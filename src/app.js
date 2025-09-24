@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import quotesRouter from './routes/quotes-router.js';
 import { proxyConfig, proxyDetectionMiddleware } from '../proxy-config.js';
+import { getAllQuotes } from './storage/database.js';
 
 dotenv.config();
 
@@ -103,7 +104,15 @@ app.use(express.urlencoded({
 }));
 
 // Routes
-app.get('/', (req, res) => res.render('index'));
+app.get('/', async (req, res) => {
+  try {
+    const quotes = await getAllQuotes();
+    res.render('index', { quotes });
+  } catch (error) {
+    console.error('Error loading quotes:', error);
+    res.render('index', { quotes: [] });
+  }
+});
 app.get('/health', (req, res) => res.status(200).send('ok'));
 app.use('/quotes', quotesRouter);
 

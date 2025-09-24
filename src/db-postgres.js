@@ -39,11 +39,18 @@ const adapter = {
       const result = await client.query(pgSql, pgParams);
 
       // Adaptar resultado para formato mysql2
-      return [{
-        insertId: result.rows[0]?.id || null,
-        affectedRows: result.rowCount || 0,
-        ...result.rows
-      }];
+      if (result.command === 'INSERT' && result.rows.length > 0) {
+        // Para INSERT, retornar com insertId
+        return [result.rows, {
+          insertId: result.rows[0]?.id || null,
+          affectedRows: result.rowCount || 0
+        }];
+      } else {
+        // Para SELECT/UPDATE/DELETE, retornar os dados
+        return [result.rows, {
+          affectedRows: result.rowCount || 0
+        }];
+      }
     } finally {
       client.release();
     }

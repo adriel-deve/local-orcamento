@@ -4,7 +4,7 @@ import path from 'path';
 import * as fs from 'fs';
 import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
-import { initExcel, saveQuoteAndSpecs, getQuoteByCode } from '../storage/excel.js';
+import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes } from '../storage/database.js';
 
 const router = Router();
 
@@ -308,12 +308,12 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
 
 
 router.get('/new', async (_req, res) => {
-  initExcel();
+  await initDatabase();
   res.render('quotes/new');
 });
 
 router.get('/:code', async (req, res) => {
-  initExcel();
+  await initDatabase();
   const code = req.params.code;
   const data = getQuoteByCode(code);
   if (!data) return res.status(404).render('404', { message: 'Cotação não encontrada' });
@@ -321,7 +321,7 @@ router.get('/:code', async (req, res) => {
 });
 
 router.get('/:code/layout', async (req, res) => {
-  initExcel();
+  await initDatabase();
   const code = req.params.code;
   const data = getQuoteByCode(code);
   if (!data) return res.status(404).send('Cotação não encontrada');
@@ -364,7 +364,7 @@ router.post('/save', upload.any(), async (req, res, next) => {
       status: 'Rascunho'
     };
 
-    initExcel();
+    await initDatabase();
     function packItems(arr, secName) {
       return (arr || []).map(it => ({
         description: secName,

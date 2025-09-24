@@ -205,6 +205,25 @@ router.post('/preview-html', upload.any(), async (req, res) => {
   }
 });
 
+// Test PDF generation
+router.get('/test-pdf', async (req, res) => {
+  try {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
+
+    const { default: PDFDocument } = await import('pdfkit');
+    const doc = new PDFDocument();
+
+    doc.pipe(res);
+    doc.fontSize(20).text('Teste de PDF - Local Orçamentos', 100, 100);
+    doc.text('Se você está vendo este texto, a geração de PDF está funcionando!', 100, 150);
+    doc.end();
+  } catch (error) {
+    console.error('Erro no teste PDF:', error);
+    res.status(500).send('Erro ao gerar PDF de teste: ' + error.message);
+  }
+});
+
 // Generate PDF directly from form data without saving
 router.post('/generate-pdf', upload.any(), async (req, res) => {
   try {
@@ -310,6 +329,65 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
 router.get('/new', async (_req, res) => {
 // initDatabase() removed - handled at app startup
   res.render('quotes/new');
+});
+
+// Save quote to database
+router.post('/save', upload.any(), async (req, res) => {
+  try {
+    console.log('Salvando orçamento no banco...');
+    const payload = JSON.parse(req.body.specs_json || '{}');
+
+    const quote = {
+      quote_code: req.body.quote_code || `COT-${Date.now()}`,
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      company: req.body.company || '',
+      representative: req.body.representative || '',
+      supplier: req.body.supplier || 'Fornecedor',
+      services: parseServices(req.body) || '',
+      validity_days: parseInt(req.body.validity) || 15,
+      delivery_time: req.body.delivery || null,
+      notes: req.body.notes || null,
+      status: 'Rascunho'
+    };
+
+    // Processar specs do payload
+    const specs = [];
+    const sections = payload.sections || {};
+
+    // Modalidade A
+    if (sections.itemsEquipA?.length > 0) {
+      specs.push({
+        description: 'EQUIPAMENTOS_A',
+        items: sections.itemsEquipA.map(item => ({
+          name: item.name,
+          price: parseFloat(item.unit) || 0
+        }))
+      });
+    }
+
+    if (sections.itemsAssessoriaA?.length > 0) {
+      specs.push({
+        description: 'ASSESSORIA_A',
+        items: sections.itemsAssessoriaA.map(item => ({
+          name: item.name,
+          price: parseFloat(item.unit) || 0
+        }))
+      });
+    }
+
+    // Salvar no banco
+    const result = await saveQuoteAndSpecs({ quote, specs });
+
+    if (result.success) {
+      res.redirect(`/?saved=${quote.quote_code}`);
+    } else {
+      throw new Error('Falha ao salvar no banco de dados');
+    }
+
+  } catch (error) {
+    console.error('Erro ao salvar orçamento:', error);
+    res.status(500).send('Erro ao salvar orçamento: ' + error.message);
+  }
 });
 
 router.get('/:code', async (req, res) => {

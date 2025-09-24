@@ -227,8 +227,10 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn" onclick="previewHtml()">Pré-visualizar HTML</button>
-      <button type="button" class="btn primary" onclick="generatePDF()">Gerar PDF</button>
+      <button type="button" class="btn success" onclick="saveQuote()">💾 Salvar Orçamento</button>
+      <button type="button" class="btn" onclick="previewHtml()">👁️ Pré-visualizar</button>
+      <button type="button" class="btn primary" onclick="generatePDF()">📄 Gerar PDF</button>
+      <a href="/quotes/test-pdf" class="btn warning" target="_blank">🔧 Testar PDF</a>
     </div>
   </form>
 </section>
@@ -494,6 +496,16 @@
     form.action = prevAction;
     form.method = prevMethod;
     form.target = prevTarget;
+  }
+
+  function saveQuote(){
+    if (collectPayload() === false) return;
+    const form = document.getElementById('quoteForm');
+    const prevAction = form.action;
+    form.action = '/quotes/save';
+    form.method = 'post';
+    form.target = '';
+    form.submit();
   }
 
   function generatePDF(){

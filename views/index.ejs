@@ -1,41 +1,61 @@
 <%- include('partials/top') %>
 
+<!-- Hero Section -->
 <section class="card">
-  <h2>Dashboard</h2>
-  <p>Crie novas cotações, visualize e imprima.</p>
+  <h2>🏢 Sistema de Orçamentos</h2>
+  <p>Gerencie cotações profissionais com facilidade. Crie, visualize e exporte orçamentos em PDF e Excel de forma rápida e eficiente.</p>
   <div class="actions">
-    <a class="btn" href="/quotes/new">Nova Cotação</a>
+    <a class="btn primary" href="/quotes/new">📝 Nova Cotação</a>
+    <a class="btn" href="#quotes-list">📊 Ver Histórico</a>
   </div>
 </section>
 
+<!-- Stats Cards -->
+<div class="grid cols-3">
+  <div class="card text-center">
+    <h3 style="color: var(--primary); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: var(--text-muted);">Total de Orçamentos</p>
+  </div>
+  <div class="card text-center">
+    <h3 style="color: var(--success); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Aprovado').length : 0 %></h3>
+    <p style="margin: 0; color: var(--text-muted);">Aprovados</p>
+  </div>
+  <div class="card text-center">
+    <h3 style="color: var(--warning); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Rascunho').length : 0 %></h3>
+    <p style="margin: 0; color: var(--text-muted);">Em Andamento</p>
+  </div>
+</div>
+
 <% if (quotes && quotes.length > 0) { %>
-<section class="card">
-  <h3>Orçamentos Recentes</h3>
+<section class="card" id="quotes-list">
+  <h3>📋 Orçamentos Recentes</h3>
   <div class="quotes-list">
-    <table style="width: 100%; border-collapse: collapse;">
+    <table>
       <thead>
-        <tr style="background-color: #f5f5f5;">
-          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Código</th>
-          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Empresa</th>
-          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Data</th>
-          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
-          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Ações</th>
+        <tr>
+          <th>🔖 Código</th>
+          <th>🏢 Empresa</th>
+          <th>📅 Data</th>
+          <th>📊 Status</th>
+          <th>⚡ Ações</th>
         </tr>
       </thead>
       <tbody>
         <% quotes.forEach(function(quote) { %>
         <tr>
-          <td style="padding: 10px; border: 1px solid #ddd;"><%= quote.quote_code %></td>
-          <td style="padding: 10px; border: 1px solid #ddd;"><%= quote.company %></td>
-          <td style="padding: 10px; border: 1px solid #ddd;"><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
-          <td style="padding: 10px; border: 1px solid #ddd;">
-            <span style="padding: 4px 8px; border-radius: 4px; background-color: <%= quote.status === 'Aprovado' ? '#d4edda' : quote.status === 'Rejeitado' ? '#f8d7da' : '#fff3cd' %>; color: <%= quote.status === 'Aprovado' ? '#155724' : quote.status === 'Rejeitado' ? '#721c24' : '#856404' %>;">
+          <td><strong><%= quote.quote_code %></strong></td>
+          <td><%= quote.company %></td>
+          <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
+          <td>
+            <span class="status-badge <%= quote.status.toLowerCase() %>">
               <%= quote.status %>
             </span>
           </td>
-          <td style="padding: 10px; border: 1px solid #ddd;">
-            <a href="/quotes/view/<%= quote.quote_code %>" style="color: #007bff; text-decoration: none; margin-right: 10px;">Ver</a>
-            <a href="/quotes/pdf/<%= quote.quote_code %>" style="color: #28a745; text-decoration: none;">PDF</a>
+          <td>
+            <div style="display: flex; gap: 0.5rem;">
+              <a href="/quotes/view/<%= quote.quote_code %>" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">👁️ Ver</a>
+              <a href="/quotes/pdf/<%= quote.quote_code %>" class="btn success" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">📄 PDF</a>
+            </div>
           </td>
         </tr>
         <% }) %>
@@ -44,9 +64,27 @@
   </div>
 </section>
 <% } else { %>
-<section class="card">
-  <h3>Nenhum orçamento encontrado</h3>
-  <p>Comece criando seu primeiro orçamento usando o botão "Nova Cotação" acima.</p>
+<section class="card text-center" id="quotes-list">
+  <div style="padding: 3rem;">
+    <h3>📋 Nenhum orçamento encontrado</h3>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin: 1rem 0;">Comece criando seu primeiro orçamento profissional</p>
+    <div style="background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 2rem; margin: 2rem 0;">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🚀 Recursos Disponíveis:</h4>
+      <div class="grid cols-2" style="text-align: left;">
+        <div>
+          <p>✅ <strong>Geração de PDF</strong></p>
+          <p>✅ <strong>Export para Excel</strong></p>
+          <p>✅ <strong>Múltiplas Moedas</strong></p>
+        </div>
+        <div>
+          <p>✅ <strong>Upload de Imagens</strong></p>
+          <p>✅ <strong>Modalidades A/B</strong></p>
+          <p>✅ <strong>Condições de Pagamento</strong></p>
+        </div>
+      </div>
+    </div>
+    <a href="/quotes/new" class="btn primary" style="padding: 1rem 2rem; font-size: 1.125rem;">🎯 Criar Primeiro Orçamento</a>
+  </div>
 </section>
 <% } %>
 

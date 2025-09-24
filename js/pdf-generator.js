@@ -28,46 +28,50 @@ window.generatePDFClient = function() {
     const doc = new jsPDF();
     doc.setFont('helvetica');
 
-    // CABEÇALHO IDÊNTICO À PRÉ-VISUALIZAÇÃO
-    // Layout exato do layout-print.ejs
-    const headerHeight = 40;
+    // CABEÇALHO EXATAMENTE IGUAL À PRÉ-VISUALIZAÇÃO
+    let yPos = 20;
 
-    // Fundo do cabeçalho
-    doc.setFillColor(248, 249, 250);
-    doc.rect(10, 10, 190, headerHeight, 'F');
-
-    // Linha superior vermelha
+    // Cabeçalho principal
     doc.setDrawColor(220, 38, 38);
     doc.setLineWidth(2);
-    doc.line(10, 10, 200, 10);
+    doc.line(10, yPos - 5, 200, yPos - 5);
 
-    // Logo placeholder (esquerda)
-    doc.setDrawColor(220, 38, 38);
-    doc.setLineWidth(1);
-    doc.rect(15, 15, 40, 25);
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text('LOGO', 30, 30);
+    // Logo Pharmatec (esquerda) - mesma posição da pré-visualização
+    try {
+      // Tentar adicionar logo real
+      const logoImg = new Image();
+      logoImg.src = '/static/img/company-logo.jpg';
+      doc.addImage(logoImg, 'JPEG', 15, yPos, 40, 25);
+    } catch (e) {
+      // Fallback: placeholder da logo
+      doc.setDrawColor(220, 38, 38);
+      doc.setLineWidth(1);
+      doc.rect(15, yPos, 40, 25);
+      doc.setFontSize(10);
+      doc.setTextColor(220, 38, 38);
+      doc.text('Pharmatec Logo', 20, yPos + 15);
+    }
 
-    // Título da proposta (direita)
+    // Informações da proposta (direita) - exato como pré-visualização
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(220, 38, 38);
-    doc.text('PROPOSTA COMERCIAL', 120, 22);
+    doc.text('PROPOSTA COMERCIAL', 120, yPos + 8);
 
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
-    doc.text(quoteData.quote_code, 120, 30);
+    doc.text(quoteData.quote_code, 120, yPos + 18);
 
     doc.setFontSize(12);
-    doc.text(quoteData.date, 120, 37);
+    doc.text(quoteData.date, 120, yPos + 25);
 
-    // Linha inferior do cabeçalho
+    // Linha inferior (igual pré-visualização)
+    yPos += 35;
     doc.setDrawColor(220, 38, 38);
     doc.setLineWidth(2);
-    doc.line(10, 52, 200, 52);
+    doc.line(10, yPos, 200, yPos);
 
-    let yPos = 65;
+    yPos += 10;
 
     // DADOS DA PROPOSTA (Grid como na pré-visualização)
     doc.setFillColor(250, 250, 250);
@@ -138,21 +142,22 @@ window.generatePDFClient = function() {
     doc.text(`${quoteData.validity} dias`, 150, yPos);
     yPos += 15;
 
-    // Seções de Itens (estilo pré-visualização)
+    // MODALIDADES EXATAS DA PRÉ-VISUALIZAÇÃO
     const sections = payload.sections || {};
 
-    // Modalidade A - Caixa com borda vermelha
+    // Modalidade A - Borda vermelha exata da pré-visualização
     if (sections.itemsEquipA && sections.itemsEquipA.length > 0) {
-      // Desenhar caixa da modalidade
-      doc.setDrawColor(196, 30, 58);
-      doc.setFillColor(255, 248, 249); // Fundo muito claro vermelho
+      // Caixa da modalidade (igual layout-print.ejs)
+      doc.setDrawColor(220, 38, 38); // #dc2626
+      doc.setFillColor(255, 248, 249); // rgba(220, 38, 38, 0.02)
       doc.setLineWidth(2);
-      doc.roundedRect(15, yPos - 5, 180, 8, 2, 2, 'FD');
+      doc.roundedRect(12, yPos, 186, 15, 3, 3, 'FD');
 
-      doc.setFontSize(14);
+      // Título centralizado (como na pré-visualização)
+      doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(196, 30, 58);
-      doc.text('MODALIDADE A - Sistema CIF', 20, yPos);
+      doc.setTextColor(220, 38, 38);
+      doc.text('MODALIDADE A - Sistema CIF', 105, yPos + 8, { align: 'center' });
       yPos += 8;
 
       doc.setFontSize(10);

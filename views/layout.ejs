@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title || 'Local Orçamentos' %></title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=<%= Date.now() %>" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <h1>Local Orçamentos</h1>
+        <nav>
+          <a href="/">Início</a>
+          <a href="/quotes/new">Nova Cotação</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <%- body %>
+    </main>
+    <footer class="app-footer">
+      <div class="container">© <%= new Date().getFullYear() %> • App Local</div>
+    </footer>
+  </body>
+  </html>
+

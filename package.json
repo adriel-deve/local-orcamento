@@ -1,0 +1,27 @@
+{
+    "name": "local-orcamentos",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "node src/app.js",
+        "init:db": "node src/init-db.js",
+            "pdf:make": "node src/tools/make-pdf.js",
+        "xlsx:make": "node src/tools/make-xlsx.js",
+        "claude": "cmd /c npx -y @anthropic-ai/claude-code",
+        "claude:help": "cmd /c npx -y @anthropic-ai/claude-code --help"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "ejs": "^3.1.10",
+        "express": "^4.19.2",
+        "form-data": "^4.0.4",
+        "html-pdf": "^3.0.1",
+        "multer": "^1.4.5-lts.1",
+        "mysql2": "^3.11.3",
+        "node-fetch": "^3.3.2",
+        "pdfkit": "^0.15.0",
+        "puppeteer": "^24.22.2",
+        "xlsx": "^0.18.5"
+    }
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Cores - Local Orçamentos</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .demo-section {
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .color-box {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            margin: 10px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            line-height: 100px;
+            font-weight: bold;
+        }
+        .primary { background: var(--primary); }
+        .primary-dark { background: var(--primary-dark); }
+        .secondary { background: var(--secondary); }
+        .text-demo { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-demo">🎨 Teste das Novas Cores - Vermelho/Preto</h1>
+
+        <div class="demo-section">
+            <h2>Cores Principais</h2>
+            <div class="color-box primary">Primary</div>
+            <div class="color-box primary-dark">Dark</div>
+            <div class="color-box secondary">Secondary</div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Botões de Teste</h2>
+            <button class="btn primary">Botão Principal</button>
+            <button class="btn">Botão Secundário</button>
+        </div>
+
+        <div class="demo-section">
+            <h2>Texto de Exemplo</h2>
+            <p class="text-demo">Este texto deveria estar em preto (#000000) conforme as novas especificações.</p>
+            <p>Se você está vendo as cores vermelha e preta, as mudanças funcionaram!</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>Navegação</h2>
+            <a href="/">← Voltar para Home</a> |
+            <a href="/quotes/new">Nova Cotação</a>
+        </div>
+    </div>
+</body>
+</html>

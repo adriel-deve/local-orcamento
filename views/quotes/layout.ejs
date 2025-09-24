@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposta Comercial - <%= quote.quote_code %></title>
+  <link rel="stylesheet" href="/static/css/layout.css?v=<%= Date.now() %>">
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Imprimir</button>
+  <% const fmt = (val) => Number(val || 0).toFixed(2).replace('.', ','); %>
+
+  <!-- PÁGINA 1: Capa Minimalista -->
+  <div class="layout-page page-break page-cover">
+    <!-- Imagem abstrata no canto superior esquerdo -->
+    <div class="abstract-pattern">
+      <img src="/static/img/abstract-pattern.svg" alt="Pattern" class="pattern-image">
+    </div>
+
+    <!-- Logo Pharmatec menor e centralizada -->
+    <div class="cover-logo">
+      <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="pharmatec-logo">
+    </div>
+
+    <!-- Título principal centralizado -->
+    <div class="cover-title-section">
+      <h1 class="cover-title">PROPOSTA COMERCIAL</h1>
+      <div class="cover-code"><%= quote.quote_code %></div>
+      <div class="cover-subtitle">Soluções Farmacêuticas e Industriais</div>
+    </div>
+
+    <!-- Data no rodapé -->
+    <div class="cover-footer">
+      <%= new Date(quote.date).toLocaleDateString('pt-BR') %>
+    </div>
+  </div>
+
+  <!-- PÁGINA 2: Texto Institucional + Dados do Fornecedor -->
+  <div class="layout-page page-break page-institutional">
+    <div class="page-number">2</div>
+    <!-- Texto institucional -->
+    <div class="institutional-section">
+      <h2 class="section-title">Sobre a Pharmatec</h2>
+      <div class="institutional-content">
+        <p>Com 30 anos de experiência no mercado nacional e internacional, o Grupo Pharmatec é especializado nos setores farmacêutico, nutracêutico, cosmecêutico, cosmético, químico, alimentício e veterinário.</p>
+
+        <p>Atendimento personalizado, tendo como objetivo as necessidades do cliente, operando com soluções, sejam serviços, equipamentos ou peças, reconhecidos por clientes renomados no mercado.</p>
+
+        <p>Nossa missão é fornecer tecnologia de ponta e suporte técnico especializado, garantindo a excelência operacional e o sucesso dos projetos de nossos clientes.</p>
+      </div>
+    </div>
+
+    <!-- Dados do fornecedor e proposta -->
+    <div class="supplier-data-section">
+      <h3 class="subsection-title">Dados da Proposta</h3>
+      <div class="data-grid">
+        <div class="data-card">
+          <span class="data-label">Empresa Cliente</span>
+          <span class="data-value"><%= quote.client || quote.company || '-' %></span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">CNPJ</span>
+          <span class="data-value"><%= quote.cnpj || '-' %></span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">Representante</span>
+          <span class="data-value"><%= quote.representative || '-' %></span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">Fornecedor</span>
+          <span class="data-value"><%= quote.supplier || 'Pharmatec Solutions' %></span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">Data da Proposta</span>
+          <span class="data-value"><%= new Date(quote.date).toLocaleDateString('pt-BR') %></span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">Validade</span>
+          <span class="data-value"><%= quote.validity_days || 30 %> dias</span>
+        </div>
+        <div class="data-card">
+          <span class="data-label">Prazo de Entrega</span>
+          <span class="data-value"><%= quote.delivery_time || 'A definir' %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Imagem do globo na parte inferior -->
+    <div class="globe-footer">
+      <img src="/static/img/globo.png" alt="Global Solutions" class="globe-image">
+    </div>
+  </div>
+
+  <!-- PÁGINA 3: Especificações do Equipamento -->
+  <div class="layout-page page-break page-specifications">
+    <div class="page-number">3</div>
+    <h2 class="section-title">Especificações do Equipamento</h2>
+
+    <div class="equipment-details">
+      <div class="equipment-info">
+        <h3 class="equipment-name"><%= quote.machine_model || 'Nome do Equipamento' %></h3>
+
+        <!-- Espaço para imagem do equipamento -->
+        <div class="equipment-image-placeholder">
+          <div class="image-box">
+            <span>Imagem do Equipamento</span>
+            <p>Dimensões: 600x450px</p>
+          </div>
+        </div>
+
+        <!-- Especificações técnicas -->
+        <% if (quote.tech_spec) { %>
+        <div class="technical-section">
+          <h4>Especificações Técnicas</h4>
+          <div class="tech-content">
+            <%= quote.tech_spec %>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Princípio de funcionamento -->
+        <% if (quote.principle) { %>
+        <div class="principle-section">
+          <h4>Princípio de Funcionamento</h4>
+          <div class="principle-content">
+            <%= quote.principle %>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Observações adicionais -->
+        <% if (quote.notes) { %>
+        <div class="notes-section">
+          <h4>Observações</h4>
+          <div class="notes-content">
+            <%= quote.notes %>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA 4: Tabelas de Preços e Serviços -->
+  <div class="layout-page page-break page-pricing">
+    <div class="page-number">4</div>
+    <h2 class="section-title">Detalhamento Financeiro</h2>
+
+    <% sections.forEach(function(section, sectionIndex){
+      const totals = section.totals;
+      const items = section.items || [];
+    %>
+      <section style="margin-bottom: 32px;">
+        <h3 class="section-title" style="margin-top: 32px; font-size: 18px;">
+          <%= section.title %>
+        </h3>
+
+        <% if (!items.length) { %>
+          <div class="empty-msg">
+            Nenhum item cadastrado nesta seção.
+          </div>
+        <% } else { %>
+          <div class="table-container">
+            <table class="layout-table">
+              <thead>
+                <tr>
+                  <th style="width: 40%;">Descrição</th>
+                  <th style="width: 10%; text-align: center;">Qtd</th>
+                  <th style="width: 20%; text-align: right;">Valor Unitário</th>
+                  <th style="width: 10%; text-align: center;">Moeda</th>
+                  <th style="width: 20%; text-align: right;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% items.forEach(function(it, itemIndex){
+                  const unit = Number(it.unit || it.price || 0);
+                  const qty = Number(it.qty || 1);
+                  const cur = (it.currency || 'BRL').toUpperCase();
+                  const subtotal = qty * unit;
+                  const symbol = cur === 'USD' ? '$' : (cur === 'EUR' ? '€' : 'R$');
+                %>
+                  <tr>
+                    <td>
+                      <strong><%= it.name %></strong>
+                    </td>
+                    <td style="text-align: center;">
+                      <%= qty.toLocaleString('pt-BR') %>
+                    </td>
+                    <td style="text-align: right;">
+                      <%= symbol %> <%= fmt(unit) %>
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="currency-badge <%= cur.toLowerCase() %>"><%= cur %></span>
+                    </td>
+                    <td style="text-align: right;">
+                      <strong><%= symbol %> <%= fmt(subtotal) %></strong>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <% const parts=[];
+             if(totals.BRL) parts.push('R$ '+fmt(totals.BRL));
+             if(totals.USD) parts.push('$ '+fmt(totals.USD));
+             if(totals.EUR) parts.push('€ '+fmt(totals.EUR));
+          %>
+          <div class="section-total">
+            <strong>Total da Seção:</strong> <%= parts.join(' + ') || 'R$ 0,00' %>
+          </div>
+        <% } %>
+      </section>
+    <% }) %>
+
+  </div>
+
+  <!-- PÁGINA 5: Resumo Financeiro Total -->
+  <div class="layout-page page-break page-summary">
+    <div class="page-number">5</div>
+    <h2 class="section-title">Resumo Financeiro Total</h2>
+
+    <%
+      const totalParts=[];
+      if(totals.BRL) totalParts.push('R$ '+fmt(totals.BRL));
+      if(totals.USD) totalParts.push('$ '+fmt(totals.USD));
+      if(totals.EUR) totalParts.push('€ '+fmt(totals.EUR));
+
+      const combos=[];
+      if(totals.BRL && totals.USD) combos.push('R$ '+fmt(totals.BRL)+' + $ '+fmt(totals.USD));
+      if(totals.BRL && totals.EUR) combos.push('R$ '+fmt(totals.BRL)+' + € '+fmt(totals.EUR));
+      if(totals.USD && totals.EUR) combos.push('$ '+fmt(totals.USD)+' + € '+fmt(totals.EUR));
+      if(!combos.length){
+        if(totals.BRL) combos.push('R$ '+fmt(totals.BRL));
+        else if(totals.USD) combos.push('$ '+fmt(totals.USD));
+        else if(totals.EUR) combos.push('€ '+fmt(totals.EUR));
+        else combos.push('R$ 0,00');
+      }
+    %>
+
+    <div class="financial-summary">
+      <div class="summary-header">
+        <h3>Consolidação de Valores</h3>
+      </div>
+
+      <div class="summary-breakdown">
+        <% if (totalParts.length > 1) { %>
+        <div class="summary-item">
+          <span class="summary-label">Totais por Moeda:</span>
+          <span class="summary-value"><%= totalParts.join(' | ') %></span>
+        </div>
+        <% } %>
+
+        <div class="summary-item total-line">
+          <span class="summary-label">Valor Total da Proposta:</span>
+          <span class="summary-value main-total"><%= combos.join(' | ') %></span>
+        </div>
+      </div>
+
+      <!-- Condições comerciais -->
+      <div class="commercial-conditions">
+        <h4>Condições Comerciais</h4>
+        <div class="conditions-grid">
+          <div class="condition-item">
+            <strong>Validade da Proposta:</strong>
+            <span><%= quote.validity_days || 30 %> dias</span>
+          </div>
+          <div class="condition-item">
+            <strong>Prazo de Entrega:</strong>
+            <span><%= quote.delivery_time || 'A definir' %></span>
+          </div>
+          <div class="condition-item">
+            <strong>Forma de Pagamento:</strong>
+            <span>A combinar</span>
+          </div>
+          <div class="condition-item">
+            <strong>Frete:</strong>
+            <span>CIF - Por conta do fornecedor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA 6: Termos de Garantia e Condições -->
+  <div class="layout-page page-warranty">
+    <div class="page-number">6</div>
+    <h2 class="section-title">Termos de Garantia e Condições Gerais</h2>
+
+    <div class="warranty-content">
+      <div class="warranty-section">
+        <h3>Garantia</h3>
+        <ul class="warranty-list">
+          <li>Garantia de 12 (doze) meses para equipamentos, contados a partir da data de entrega.</li>
+          <li>Garantia de 6 (seis) meses para peças de reposição e componentes.</li>
+          <li>A garantia cobre defeitos de fabricação e materiais, excluindo desgaste natural.</li>
+          <li>Suporte técnico especializado durante todo o período de garantia.</li>
+        </ul>
+      </div>
+
+      <div class="warranty-section">
+        <h3>Condições Gerais</h3>
+        <ul class="conditions-list">
+          <li>Esta proposta tem validade de <strong><%= quote.validity_days || 30 %> dias</strong> a partir da data de emissão.</li>
+          <li>Valores sujeitos a alteração sem prévio aviso após o prazo de validade.</li>
+          <li>Esta proposta não constitui compromisso de compra até a assinatura do contrato.</li>
+          <li>Prazo de entrega: <strong><%= quote.delivery_time || 'A definir conforme especificações' %></strong>.</li>
+          <li>Instalação e treinamento inclusos no valor da proposta.</li>
+          <li>Suporte técnico 24/7 através de nossos canais de atendimento.</li>
+        </ul>
+      </div>
+
+      <div class="warranty-section">
+        <h3>Responsabilidades</h3>
+        <ul class="responsibility-list">
+          <li>O cliente deve fornecer infraestrutura adequada conforme especificações técnicas.</li>
+          <li>Pharmatec se responsabiliza pela entrega, instalação e comissionamento dos equipamentos.</li>
+          <li>Treinamento da equipe operacional está incluído no escopo da proposta.</li>
+          <li>Documentação técnica completa será fornecida em português.</li>
+        </ul>
+      </div>
+
+      <!-- Assinatura e contato -->
+      <div class="signature-section">
+        <div class="contact-info">
+          <h4>Contato para Esclarecimentos</h4>
+          <p><strong>Pharmatec Solutions</strong></p>
+          <p>Email: <%= quote.contact_email || '[email do vendedor]' %></p>
+          <p>Telefone: <%= quote.contact_phone || '[telefone do vendedor]' %></p>
+          <p>Site: www.apharmatec.com.br</p>
+        </div>
+
+        <div class="signature-box">
+          <div class="signature-line">
+            <span>Assinatura do Responsável Técnico</span>
+          </div>
+          <p class="signature-name"><%= quote.seller_name || '[Nome do Vendedor]' %> - Eng. Responsável - CREA XX.XXX.XXX-X</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Adicionar data/hora de geração
+    document.addEventListener('DOMContentLoaded', function() {
+      const now = new Date();
+      const footer = document.createElement('div');
+      footer.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        font-size: 10px;
+        color: #999;
+        z-index: 1000;
+      `;
+      footer.textContent = 'Gerado em: ' + now.toLocaleString('pt-BR');
+      document.body.appendChild(footer);
+    });
+  </script>
+</body>
+</html>

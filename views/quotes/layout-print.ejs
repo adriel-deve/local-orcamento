@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposta Comercial - <%= quote.quote_code %></title>
+  <style>
+    /* CSS otimizado para impressão */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #333;
+      background: white;
+    }
+
+    .print-btn {
+      display: none;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Layout para impressão */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 20mm;
+      background: white;
+      page-break-after: always;
+    }
+
+    .page:last-child { page-break-after: avoid; }
+
+    /* Cabeçalho */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #dc2626;
+      padding-bottom: 10px;
+    }
+
+    .logo { max-height: 60px; }
+    .header-info { text-align: right; }
+    .proposal-title { font-size: 18px; font-weight: bold; color: #dc2626; }
+    .proposal-code { font-size: 14px; margin-top: 5px; }
+
+    /* Dados da proposta */
+    .proposal-data {
+      margin-bottom: 25px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .data-item {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .data-label {
+      font-weight: bold;
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .data-value {
+      font-size: 12px;
+      color: #333;
+    }
+
+    /* Seções */
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #dc2626;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #dc2626;
+      padding-bottom: 5px;
+    }
+
+    /* Modalidades */
+    .modalidade {
+      margin-bottom: 30px;
+      border: 2px solid #dc2626;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .modalidade-a { border-color: #dc2626; background: rgba(220, 38, 38, 0.02); }
+    .modalidade-b { border-color: #1f2937; background: rgba(31, 41, 55, 0.02); }
+
+    .modalidade-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .modalidade-a .modalidade-title { color: #dc2626; }
+    .modalidade-b .modalidade-title { color: #1f2937; }
+
+    /* Tabelas */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+      font-size: 11px;
+    }
+
+    .items-table th,
+    .items-table td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: left;
+    }
+
+    .items-table th {
+      background: #f5f5f5;
+      font-weight: bold;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .items-table .text-right { text-align: right; }
+    .items-table .text-center { text-align: center; }
+
+    /* Totais */
+    .totals {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .total-box {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      min-width: 200px;
+      text-align: right;
+    }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .total-final {
+      font-weight: bold;
+      font-size: 14px;
+      border-top: 1px solid #333;
+      padding-top: 5px;
+    }
+
+    /* Termos e condições */
+    .terms {
+      margin-top: 30px;
+      page-break-inside: avoid;
+    }
+
+    .terms-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #dc2626;
+      margin-bottom: 15px;
+    }
+
+    .terms-content {
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .terms-content ul {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    .terms-content li {
+      margin-bottom: 8px;
+    }
+
+    /* Assinatura */
+    .signature-section {
+      margin-top: 40px;
+      page-break-inside: avoid;
+    }
+
+    .signature-box {
+      border: 1px solid #ddd;
+      padding: 20px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .signature-line {
+      border-bottom: 1px solid #333;
+      width: 300px;
+      margin: 20px auto;
+      height: 40px;
+    }
+
+    /* Contato */
+    .contact-info {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* Media queries para impressão */
+    @media print {
+      body { background: white !important; }
+      .print-btn { display: none !important; }
+      .page { margin: 0; padding: 15mm; box-shadow: none; }
+      .page-break { page-break-before: always; }
+    }
+
+    @media screen {
+      .print-btn { display: block; }
+      .page { box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: 20px auto; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Imprimir</button>
+  <% const fmt = (val) => Number(val || 0).toFixed(2).replace('.', ','); %>
+
+  <!-- PÁGINA PRINCIPAL: Proposta Completa -->
+  <div class="page">
+    <!-- Cabeçalho -->
+    <div class="header">
+      <div>
+        <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="logo">
+      </div>
+      <div class="header-info">
+        <div class="proposal-title">PROPOSTA COMERCIAL</div>
+        <div class="proposal-code"><%= quote.quote_code %></div>
+        <div><%= new Date(quote.date).toLocaleDateString('pt-BR') %></div>
+      </div>
+    </div>
+
+    <!-- Dados da Proposta -->
+    <div class="proposal-data">
+      <div class="data-grid">
+        <div class="data-item">
+          <span class="data-label">Cliente</span>
+          <span class="data-value"><%= quote.client || quote.company || '-' %></span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">CNPJ</span>
+          <span class="data-value"><%= quote.cnpj || '-' %></span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Representante</span>
+          <span class="data-value"><%= quote.representative || '-' %></span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Validade</span>
+          <span class="data-value"><%= quote.validity_days || 30 %> dias</span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Prazo de Entrega</span>
+          <span class="data-value"><%= quote.delivery_time || 'A definir' %></span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Modelo da Máquina</span>
+          <span class="data-value"><%= quote.machine_model || '-' %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Especificações Técnicas -->
+    <% if (quote.tech_spec || quote.principle || quote.equipment_image) { %>
+    <div class="section">
+      <!-- Imagem do Equipamento -->
+      <% if (quote.equipment_image) { %>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h3 class="section-title">Imagem do Equipamento</h3>
+        <img src="<%= quote.equipment_image %>" alt="Equipamento" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px;">
+      </div>
+      <% } %>
+
+      <% if (quote.tech_spec) { %>
+      <h3 class="section-title">Especificação Técnica</h3>
+      <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.tech_spec %></p>
+      <% } %>
+
+      <% if (quote.principle) { %>
+      <h3 class="section-title">Princípio de Funcionamento</h3>
+      <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
+      <% } %>
+    </div>
+    <% } %>
+
+    <!-- Modalidade A (Sistema CIF) -->
+    <%
+    const modalidadeA = sections.filter(s => s.key.includes('_a'));
+    const hasModalidadeA = modalidadeA.some(s => s.items && s.items.length > 0);
+    %>
+    <% if (hasModalidadeA) { %>
+    <div class="modalidade modalidade-a">
+      <h2 class="modalidade-title">MODALIDADE A - Sistema CIF</h2>
+
+      <% modalidadeA.forEach(section => { %>
+        <% if (section.items && section.items.length > 0) { %>
+        <div class="section">
+          <h3 class="section-title"><%= section.title.replace('Modalidade A - ', '') %></h3>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 40%">Descrição</th>
+                <th style="width: 8%" class="text-center">Qtd</th>
+                <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
+                <th style="width: 8%" class="text-center">Dias</th>
+                <% } %>
+                <th style="width: 15%" class="text-right">Valor Unit.</th>
+                <th style="width: 10%" class="text-center">Moeda</th>
+                <th style="width: 15%" class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% section.items.forEach(item => { %>
+              <tr>
+                <td><%= item.name %></td>
+                <td class="text-center"><%= item.qty %></td>
+                <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
+                <td class="text-center"><%= item.days || '-' %></td>
+                <% } %>
+                <td class="text-right"><%= fmt(item.unit) %></td>
+                <td class="text-center"><%= item.currency %></td>
+                <td class="text-right"><%= item.currency %> <%= fmt(item.subtotal) %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      <% }); %>
+
+      <% if (totals.modalidadeA && Object.keys(totals.modalidadeA).length > 0) { %>
+      <div class="totals">
+        <div class="total-box">
+          <%
+          const currenciesA = Object.entries(totals.modalidadeA).filter(([currency, value]) => value > 0);
+          if (currenciesA.length > 0) {
+            const totalText = currenciesA.map(([currency, value]) => {
+              const symbol = currency === 'BRL' ? 'R$' : currency === 'USD' ? '$' : '€';
+              return `${currency} ${symbol} ${fmt(value)}`;
+            }).join(' + ');
+          %>
+          <div class="total-line total-final">
+            <span>Total Modalidade A:</span>
+            <span><%= totalText %></span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+
+    <!-- Modalidade B (Sistema FOB) -->
+    <%
+    const modalidadeB = sections.filter(s => s.key.includes('_b'));
+    const hasModalidadeB = modalidadeB.some(s => s.items && s.items.length > 0);
+    %>
+    <% if (hasModalidadeB) { %>
+    <div class="modalidade modalidade-b">
+      <h2 class="modalidade-title">MODALIDADE B - Sistema FOB</h2>
+
+      <% modalidadeB.forEach(section => { %>
+        <% if (section.items && section.items.length > 0) { %>
+        <div class="section">
+          <h3 class="section-title"><%= section.title.replace('Modalidade B - ', '') %></h3>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 40%">Descrição</th>
+                <th style="width: 8%" class="text-center">Qtd</th>
+                <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
+                <th style="width: 8%" class="text-center">Dias</th>
+                <% } %>
+                <th style="width: 15%" class="text-right">Valor Unit.</th>
+                <th style="width: 10%" class="text-center">Moeda</th>
+                <th style="width: 15%" class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% section.items.forEach(item => { %>
+              <tr>
+                <td><%= item.name %></td>
+                <td class="text-center"><%= item.qty %></td>
+                <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
+                <td class="text-center"><%= item.days || '-' %></td>
+                <% } %>
+                <td class="text-right"><%= fmt(item.unit) %></td>
+                <td class="text-center"><%= item.currency %></td>
+                <td class="text-right"><%= item.currency %> <%= fmt(item.subtotal) %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      <% }); %>
+
+      <% if (totals.modalidadeB && Object.keys(totals.modalidadeB).length > 0) { %>
+      <div class="totals">
+        <div class="total-box">
+          <%
+          const currenciesB = Object.entries(totals.modalidadeB).filter(([currency, value]) => value > 0);
+          if (currenciesB.length > 0) {
+            const totalText = currenciesB.map(([currency, value]) => {
+              const symbol = currency === 'BRL' ? 'R$' : currency === 'USD' ? '$' : '€';
+              return `${currency} ${symbol} ${fmt(value)}`;
+            }).join(' + ');
+          %>
+          <div class="total-line total-final">
+            <span>Total Modalidade B:</span>
+            <span><%= totalText %></span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+
+
+    <!-- Observações -->
+    <% if (quote.notes) { %>
+    <div class="section">
+      <h3 class="section-title">Observações</h3>
+      <p style="font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.notes %></p>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- PÁGINA DE CONDIÇÕES DE PAGAMENTO (se incluída) -->
+  <% if (quote.include_payment_conditions === 'on' || quote.include_payment_conditions === true) { %>
+  <div class="page page-break">
+    <div class="payment-conditions">
+      <h2 style="text-align: center; color: #dc2626; font-size: 16px; margin-bottom: 25px; font-weight: bold;">CONDIÇÕES DE PAGAMENTO</h2>
+
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+          <%= quote.payment_intro %>
+        </p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">Montante em dólares americanos independente da opção:</h3>
+        <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
+          <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+            <strong>OPÇÃO A ou OPÇÃO B</strong><br>
+            <%= quote.payment_usd_conditions %>
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+          <%= quote.payment_brl_intro %>
+        </p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÇÃO A ou OPÇÃO B (com SAT)</h3>
+        <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
+          <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+            <%= quote.payment_brl_with_sat %>
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÇÃO A ou OPÇÃO B (sem SAT)</h3>
+        <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
+          <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+            <%= quote.payment_brl_without_sat %>
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top: 25px;">
+        <p style="font-size: 10px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
+          <%= quote.payment_additional_notes %>
+        </p>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- PÁGINA DE TERMOS E GARANTIAS -->
+  <div class="page page-break">
+    <!-- Termos e Condições -->
+    <div class="terms">
+      <h2 class="terms-title">TERMOS DE GARANTIA GERAIS DO FABRICANTE</h2>
+      <div class="terms-content">
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Garantia de materiais elétricos, mecânicos e pneumáticos comerciais: conforme garantia do fabricante ou fornecedor.
+        </p>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          <strong>Excluem-se da garantia:</strong> os desgastes normais de uso; defeitos de mau uso, imperícia ou negligência no uso; uso inadequado do equipamento; defeitos originados pela falta de cuidados, execução incorreta ou inadequada na limpeza, lubrificação, ou armazenamento do equipamento, bem como exposição a agentes químicos corrosivos, ou com condições ambientais e/ou elétricas inadequadas ou deficientes; defeitos ou danos causados por instalação ou manutenção técnica imprópria, e ainda, violação, alteração, ou substituição de peças ou acessórios, bem como outros itens, por serviço técnico não autorizado pelo fabricante; não cumprimento de orientações técnicas; danos causados por acidente; danos causados por agentes da natureza, assim como pancadas, quedas, queimadas, incêndios, enchentes, nevasca, nevoeiro, também furto, roubo, depredação, dentre outros.
+        </p>
+
+        <h3 style="margin: 20px 0 10px 0; color: #dc2626; font-size: 12px;">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</h3>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Em linhas completas ou quando necessário, a equipe REPRESENTANTE visitará o cliente, podendo ser acompanhada pela equipe do Grupo Zanatech (despesas de alimentação, hospedagem e deslocamento são pagas pelo cliente). O Grupo Zanatech pode traduzir a documentação de inglês para português (serviço pago pelo cliente) e oferece tradução gratuita da IHM de inglês para português caso solicitado pelo REPRESENTANTE. Para novas vendas, a garantia nacional do Grupo Zanatech complementa a garantia do fabricante REPRESENTANTE, sem cancelá-la ou substituí-la, tendo a validade estipulada previamente, para os equipamentos que forem instalados, qualificados e os operadores treinados por pessoal autorizado pelo Grupo Zanatech ou REPRESENTANTE (serviço pago pelo cliente). O Grupo Zanatech fornece suporte a clientes locais através da garantia do Grupo Zanatech (sem cobrança de honorários, apenas há cobrança das despesas locais) e seu pessoal autorizado pode efetuar reparos e substituições em equipamentos REPRESENTANTE sob garantia, sem invalidá-la. Serviços para equipamentos REPRESENTANTE com garantia vencida.
+        </p>
+
+        <h3 style="margin: 20px 0 10px 0; color: #dc2626; font-size: 12px;">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</h3>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Informamos que o Grupo Zanatech é o representante exclusivo oficial do REPRESENTANTE para todo o território brasileiro, sendo as únicas empresas autorizadas a realizar a venda, serviços de manutenção, suporte técnico e assistência para todos os equipamentos da marca REPRESENTANTE.
+        </p>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Esta representação exclusiva foi formalmente estabelecida e certificada pelo REPRESENTANTE, com vigência assegurada para o período de 2024 a 2027, conforme documento oficial emitido pelo Sr. Boo Han Lee, Presidente do REPRESENTANTE.
+        </p>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Ao adquirir equipamentos ou contratar serviços REPRESENTANTE através de empresas do Grupo Zanatech, V.Sa. conta com o respaldo oficial do fabricante e a segurança de aquisição legítima e atendimento qualificado e autorizado.
+        </p>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          É um enorme prazer fazer parte do projeto de sua empresa, e ficamos à disposição para quaisquer esclarecimentos.
+        </p>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          <strong>Cordialmente,</strong>
+        </p>
+
+        <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+          <h4 style="margin-bottom: 10px; color: #dc2626; font-size: 11px;">VALIDADE DA PROPOSTA</h4>
+          <p style="margin-bottom: 10px; font-size: 10px;">
+            • Esta proposta tem validade de <%= quote.validity || 30 %> dias a partir da data de emissão.<br>
+            • Preços sujeitos a alteração sem aviso prévio após vencimento da proposta.<br>
+            • Confirmação do pedido mediante assinatura do contrato e pagamento da entrada.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informações de Contato -->
+    <div class="contact-info">
+      <h3 style="margin-bottom: 10px; color: #dc2626;">INFORMAÇÕES PARA CONTATO</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: left;">
+        <div>
+          <strong>Vendedor:</strong><br>
+          <%= quote.seller_name || 'Consultor Pharmatec' %><br>
+          Email: <%= quote.contact_email || 'vendas@apharmatec.com.br' %><br>
+          Telefone: <%= quote.contact_phone || '(11) 99999-9999' %>
+        </div>
+        <div>
+          <strong>Empresa:</strong><br>
+          Pharmatec Solutions<br>
+          Website: www.apharmatec.com.br<br>
+          Suporte: suporte@apharmatec.com.br
+        </div>
+      </div>
+    </div>
+
+    <!-- Assinatura -->
+    <div class="signature-section">
+      <div class="signature-box">
+        <p style="margin-bottom: 20px; font-weight: bold;">ACEITE DA PROPOSTA</p>
+        <div class="signature-line"></div>
+        <p style="margin-top: 10px; font-size: 11px;">
+          Assinatura do Responsável Técnico<br>
+          <strong><%= quote.seller_name || 'Representante Pharmatec' %></strong><br>
+          Data: ___/___/______
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

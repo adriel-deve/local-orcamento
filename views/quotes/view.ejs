@@ -1,0 +1,81 @@
+﻿<%- include('../partials/top') %>
+<section class="card">
+  <h2>Orçamento <%= quote.quote_code %></h2>
+  <% const fmt = (val) => Number(val || 0).toFixed(2).replace('.', ','); %>
+  <div class="grid grid-2">
+    <div><strong>Cliente:</strong> <%= quote.client || quote.company || '-' %></div>
+    <div><strong>CNPJ:</strong> <%= quote.cnpj || '-' %></div>
+    <div><strong>Empresa (interno):</strong> <%= quote.company || '-' %></div>
+    <div><strong>Representante:</strong> <%= quote.representative || '-' %></div>
+    <div><strong>Fornecedor:</strong> <%= quote.supplier || '-' %></div>
+    <div><strong>Modelo da Máquina:</strong> <%= quote.machine_model || '-' %></div>
+    <div><strong>Data:</strong> <%= new Date(quote.date).toLocaleDateString('pt-BR') %></div>
+    <div><strong>Validade:</strong> <%= quote.validity_days || 0 %> dias</div>
+    <div><strong>Prazo de Entrega:</strong> <%= quote.delivery_time || '-' %></div>
+    <div style="grid-column:1/3"><strong>Serviços:</strong> <%= (quote.services || '').replace(/;/g, ', ') %></div>
+    <div style="grid-column:1/3"><strong>Observações:</strong> <%= quote.notes || '-' %></div>
+  </div>
+
+  <hr />
+  <h3>Especificações</h3>
+  <% let totalBRL=0,totalUSD=0,totalEUR=0; %>
+  <% (specs || []).forEach(function(section, index){ const items = section.items || []; %>
+    <div class="spec-view">
+      <h4>Especificação <%= index + 1 %> — <%= section.description || '-' %></h4>
+      <% if (!items.length) { %>
+        <p class="empty-msg">Nenhum item cadastrado.</p>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Qtd</th>
+              <th>Unitário</th>
+              <th>Moeda</th>
+              <th style="text-align:right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% let subBRL=0, subUSD=0, subEUR=0; %>
+            <% items.forEach(function(it){ const qty=Number(it.qty||1); const unit=Number(it.price||it.unit||0); const cur=(it.currency||'BRL').toUpperCase(); const subtotal=qty*unit; if(cur==='USD') subUSD+=subtotal; else if(cur==='EUR') subEUR+=subtotal; else subBRL+=subtotal; %>
+              <tr>
+                <td><%= it.name %></td>
+                <td><%= qty %></td>
+                <td><%= cur==='USD'?'$':(cur==='EUR'?'€':'R$') %> <%= fmt(unit) %></td>
+                <td><%= cur %></td>
+                <td style="text-align:right"><%= cur==='USD'?'$':(cur==='EUR'?'€':'R$') %> <%= fmt(subtotal) %></td>
+              </tr>
+            <% }) %>
+            <% totalBRL+=subBRL; totalUSD+=subUSD; totalEUR+=subEUR; %>
+            <tr class="subtotal">
+              <td colspan="4">Subtotal</td>
+              <td style="text-align:right">
+                <% const parts=[]; if(subBRL) parts.push('R$ '+fmt(subBRL)); if(subUSD) parts.push('$ '+fmt(subUSD)); if(subEUR) parts.push('€ '+fmt(subEUR)); %>
+                <%= parts.join(' | ') || 'R$ 0,00' %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  <% }); %>
+
+  <div class="total">
+    <% const totalParts=[]; if(totalBRL) totalParts.push('R$ '+fmt(totalBRL)); if(totalUSD) totalParts.push('$ '+fmt(totalUSD)); if(totalEUR) totalParts.push('€ '+fmt(totalEUR)); %>
+    <strong>Totais por moeda:</strong> <%= totalParts.join(' | ') || 'R$ 0,00' %>
+  </div>
+
+  <div class="total">
+    <% const combos=[]; if(totalBRL && totalUSD) combos.push('R$ '+fmt(totalBRL)+' + $ '+fmt(totalUSD)); if(totalBRL && totalEUR) combos.push('R$ '+fmt(totalBRL)+' + € '+fmt(totalEUR)); if(!combos.length){ if(totalBRL) combos.push('R$ '+fmt(totalBRL)); else if(totalUSD) combos.push('$ '+fmt(totalUSD)); else if(totalEUR) combos.push('€ '+fmt(totalEUR)); else combos.push('R$ 0,00'); } %>
+    <strong>Combinações:</strong> <%= combos.join(' | ') %>
+  </div>
+
+  <div class="actions">
+    <a class="btn" href="/quotes/new">Nova cotação</a>
+    <button class="btn" onclick="window.print()">Imprimir / PDF</button>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout">Visualizar Layout</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/xlsx">Baixar Excel</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/pdf">Baixar PDF</a>
+  </div>
+</section>
+<%- include('../partials/bottom') %>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview do Layout Atualizado</title>
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <style>
+        .preview-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .preview-item {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .preview-title {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h1>🎯 Layout da Cotação - Atualizado</h1>
+
+        <div class="preview-item">
+            <h3 class="preview-title">✅ Dados da Proposta - Minimalistas</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <span class="data-label">Cliente:</span>
+                    <span class="data-value">Empresa XYZ Ltda</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">CNPJ:</span>
+                    <span class="data-value">12.345.678/0001-90</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Data:</span>
+                    <span class="data-value">23/09/2025</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-item">
+            <h3 class="preview-title">✅ Imagem do Equipamento - Maior</h3>
+            <div class="equipment-image-placeholder">
+                <div class="image-box">
+                    <span>Imagem do Equipamento</span>
+                    <p>Dimensões: 600x450px</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-item">
+            <h3 class="preview-title">✅ Globo da Image</h3>
+            <div class="globe-footer">
+                <img src="/static/img/globo.png" alt="Global Solutions" class="globe-image">
+            </div>
+        </div>
+
+        <div class="preview-item">
+            <h3 class="preview-title">✅ Contatos e Assinatura</h3>
+            <div class="contact-info">
+                <h4>Contato para Esclarecimentos</h4>
+                <p><strong>Pharmatec Solutions</strong></p>
+                <p>Email: vendedor@pharmatec.com.br</p>
+                <p>Telefone: (11) 99999-9999</p>
+                <p>Site: www.apharmatec.com.br</p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">
+                    <span>Assinatura do Responsável Técnico</span>
+                </div>
+                <p class="signature-name">João Silva - Eng. Responsável - CREA XX.XXX.XXX-X</p>
+            </div>
+        </div>
+
+        <div class="preview-item">
+            <h3 class="preview-title">🚀 Próximos Passos</h3>
+            <ul>
+                <li>✅ Dados minimalistas implementados</li>
+                <li>✅ Globo substituído pela imagem da pasta Image</li>
+                <li>✅ Imagem do equipamento aumentada (600x450px)</li>
+                <li>✅ Campos de contato adicionados ao formulário</li>
+                <li>✅ Nome do vendedor na assinatura</li>
+                <li>✅ Emojis removidos do layout</li>
+            </ul>
+            <p><strong>Acesse:</strong> <a href="/quotes/new">/quotes/new</a> para testar o novo formulário</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,569 @@
+<%- include('../partials/top') %>
+<section class="card">
+  <h2>Nova Cotação</h2>
+
+  <form id="quoteForm" class="form" method="post" action="/quotes/save" enctype="multipart/form-data">
+    <div class="grid">
+      <div>
+        <label>Número da Cotação (QuoteID)</label>
+        <input name="quote_code" type="text" placeholder="COT-2025-0001" required />
+      </div>
+      <div>
+        <label>Data</label>
+        <input name="date" type="date" required />
+      </div>
+      <div>
+        <label>Cliente</label>
+        <input name="client" type="text" required />
+      </div>
+      <div>
+        <label>CNPJ</label>
+        <input name="cnpj" type="text" placeholder="00.000.000/0000-00" />
+      </div>
+      <div>
+        <label>Empresa (interno)</label>
+        <input name="company" type="text" required />
+      </div>
+      <div>
+        <label>Representante</label>
+        <input name="representative" type="text" required />
+      </div>
+      <div>
+        <label>Modelo da Máquina</label>
+        <input name="machine_model" type="text" />
+      </div>
+      <div>
+        <label>Validade (dias)</label>
+        <input name="validity" type="number" min="1" value="15" />
+      </div>
+      <div>
+        <label>Prazo de Entrega</label>
+        <input name="delivery" type="text" placeholder="ex.: 30 dias" />
+      </div>
+    </div>
+
+    <!-- Seções de Equipamentos -->
+    <div id="equipment-sections-container">
+      <h3>Especificações dos Equipamentos</h3>
+      <div id="equipment-sections">
+        <!-- Primeira seção (sempre presente) -->
+        <div class="equipment-section" data-section-id="0">
+          <div class="equipment-section-header">
+            <h4>Equipamento 1</h4>
+            <button type="button" class="btn danger" onclick="removeEquipmentSection(0)" style="display: none;">Remover</button>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label>Especificação Técnica</label>
+              <textarea class="tech_spec" rows="4" placeholder="Detalhe técnico do equipamento..."></textarea>
+            </div>
+            <div class="field">
+              <label>Princípio de Funcionamento</label>
+              <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento..."></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label>Imagem do Equipamento</label>
+            <input type="file" class="equipment_image" accept="image/*" />
+            <small style="color: #666; font-size: 12px;">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="addEquipmentSection()">Adicionar Outro Equipamento</button>
+    </div>
+
+    <div class="field">
+      <label>Observações Gerais</label>
+      <textarea name="notes" rows="3" placeholder="Observações gerais da cotação..."></textarea>
+    </div>
+
+    <hr />
+    <h3>Dados de Contato</h3>
+    <div class="grid">
+      <div>
+        <label>Nome do Vendedor</label>
+        <input name="seller_name" type="text" placeholder="Nome completo do vendedor" />
+      </div>
+      <div>
+        <label>Email para Contato</label>
+        <input name="contact_email" type="email" placeholder="email@pharmatec.com.br" />
+      </div>
+      <div>
+        <label>Telefone para Contato</label>
+        <input name="contact_phone" type="text" placeholder="(11) 99999-9999" />
+      </div>
+    </div>
+
+    <hr />
+    <h3>Modalidades de Entrega</h3>
+
+    <!-- MODALIDADE A (Sistema CIF) -->
+    <div class="modalidade-container" style="border: 2px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(220, 38, 38, 0.05);">
+      <h2 style="color: var(--primary); margin-bottom: 20px;">Modalidade A (Sistema CIF)</h2>
+
+      <h4>Itens (Equipamentos)</h4>
+      <div id="sec_equip_a" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_equip_a')">Adicionar Equipamento</button>
+      </div>
+
+      <h4>Serviços de Assessoria na Importação</h4>
+      <div id="sec_assessoria_a" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_assessoria_a')">Adicionar Serviço de Assessoria</button>
+      </div>
+
+      <h4>Serviços Operacionais e Preventivos</h4>
+      <div id="sec_operacionais_a" class="spec">
+        <div class="checkboxes" style="margin-bottom:10px">
+          <label><input type="checkbox" value="FAT" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> FAT</label>
+          <label><input type="checkbox" value="SAT" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> SAT</label>
+          <label><input type="checkbox" value="Startup" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> Startup</label>
+          <label><input type="checkbox" value="Treinamento" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> Treinamento</label>
+          <label><input type="checkbox" value="Acompanhamento" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> Acompanhamento</label>
+          <label><input type="checkbox" value="Manutenção" onchange="handleServiceToggle(this,'sec_operacionais_a')"/> Manutenção</label>
+        </div>
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_operacionais_a')">Adicionar Serviço Operacional</button>
+      </div>
+
+      <h4>Certificados</h4>
+      <div id="sec_certificados_a" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_certificados_a')">Adicionar Certificado</button>
+      </div>
+    </div>
+
+    <!-- MODALIDADE B (Sistema FOB) -->
+    <div class="modalidade-container" style="border: 2px solid var(--secondary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(31, 41, 55, 0.05);">
+      <h2 style="color: var(--secondary); margin-bottom: 20px;">Modalidade B (Sistema FOB)</h2>
+
+      <div style="margin-bottom: 15px;">
+        <button type="button" class="btn" onclick="copyModalidadeAToB()" style="background: var(--secondary);">Copiar Modalidade A para B</button>
+        <button type="button" class="btn" onclick="clearModalidadeB()" style="background: #dc2626; margin-left: 10px;">Limpar Modalidade B</button>
+      </div>
+
+      <h4>Itens (Equipamentos)</h4>
+      <div id="sec_equip_b" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_equip_b')">Adicionar Equipamento</button>
+      </div>
+
+      <h4>Serviços de Assessoria na Importação</h4>
+      <div id="sec_assessoria_b" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_assessoria_b')">Adicionar Serviço de Assessoria</button>
+      </div>
+
+      <h4>Serviços Operacionais e Preventivos</h4>
+      <div id="sec_operacionais_b" class="spec">
+        <div class="checkboxes" style="margin-bottom:10px">
+          <label><input type="checkbox" value="FAT" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> FAT</label>
+          <label><input type="checkbox" value="SAT" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> SAT</label>
+          <label><input type="checkbox" value="Startup" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> Startup</label>
+          <label><input type="checkbox" value="Treinamento" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> Treinamento</label>
+          <label><input type="checkbox" value="Acompanhamento" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> Acompanhamento</label>
+          <label><input type="checkbox" value="Manutenção" onchange="handleServiceToggle(this,'sec_operacionais_b')"/> Manutenção</label>
+        </div>
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_operacionais_b')">Adicionar Serviço Operacional</button>
+      </div>
+
+      <h4>Certificados</h4>
+      <div id="sec_certificados_b" class="spec">
+        <div class="items"></div>
+        <button type="button" class="btn" onclick="addRow('sec_certificados_b')">Adicionar Certificado</button>
+      </div>
+    </div>
+
+    <input type="hidden" id="specs_json" name="specs_json" />
+    <input type="hidden" id="action_field" name="action" value="save" />
+
+    <!-- Condições de Pagamento -->
+    <div class="payment-conditions-container" style="border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(16, 185, 129, 0.05);">
+      <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <input type="checkbox" id="include_payment_conditions" name="include_payment_conditions" onchange="togglePaymentConditions()" />
+        <label for="include_payment_conditions" style="margin-left: 8px; font-weight: bold; color: #10b981; font-size: 16px;">Incluir Condições de Pagamento</label>
+      </div>
+
+      <div id="payment_conditions_fields" style="display: none;">
+        <h3 style="color: #10b981; margin-bottom: 20px;">Condições de Pagamento</h3>
+
+        <div class="field">
+          <label>Introdução das Condições</label>
+          <textarea name="payment_intro" rows="2" placeholder="Texto introdutório das condições de pagamento...">As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:</textarea>
+        </div>
+
+        <div class="field">
+          <label>Montante em Dólares - Condições</label>
+          <textarea name="payment_usd_conditions" rows="3" placeholder="Condições para valores em dólar...">01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.</textarea>
+        </div>
+
+        <div class="field">
+          <label>Introdução Montante em Reais</label>
+          <textarea name="payment_brl_intro" rows="2" placeholder="Texto introdutório para valores em reais...">Montante em reais brasileiros de serviços prestados de acordo com a opção:</textarea>
+        </div>
+
+        <div class="field">
+          <label>Condições para Modalidade com SAT</label>
+          <textarea name="payment_brl_with_sat" rows="6" placeholder="Condições de pagamento para modalidade com SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03 (três) parcelas pagas através de depósitos ou boletos:
+1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
+2. Segunda parcela no valor de 30% do montante em reais, para ser paga na chegada do pedido na empresa ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;
+3. Terceira parcela no valor de 60% do montante em reais, para ser paga 30 dias após aprovação do SAT ou 90 dias corridos após o aceite da invoice, o que ocorrer primeiro;</textarea>
+        </div>
+
+        <div class="field">
+          <label>Condições para Modalidade sem SAT</label>
+          <textarea name="payment_brl_without_sat" rows="4" placeholder="Condições de pagamento para modalidade sem SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 02 (duas) parcelas pagas através de depósitos ou boletos:
+1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
+2. Segunda parcela no valor de 90% do montante em reais, para ser paga na chegada do pedido no porto aduaneiro;</textarea>
+        </div>
+
+        <div class="field">
+          <label>Observações Adicionais</label>
+          <textarea name="payment_additional_notes" rows="8" placeholder="Observações adicionais sobre condições de pagamento...">Não fazem parte dos serviços prestados pelo Grupo Zanatech os itens anteriores: 1. Honorários de despachantes e manuseio; 2. Despesas de Importação; 3. Transporte até a porta da empresa. Os pagamentos e condições de tais itens são negociados diretamente entre a empresa contratante e a prestadora do serviço em questão. As empresas parceiras recomendadas pelo Grupo Zanatech podem oferecer condições e descontos especiais nas condições pré-estabelecidas. Para o start-up, o EQUIPAMENTO deve estar em ÁREA QUALIFICADA, com fácil acesso às UTILIDADES (ar comprimido, alimentação elétrica) necessárias, caso contrário poderá haver atrasos e custos adicionais.</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" onclick="previewHtml()">Pré-visualizar HTML</button>
+      <button type="button" class="btn primary" onclick="generatePDF()">Gerar PDF</button>
+    </div>
+  </form>
+</section>
+
+<script>
+  // Equipment sections management
+  let equipmentSectionCounter = 0;
+
+  function addEquipmentSection() {
+    equipmentSectionCounter++;
+    const container = document.getElementById('equipment-sections');
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'equipment-section';
+    sectionDiv.setAttribute('data-section-id', equipmentSectionCounter);
+
+    sectionDiv.innerHTML = `
+      <div class="equipment-section-header" style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+        <h4 style="margin: 0;">Equipamento ${equipmentSectionCounter + 1}</h4>
+        <button type="button" class="btn danger" onclick="removeEquipmentSection(${equipmentSectionCounter})">Remover</button>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Especificação Técnica</label>
+          <textarea class="tech_spec" rows="4" placeholder="Detalhe técnico do equipamento..."></textarea>
+        </div>
+        <div class="field">
+          <label>Princípio de Funcionamento</label>
+          <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento..."></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>Imagem do Equipamento</label>
+        <input type="file" class="equipment_image" accept="image/*" />
+        <small style="color: #666; font-size: 12px;">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
+      </div>
+    `;
+
+    container.appendChild(sectionDiv);
+    updateRemoveButtons();
+  }
+
+  function removeEquipmentSection(sectionId) {
+    const section = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (section) {
+      section.remove();
+      updateRemoveButtons();
+      updateSectionNumbers();
+    }
+  }
+
+  function updateRemoveButtons() {
+    const sections = document.querySelectorAll('.equipment-section');
+    sections.forEach((section, index) => {
+      const removeBtn = section.querySelector('.btn.danger');
+      if (removeBtn) {
+        removeBtn.style.display = sections.length > 1 ? 'block' : 'none';
+      }
+    });
+  }
+
+  function updateSectionNumbers() {
+    const sections = document.querySelectorAll('.equipment-section');
+    sections.forEach((section, index) => {
+      const header = section.querySelector('h4');
+      if (header) {
+        header.textContent = `Equipamento ${index + 1}`;
+      }
+    });
+  }
+
+  function addRow(sectionId, preset){
+    try {
+      console.log('addRow chamado para:', sectionId, preset);
+      const section = document.getElementById(sectionId);
+      if (!section) {
+        console.error('Seção não encontrada:', sectionId);
+        return;
+      }
+
+      const container = section.querySelector('.items');
+      if (!container) {
+        console.error('Container .items não encontrado na seção:', sectionId);
+        return;
+      }
+
+      const row = document.createElement('div');
+      row.className = 'item_row';
+      const p = preset || {};
+      // Verifica se é seção de serviços para mostrar campo de dias
+      const isServiceSection = sectionId.includes('operacionais') || sectionId.includes('assessoria');
+      const daysField = isServiceSection ? `<input type="number" class="item_days" min="1" step="1" placeholder="Dias" value="${p.days||1}" title="Quantidade de dias" />` : '';
+
+      row.innerHTML = `
+        <input type="text" class="item_name" placeholder="Descrição" value="${p.name||''}" />
+        <input type="number" class="item_qty" min="1" step="1" value="${p.qty||1}" />
+        ${daysField}
+        <input type="number" class="item_unit" step="0.01" min="0" placeholder="Preço unitário" value="${p.unit||p.unit_price||p.price||''}" />
+        <select class="item_currency">
+          <option value="BRL" ${p.currency==='BRL'?'selected':''}>Real (R$)</option>
+          <option value="USD" ${p.currency==='USD'?'selected':''}>Dólar ($)</option>
+          <option value="EUR" ${p.currency==='EUR'?'selected':''}>Euro (€)</option>
+        </select>
+        <button type="button" class="btn danger" onclick="this.parentNode.remove()">Remover</button>`;
+      container.appendChild(row);
+      console.log('Item adicionado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao adicionar row:', error);
+    }
+  }
+
+  // Nova função mais robusta para checkboxes
+  function handleServiceToggle(checkbox, sectionId) {
+    try {
+      console.log('handleServiceToggle:', checkbox.value, 'checked:', checkbox.checked, 'sectionId:', sectionId);
+
+      if (checkbox.checked) {
+        // Adiciona item
+        addRow(sectionId, {
+          name: checkbox.value,
+          qty: 1,
+          unit: '',
+          currency: 'BRL'
+        });
+      } else {
+        // Remove item
+        removeItemByName(sectionId, checkbox.value);
+      }
+    } catch (error) {
+      console.error('Erro em handleServiceToggle:', error);
+    }
+  }
+
+  // Mantém função antiga para compatibilidade
+  function quickToggle(cb, sectionId){
+    handleServiceToggle(cb, sectionId);
+  }
+
+  function removeItemByName(sectionId, itemName) {
+    const container = document.getElementById(sectionId).querySelector('.items');
+    const rows = container.querySelectorAll('.item_row');
+    rows.forEach(row => {
+      const nameInput = row.querySelector('.item_name');
+      if (nameInput && nameInput.value === itemName) {
+        row.remove();
+      }
+    });
+  }
+
+  function validateCurrencies() {
+    const usedCurrencies = new Set();
+
+    // Coleta todas as moedas usadas nos itens
+    document.querySelectorAll('.item_currency').forEach(select => {
+      if (select.value && select.closest('.item_row').querySelector('.item_name').value) {
+        usedCurrencies.add(select.value);
+      }
+    });
+
+    // Verifica se há mais de 2 moedas
+    if (usedCurrencies.size > 2) {
+      const currencies = Array.from(usedCurrencies);
+      alert(`Erro: Máximo 2 moedas permitidas na cotação.\nEncontradas: ${currencies.join(', ')}\nPor favor, use apenas 2 moedas diferentes.`);
+      return false;
+    }
+
+    return true;
+  }
+
+  function collectPayload(){
+    // Valida moedas antes de coletar dados
+    if (!validateCurrencies()) {
+      return false;
+    }
+
+    // Coletar dados das seções de equipamentos
+    const equipmentSections = [];
+    document.querySelectorAll('.equipment-section').forEach((section, index) => {
+      const techSpec = section.querySelector('.tech_spec')?.value || '';
+      const principle = section.querySelector('.principle')?.value || '';
+      if (techSpec || principle) {
+        equipmentSections.push({
+          tech_spec: techSpec,
+          principle: principle,
+          index: index
+        });
+      }
+    });
+
+    // Combinar especificações de todos os equipamentos
+    let combinedTechSpec = '';
+    let combinedPrinciple = '';
+
+    equipmentSections.forEach((eq, index) => {
+      if (eq.tech_spec) {
+        if (equipmentSections.length > 1) {
+          combinedTechSpec += `--- EQUIPAMENTO ${index + 1} ---\n\n${eq.tech_spec}\n\n`;
+        } else {
+          combinedTechSpec = eq.tech_spec;
+        }
+      }
+      if (eq.principle) {
+        if (equipmentSections.length > 1) {
+          combinedPrinciple += `--- EQUIPAMENTO ${index + 1} ---\n\n${eq.principle}\n\n`;
+        } else {
+          combinedPrinciple = eq.principle;
+        }
+      }
+    });
+
+    const pack = {
+      tech_spec: combinedTechSpec.trim(),
+      principle: combinedPrinciple.trim(),
+      equipment_sections: equipmentSections,
+      sections: {}
+    };
+    function collect(sectionId){
+      const arr = [];
+      document.querySelectorAll('#'+sectionId+' .item_row').forEach(row => {
+        const name = row.querySelector('.item_name').value;
+        const qty = row.querySelector('.item_qty').value;
+        const unit = row.querySelector('.item_unit').value;
+        const currency = row.querySelector('.item_currency').value;
+        const daysInput = row.querySelector('.item_days');
+        const days = daysInput ? daysInput.value : null;
+
+        const item = { name, qty, unit, currency };
+        if (days) item.days = days;
+
+        if(name){ arr.push(item); }
+      });
+      return arr;
+    }
+    // Modalidade A
+    pack.sections.itemsEquipA = collect('sec_equip_a');
+    pack.sections.itemsAssessoriaA = collect('sec_assessoria_a');
+    pack.sections.itemsOperacionaisA = collect('sec_operacionais_a');
+    pack.sections.itemsCertificadosA = collect('sec_certificados_a');
+
+    // Modalidade B
+    pack.sections.itemsEquipB = collect('sec_equip_b');
+    pack.sections.itemsAssessoriaB = collect('sec_assessoria_b');
+    pack.sections.itemsOperacionaisB = collect('sec_operacionais_b');
+    pack.sections.itemsCertificadosB = collect('sec_certificados_b');
+    document.getElementById('specs_json').value = JSON.stringify(pack);
+  }
+
+  function submitForm(action){
+    document.getElementById('action_field').value = action;
+    if (collectPayload() === false) return;
+    document.getElementById('quoteForm').submit();
+  }
+
+  function previewHtml(){
+    if (collectPayload() === false) return;
+    const form = document.getElementById('quoteForm');
+    const prevAction = form.action;
+    const prevTarget = form.target;
+    const prevMethod = form.method;
+    form.action = '/quotes/preview-html';
+    form.method = 'post';
+    form.target = '_blank';
+    form.submit();
+    form.action = prevAction;
+    form.method = prevMethod;
+    form.target = prevTarget;
+  }
+
+  function generatePDF(){
+    if (collectPayload() === false) return;
+    const form = document.getElementById('quoteForm');
+    const prevAction = form.action;
+    const prevTarget = form.target;
+    const prevMethod = form.method;
+    form.action = '/quotes/generate-pdf';
+    form.method = 'post';
+    form.target = '_blank';
+    form.submit();
+    form.action = prevAction;
+    form.method = prevMethod;
+    form.target = prevTarget;
+  }
+
+
+  // Função para copiar Modalidade A para B
+  function copyModalidadeAToB(){
+    const sections = ['equip', 'assessoria', 'operacionais', 'certificados'];
+
+    sections.forEach(section => {
+      const modalidadeAItems = document.querySelectorAll(`#sec_${section}_a .item_row`);
+      const modalidadeBContainer = document.getElementById(`sec_${section}_b`).querySelector('.items');
+
+      // Limpar seção B primeiro
+      modalidadeBContainer.innerHTML = '';
+
+      // Copiar cada item da Modalidade A
+      modalidadeAItems.forEach(row => {
+        const name = row.querySelector('.item_name').value;
+        const qty = row.querySelector('.item_qty').value;
+        const unit = row.querySelector('.item_unit').value;
+        const currency = row.querySelector('.item_currency').value;
+
+        if(name) {
+          addRow(`sec_${section}_b`, { name, qty, unit, currency });
+        }
+      });
+    });
+
+    alert('Modalidade A copiada para Modalidade B com sucesso!');
+  }
+
+  // Função para limpar Modalidade B
+  function clearModalidadeB(){
+    const sections = ['equip', 'assessoria', 'operacionais', 'certificados'];
+
+    sections.forEach(section => {
+      const modalidadeBContainer = document.getElementById(`sec_${section}_b`).querySelector('.items');
+      modalidadeBContainer.innerHTML = '';
+    });
+
+    alert('Modalidade B limpa com sucesso!');
+  }
+
+  // Função para alternar a visibilidade das condições de pagamento
+  function togglePaymentConditions() {
+    const checkbox = document.getElementById('include_payment_conditions');
+    const fields = document.getElementById('payment_conditions_fields');
+
+    if (checkbox.checked) {
+      fields.style.display = 'block';
+    } else {
+      fields.style.display = 'none';
+    }
+  }
+
+  // Linhas iniciais
+  addRow('sec_equip_a');
+</script>
+<%- include('../partials/bottom') %>

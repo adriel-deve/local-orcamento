@@ -69,37 +69,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static files - Vercel compatible
-const publicPath = process.env.NODE_ENV === 'production' ?
-  path.join(process.cwd(), 'public') :
-  path.join(__dirname, '..', 'public');
+// Static files - Root level for Vercel
+const rootPath = process.cwd();
 
-const uploadsPath = process.env.NODE_ENV === 'production' ?
-  path.join(process.cwd(), 'uploads') :
-  path.join(__dirname, '..', 'uploads');
+console.log('Serving static files from root:', rootPath);
 
-const outputPath = process.env.NODE_ENV === 'production' ?
-  path.join(process.cwd(), 'output') :
-  path.join(__dirname, '..', 'output');
-
-console.log('Static paths:', { publicPath, uploadsPath, outputPath });
-
-app.use('/static', express.static(publicPath, {
+// Serve CSS and JS directly from root folders
+app.use('/css', express.static(path.join(rootPath, 'css'), {
   maxAge: process.env.NODE_ENV === 'production' ? 31536000000 : 0,
-  etag: process.env.NODE_ENV === 'production',
   setHeaders: (res, filePath) => {
+    res.setHeader('Content-Type', 'text/css');
     if (process.env.NODE_ENV !== 'production') {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    }
-    if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
     }
   }
 }));
+
+app.use('/js', express.static(path.join(rootPath, 'js'), {
+  maxAge: process.env.NODE_ENV === 'production' ? 31536000000 : 0,
+  setHeaders: (res, filePath) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    if (process.env.NODE_ENV !== 'production') {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
+
+// Fallback: serve public folder for any remaining static files
+const publicPath = process.env.NODE_ENV === 'production' ?
+  path.join(rootPath, 'public') :
+  path.join(__dirname, '..', 'public');
+
+app.use('/static', express.static(publicPath));
+
+// Uploads and output folders
+const uploadsPath = process.env.NODE_ENV === 'production' ?
+  path.join(rootPath, 'uploads') :
+  path.join(__dirname, '..', 'uploads');
+
+const outputPath = process.env.NODE_ENV === 'production' ?
+  path.join(rootPath, 'output') :
+  path.join(__dirname, '..', 'output');
 
 app.use('/uploads', express.static(uploadsPath));
 app.use('/output', express.static(outputPath));

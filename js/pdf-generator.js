@@ -1,4 +1,4 @@
-// PDF Generator usando jsPDF - Funciona 100% na Vercel
+// PDF Generator - Igual à pré-visualização
 window.generatePDFClient = function() {
   try {
     // Coletar dados do formulário
@@ -7,69 +7,103 @@ window.generatePDFClient = function() {
     const formData = new FormData(document.getElementById('quoteForm'));
     const payload = JSON.parse(document.getElementById('specs_json').value || '{}');
 
-    // Dados básicos do orçamento
+    // Dados básicos (exatamente como na pré-visualização)
     const quoteData = {
       quote_code: formData.get('quote_code') || 'COT-' + Date.now(),
       date: formData.get('date') || new Date().toLocaleDateString('pt-BR'),
-      company: formData.get('company') || 'Empresa',
+      company: formData.get('company') || '',
       representative: formData.get('representative') || '',
       client: formData.get('client') || '',
       cnpj: formData.get('cnpj') || '',
-      validity: formData.get('validity') || '15',
-      delivery: formData.get('delivery') || '',
+      validity_days: formData.get('validity') || '30',
+      delivery_time: formData.get('delivery') || 'A definir',
+      machine_model: formData.get('machine_model') || '',
+      tech_spec: formData.get('tech_spec') || '',
+      principle: formData.get('principle') || '',
       notes: formData.get('notes') || ''
     };
 
-    // Criar PDF com jsPDF
+    // Criar PDF com layout idêntico à pré-visualização
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
-    // Configurar fonte
     doc.setFont('helvetica');
 
-    // Cabeçalho estilo pré-visualização
-    doc.setFontSize(22);
-    doc.setTextColor(196, 30, 58); // Cor vermelha #c41e3a
-    doc.text('PROPOSTA COMERCIAL', 20, 25);
+    // CABEÇALHO IDÊNTICO À PRÉ-VISUALIZAÇÃO
+    // Layout exato do layout-print.ejs
+    const headerHeight = 40;
+
+    // Fundo do cabeçalho
+    doc.setFillColor(248, 249, 250);
+    doc.rect(10, 10, 190, headerHeight, 'F');
+
+    // Linha superior vermelha
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(2);
+    doc.line(10, 10, 200, 10);
+
+    // Logo placeholder (esquerda)
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(1);
+    doc.rect(15, 15, 40, 25);
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text('LOGO', 30, 30);
+
+    // Título da proposta (direita)
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(220, 38, 38);
+    doc.text('PROPOSTA COMERCIAL', 120, 22);
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(quoteData.quote_code, 120, 30);
 
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Código: ${quoteData.quote_code}`, 140, 25);
+    doc.text(quoteData.date, 120, 37);
 
-    // Linha decorativa vermelha
-    doc.setDrawColor(196, 30, 58);
-    doc.setLineWidth(3);
-    doc.line(20, 30, 190, 30);
+    // Linha inferior do cabeçalho
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(2);
+    doc.line(10, 52, 200, 52);
 
-    let yPos = 40;
+    let yPos = 65;
 
-    // Informações básicas
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DADOS DA COTAÇÃO', 20, yPos);
-    yPos += 10;
+    // DADOS DA PROPOSTA (Grid como na pré-visualização)
+    doc.setFillColor(250, 250, 250);
+    doc.rect(10, yPos - 5, 190, 35, 'F');
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Código: ${quoteData.quote_code}`, 20, yPos);
-    doc.text(`Data: ${quoteData.date}`, 120, yPos);
-    yPos += 8;
+    doc.setDrawColor(221, 221, 221);
+    doc.setLineWidth(1);
 
-    doc.text(`Cliente: ${quoteData.client}`, 20, yPos);
-    yPos += 8;
+    // Grid 2x3 exato
+    const gridItems = [
+      { label: 'Cliente', value: quoteData.client || '-', x: 15, y: yPos },
+      { label: 'CNPJ', value: quoteData.cnpj || '-', x: 110, y: yPos },
+      { label: 'Representante', value: quoteData.representative || '-', x: 15, y: yPos + 10 },
+      { label: 'Validade', value: `${quoteData.validity_days} dias`, x: 110, y: yPos + 10 },
+      { label: 'Prazo de Entrega', value: quoteData.delivery_time || '-', x: 15, y: yPos + 20 },
+      { label: 'Modelo da Máquina', value: quoteData.machine_model || '-', x: 110, y: yPos + 20 }
+    ];
 
-    doc.text(`CNPJ: ${quoteData.cnpj}`, 20, yPos);
-    yPos += 8;
+    gridItems.forEach(item => {
+      // Caixa do item
+      doc.rect(item.x - 3, item.y - 5, 85, 8);
 
-    doc.text(`Empresa: ${quoteData.company}`, 20, yPos);
-    yPos += 8;
+      // Label (igual ao CSS .data-label)
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(102, 102, 102);
+      doc.text(item.label.toUpperCase(), item.x, item.y - 1);
 
-    doc.text(`Representante: ${quoteData.representative}`, 20, yPos);
-    yPos += 8;
+      // Valor (igual ao CSS .data-value)
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(51, 51, 51);
+      doc.text(item.value, item.x, item.y + 3);
+    });
 
-    doc.text(`Validade: ${quoteData.validity} dias`, 20, yPos);
-    doc.text(`Entrega: ${quoteData.delivery}`, 120, yPos);
-    yPos += 15;
+    yPos += 40;
 
     // Dados organizados em grid (como na pré-visualização)
     doc.setFontSize(10);

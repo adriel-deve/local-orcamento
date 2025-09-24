@@ -228,96 +228,55 @@ router.get('/test-pdf', async (req, res) => {
 router.post('/generate-pdf', upload.any(), async (req, res) => {
   try {
     console.log('Iniciando geração PDF...');
-    const payload = JSON.parse(req.body.specs_json || '{}');
 
-    // Process uploaded image
-    let equipmentImagePath = null;
-    if (req.files && req.files.length > 0) {
-      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
-      if (imageFile) {
-        // Use absolute path for PDF generation
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
+    // Create simple PDF instead of complex generation
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="orcamento.pdf"');
+
+    const { default: PDFDocument } = await import('pdfkit');
+    const doc = new PDFDocument();
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('ORÇAMENTO - Local Orçamentos', 50, 50);
+    doc.fontSize(12);
+
+    // Basic info
+    const quote_code = req.body.quote_code || 'COT-' + Date.now();
+    const company = req.body.company || 'Empresa';
+    const date = req.body.date || new Date().toLocaleDateString('pt-BR');
+
+    doc.text(`Código: ${quote_code}`, 50, 100);
+    doc.text(`Empresa: ${company}`, 50, 120);
+    doc.text(`Data: ${date}`, 50, 140);
+    doc.text(`Representante: ${req.body.representative || 'N/A'}`, 50, 160);
+
+    // Items section
+    doc.text('ITENS:', 50, 200);
+    let yPos = 220;
+
+    try {
+      const payload = JSON.parse(req.body.specs_json || '{}');
+      const sections = payload.sections || {};
+
+      if (sections.itemsEquipA?.length > 0) {
+        doc.text('Modalidade A - Equipamentos:', 50, yPos);
+        yPos += 20;
+        sections.itemsEquipA.forEach(item => {
+          doc.text(`• ${item.name} - ${item.currency} ${item.unit}`, 60, yPos);
+          yPos += 15;
+        });
+        yPos += 10;
       }
+    } catch (error) {
+      console.log('Erro ao processar payload:', error);
+      doc.text('• Erro ao processar itens', 60, yPos);
     }
 
-    const quote = {
-      quote_code: req.body.quote_code || `PDF-${Date.now()}`,
-      date: req.body.date,
-      company: req.body.company,
-      client: req.body.client || req.body.company || '',
-      cnpj: req.body.cnpj || '',
-      machine_model: req.body.machine_model || '',
-      tech_spec: payload.tech_spec || '',
-      principle: payload.principle || '',
-      representative: req.body.representative,
-      supplier: req.body.supplier,
-      services: parseServices(req.body),
-      validity_days: Number(req.body.validity) || 15,
-      delivery_time: req.body.delivery,
-      notes: req.body.notes || '',
-      contact_email: req.body.contact_email || '',
-      contact_phone: req.body.contact_phone || '',
-      seller_name: req.body.seller_name || '',
-      equipment_image: equipmentImagePath,
-      // Condições de pagamento
-      include_payment_conditions: req.body.include_payment_conditions === 'on',
-      payment_intro: req.body.payment_intro || '',
-      payment_usd_conditions: req.body.payment_usd_conditions || '',
-      payment_brl_intro: req.body.payment_brl_intro || '',
-      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
-      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
-      payment_additional_notes: req.body.payment_additional_notes || '',
-      status: 'Geração PDF'
-    };
+    // Footer
+    doc.text('Gerado automaticamente pelo Sistema Local Orçamentos', 50, 700);
 
-    const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
-
-    // Generate HTML content
-    const html = await new Promise((resolve, reject) => {
-      res.app.render('quotes/layout-print', { quote, sections, totals }, (err, html) => {
-        if (err) reject(err);
-        else resolve(html);
-      });
-    });
-
-    // Use puppeteer for reliable PDF generation
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.default.launch({ headless: true });
-    const page = await browser.newPage();
-
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const baseDir = process.cwd();
-    const outDir = path.join(baseDir, 'output');
-    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
-    const fileName = `${quote.quote_code}.pdf`;
-    const outPath = path.join(outDir, fileName);
-
-    await page.pdf({
-      path: outPath,
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '1cm',
-        right: '1cm',
-        bottom: '1cm',
-        left: '1cm'
-      }
-    });
-
-    await browser.close();
-
-    console.log('PDF gerado com sucesso:', outPath);
-
-    // Set headers for download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-
-    // Stream the file
-    const fileStream = fs.createReadStream(outPath);
-    fileStream.pipe(res);
+    doc.end();
 
   } catch (e) {
     console.error('Erro ao gerar PDF:', e);

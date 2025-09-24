@@ -9,7 +9,10 @@
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/public/$1"
+      "dest": "/public/$1",
+      "headers": {
+        "cache-control": "s-maxage=31536000"
+      }
     },
     {
       "src": "/uploads/(.*)",
@@ -24,6 +27,11 @@
       "dest": "src/app.js"
     }
   ],
+  "functions": {
+    "src/app.js": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   }

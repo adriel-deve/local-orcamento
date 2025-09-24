@@ -27,18 +27,19 @@ window.generatePDFClient = function() {
     // Configurar fonte
     doc.setFont('helvetica');
 
-    // Cabeçalho
-    doc.setFontSize(20);
-    doc.setTextColor(37, 99, 235); // Cor azul
-    doc.text('ORÇAMENTO', 20, 20);
+    // Cabeçalho estilo pré-visualização
+    doc.setFontSize(22);
+    doc.setTextColor(196, 30, 58); // Cor vermelha #c41e3a
+    doc.text('PROPOSTA COMERCIAL', 20, 25);
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
+    doc.text(`Código: ${quoteData.quote_code}`, 140, 25);
 
-    // Linha decorativa
-    doc.setDrawColor(37, 99, 235);
-    doc.setLineWidth(2);
-    doc.line(20, 25, 190, 25);
+    // Linha decorativa vermelha
+    doc.setDrawColor(196, 30, 58);
+    doc.setLineWidth(3);
+    doc.line(20, 30, 190, 30);
 
     let yPos = 40;
 
@@ -70,20 +71,54 @@ window.generatePDFClient = function() {
     doc.text(`Entrega: ${quoteData.delivery}`, 120, yPos);
     yPos += 15;
 
-    // Seção de Itens
-    doc.setFontSize(14);
+    // Dados organizados em grid (como na pré-visualização)
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('ITENS COTADOS', 20, yPos);
-    yPos += 10;
+    doc.setTextColor(196, 30, 58);
 
+    doc.text('CLIENTE:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(quoteData.client, 50, yPos);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 30, 58);
+    doc.text('CNPJ:', 120, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(quoteData.cnpj, 140, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 30, 58);
+    doc.text('REPRESENTANTE:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(quoteData.representative, 70, yPos);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 30, 58);
+    doc.text('VALIDADE:', 120, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${quoteData.validity} dias`, 150, yPos);
+    yPos += 15;
+
+    // Seções de Itens (estilo pré-visualização)
     const sections = payload.sections || {};
 
-    // Modalidade A
+    // Modalidade A - Caixa com borda vermelha
     if (sections.itemsEquipA && sections.itemsEquipA.length > 0) {
-      doc.setFontSize(12);
+      // Desenhar caixa da modalidade
+      doc.setDrawColor(196, 30, 58);
+      doc.setFillColor(255, 248, 249); // Fundo muito claro vermelho
+      doc.setLineWidth(2);
+      doc.roundedRect(15, yPos - 5, 180, 8, 2, 2, 'FD');
+
+      doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(220, 38, 38); // Cor vermelha
-      doc.text('MODALIDADE A - EQUIPAMENTOS (CIF)', 20, yPos);
+      doc.setTextColor(196, 30, 58);
+      doc.text('MODALIDADE A - Sistema CIF', 20, yPos);
       yPos += 8;
 
       doc.setFontSize(10);

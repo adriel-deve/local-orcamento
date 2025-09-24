@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import quotesRouter from './routes/quotes-router.js';
 import { proxyConfig, proxyDetectionMiddleware } from '../proxy-config.js';
-import { getAllQuotes } from './storage/database.js';
+import { getAllQuotes, initDatabase } from './storage/database.js';
 
 dotenv.config();
 
@@ -178,6 +178,14 @@ app.use((req, res) => {
 // Server startup with better error handling
 const port = Number(proxyConfig.server.port);
 const host = proxyConfig.server.host;
+
+// Initialize database
+try {
+  await initDatabase();
+  console.log('✅ Database initialized successfully');
+} catch (error) {
+  console.error('❌ Database initialization failed:', error.message);
+}
 
 const server = app.listen(port, host, () => {
   console.log(`Local Orçamentos rodando em http://localhost:${port}`);

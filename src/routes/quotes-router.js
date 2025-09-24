@@ -308,12 +308,12 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
 
 
 router.get('/new', async (_req, res) => {
-  await initDatabase();
+// initDatabase() removed - handled at app startup
   res.render('quotes/new');
 });
 
 router.get('/:code', async (req, res) => {
-  await initDatabase();
+// initDatabase() removed - handled at app startup
   const code = req.params.code;
   const data = getQuoteByCode(code);
   if (!data) return res.status(404).render('404', { message: 'Cotação não encontrada' });
@@ -321,7 +321,7 @@ router.get('/:code', async (req, res) => {
 });
 
 router.get('/:code/layout', async (req, res) => {
-  await initDatabase();
+// initDatabase() removed - handled at app startup
   const code = req.params.code;
   const data = getQuoteByCode(code);
   if (!data) return res.status(404).send('Cotação não encontrada');
@@ -364,7 +364,7 @@ router.post('/save', upload.any(), async (req, res, next) => {
       status: 'Rascunho'
     };
 
-    await initDatabase();
+  // initDatabase() removed - handled at app startup
     function packItems(arr, secName) {
       return (arr || []).map(it => ({
         description: secName,

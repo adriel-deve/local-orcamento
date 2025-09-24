@@ -69,23 +69,40 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static files with no cache for development
-app.use('/static', express.static(path.join(__dirname, '..', 'public'), {
-  maxAge: 0, // Disable cache
-  etag: false, // Disable etag
-  setHeaders: (res, path) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    if (path.endsWith('.css')) {
+// Static files - Vercel compatible
+const publicPath = process.env.NODE_ENV === 'production' ?
+  path.join(process.cwd(), 'public') :
+  path.join(__dirname, '..', 'public');
+
+const uploadsPath = process.env.NODE_ENV === 'production' ?
+  path.join(process.cwd(), 'uploads') :
+  path.join(__dirname, '..', 'uploads');
+
+const outputPath = process.env.NODE_ENV === 'production' ?
+  path.join(process.cwd(), 'output') :
+  path.join(__dirname, '..', 'output');
+
+console.log('Static paths:', { publicPath, uploadsPath, outputPath });
+
+app.use('/static', express.static(publicPath, {
+  maxAge: process.env.NODE_ENV === 'production' ? 31536000000 : 0,
+  etag: process.env.NODE_ENV === 'production',
+  setHeaders: (res, filePath) => {
+    if (process.env.NODE_ENV !== 'production') {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    if (filePath.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.js')) {
+    } else if (filePath.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
     }
   }
 }));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-app.use('/output', express.static(path.join(__dirname, '..', 'output')));
+
+app.use('/uploads', express.static(uploadsPath));
+app.use('/output', express.static(outputPath));
 
 // Body parsing with better error handling
 app.use(express.json({

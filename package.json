@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node src/app.js",
         "init:db": "node src/init-db.js",
-            "pdf:make": "node src/tools/make-pdf.js",
+        "pdf:make": "node src/tools/make-pdf.js",
         "xlsx:make": "node src/tools/make-xlsx.js",
         "claude": "cmd /c npx -y @anthropic-ai/claude-code",
         "claude:help": "cmd /c npx -y @anthropic-ai/claude-code --help"
@@ -21,6 +21,7 @@
         "mysql2": "^3.11.3",
         "node-fetch": "^3.3.2",
         "pdfkit": "^0.15.0",
+        "pg": "^8.16.3",
         "puppeteer": "^24.22.2",
         "xlsx": "^0.18.5"
     }

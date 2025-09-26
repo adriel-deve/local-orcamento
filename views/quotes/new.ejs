@@ -3,42 +3,65 @@
   <h2>Nova Cotação</h2>
 
   <form id="quoteForm" class="form" method="post" action="/quotes/save" enctype="multipart/form-data">
+    <!-- Informações Principais -->
+    <h3>Informações da Cotação</h3>
     <div class="grid">
-      <div>
-        <label>Número da Cotação (QuoteID)</label>
+      <div class="field">
+        <label>Número da Cotação</label>
         <input name="quote_code" type="text" placeholder="COT-2025-0001" required />
+        <small>Código único identificador da cotação</small>
       </div>
-      <div>
-        <label>Data</label>
+      <div class="field">
+        <label>Data da Cotação</label>
         <input name="date" type="date" required />
+        <small>Data de emissão da cotação</small>
       </div>
-      <div>
-        <label>Cliente</label>
-        <input name="client" type="text" required />
+    </div>
+
+    <!-- Dados do Cliente -->
+    <h3>Dados do Cliente</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Nome do Cliente</label>
+        <input name="client" type="text" placeholder="Nome da empresa cliente" required />
       </div>
-      <div>
-        <label>CNPJ</label>
+      <div class="field">
+        <label>CNPJ do Cliente</label>
         <input name="cnpj" type="text" placeholder="00.000.000/0000-00" />
+        <small>CNPJ da empresa cliente (opcional)</small>
       </div>
-      <div>
-        <label>Empresa (interno)</label>
-        <input name="company" type="text" required />
+    </div>
+
+    <!-- Dados Internos -->
+    <h3>Informações Comerciais</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Empresa Vendedora</label>
+        <input name="company" type="text" placeholder="Nome da empresa vendedora" required />
       </div>
-      <div>
-        <label>Representante</label>
-        <input name="representative" type="text" required />
+      <div class="field">
+        <label>Representante Comercial</label>
+        <input name="representative" type="text" placeholder="Nome do representante" required />
       </div>
-      <div>
+      <div class="field">
         <label>Modelo da Máquina</label>
-        <input name="machine_model" type="text" />
+        <input name="machine_model" type="text" placeholder="Modelo do equipamento" />
+        <small>Modelo principal do equipamento cotado</small>
       </div>
-      <div>
-        <label>Validade (dias)</label>
-        <input name="validity" type="number" min="1" value="15" />
+    </div>
+
+    <!-- Condições Comerciais -->
+    <h3>Condições da Proposta</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Validade da Proposta</label>
+        <input name="validity" type="number" min="1" max="365" value="15" />
+        <small>Período em dias para validade da cotação</small>
       </div>
-      <div>
+      <div class="field">
         <label>Prazo de Entrega</label>
-        <input name="delivery" type="text" placeholder="ex.: 30 dias" />
+        <input name="delivery" type="text" placeholder="Ex: 30 dias úteis após aprovação" />
+        <small>Tempo estimado para entrega dos equipamentos</small>
       </div>
     </div>
 
@@ -72,25 +95,30 @@
       <button type="button" class="btn" onclick="addEquipmentSection()">Adicionar Outro Equipamento</button>
     </div>
 
+    <h3>Observações e Notas</h3>
     <div class="field">
       <label>Observações Gerais</label>
-      <textarea name="notes" rows="3" placeholder="Observações gerais da cotação..."></textarea>
+      <textarea name="notes" rows="4" placeholder="Observações importantes, condições especiais, detalhes técnicos adicionais..."></textarea>
+      <small>Informações complementares que serão incluídas na cotação</small>
     </div>
 
     <hr />
-    <h3>Dados de Contato</h3>
+    <h3>Informações de Contato</h3>
     <div class="grid">
-      <div>
+      <div class="field">
         <label>Nome do Vendedor</label>
-        <input name="seller_name" type="text" placeholder="Nome completo do vendedor" />
+        <input name="seller_name" type="text" placeholder="Nome completo do vendedor responsável" />
+        <small>Vendedor responsável pela proposta</small>
       </div>
-      <div>
+      <div class="field">
         <label>Email para Contato</label>
-        <input name="contact_email" type="email" placeholder="email@pharmatec.com.br" />
+        <input name="contact_email" type="email" placeholder="vendedor@pharmatec.com.br" />
+        <small>Email principal para comunicação</small>
       </div>
-      <div>
+      <div class="field">
         <label>Telefone para Contato</label>
         <input name="contact_phone" type="text" placeholder="(11) 99999-9999" />
+        <small>Telefone comercial para contato direto</small>
       </div>
     </div>
 
@@ -227,9 +255,15 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn success" onclick="saveQuote()">Salvar Orçamento</button>
-      <button type="button" class="btn" onclick="previewHtml()">Pré-visualizar</button>
-      <button type="button" class="btn primary" onclick="generatePDFClient()">Gerar PDF</button>
+      <button type="button" class="btn success" onclick="saveQuote()">
+        💾 Salvar Cotação
+      </button>
+      <button type="button" class="btn secondary" onclick="previewHtml()">
+        👁️ Pré-visualizar
+      </button>
+      <button type="button" class="btn primary" onclick="generatePDFClient()">
+        📄 Gerar PDF
+      </button>
     </div>
   </form>
 </section>

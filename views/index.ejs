@@ -2,59 +2,59 @@
 
 <!-- Hero Section -->
 <section class="card">
-  <h2>🏢 Sistema de Orçamentos</h2>
-  <p>Gerencie cotações profissionais com facilidade. Crie, visualize e exporte orçamentos em PDF e Excel de forma rápida e eficiente.</p>
+  <h2>Sistema de Orçamentos Pharmatec</h2>
+  <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem; line-height: 1.7;">Gerencie cotações profissionais com facilidade. Crie, visualize e exporte orçamentos em PDF e DOCX de forma rápida e eficiente com nossa plataforma integrada.</p>
   <div class="actions">
-    <a class="btn primary" href="/quotes/new">📝 Nova Cotação</a>
-    <a class="btn" href="#quotes-list">📊 Ver Histórico</a>
+    <a class="btn primary" href="/quotes/new">Nova Cotação</a>
+    <a class="btn secondary" href="#quotes-list">Ver Histórico</a>
   </div>
 </section>
 
 <!-- Stats Cards -->
-<div class="grid cols-3">
-  <div class="card text-center">
-    <h3 style="color: var(--primary); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
-    <p style="margin: 0; color: var(--text-muted);">Total de Orçamentos</p>
+<div class="grid">
+  <div class="card text-center" style="text-align: center;">
+    <h3 style="color: var(--primary-red); font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total de Cotações</p>
   </div>
-  <div class="card text-center">
-    <h3 style="color: var(--success); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Aprovado').length : 0 %></h3>
-    <p style="margin: 0; color: var(--text-muted);">Aprovados</p>
+  <div class="card text-center" style="text-align: center;">
+    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Aprovado').length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Aprovadas</p>
   </div>
-  <div class="card text-center">
-    <h3 style="color: var(--warning); font-size: 2rem; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Rascunho').length : 0 %></h3>
-    <p style="margin: 0; color: var(--text-muted);">Em Andamento</p>
+  <div class="card text-center" style="text-align: center;">
+    <h3 style="color: #f59e0b; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Rascunho').length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Em Andamento</p>
   </div>
 </div>
 
 <% if (quotes && quotes.length > 0) { %>
 <section class="card" id="quotes-list">
-  <h3>📋 Orçamentos Recentes</h3>
+  <h3>Cotações Recentes</h3>
   <div class="quotes-list">
     <table>
       <thead>
         <tr>
-          <th>🔖 Código</th>
-          <th>🏢 Empresa</th>
-          <th>📅 Data</th>
-          <th>📊 Status</th>
-          <th>⚡ Ações</th>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         <% quotes.forEach(function(quote) { %>
         <tr>
-          <td><strong><%= quote.quote_code %></strong></td>
-          <td><%= quote.company %></td>
+          <td><strong style="color: var(--primary-red);"><%= quote.quote_code %></strong></td>
+          <td><%= quote.client || quote.company %></td>
           <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
           <td>
-            <span class="status-badge <%= quote.status.toLowerCase() %>">
+            <span class="status-badge" style="background: <%= quote.status === 'Aprovado' ? '#10b981' : quote.status === 'Rascunho' ? '#f59e0b' : '#6b7280' %>; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
               <%= quote.status %>
             </span>
           </td>
           <td>
-            <div style="display: flex; gap: 0.5rem;">
-              <a href="/quotes/view/<%= quote.quote_code %>" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">👁️ Ver</a>
-              <a href="/quotes/pdf/<%= quote.quote_code %>" class="btn success" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">📄 PDF</a>
+            <div style="display: flex; gap: 8px;">
+              <a href="/quotes/view/<%= quote.quote_code %>" class="btn secondary" style="padding: 8px 16px; font-size: 0.875rem;">Visualizar</a>
+              <a href="/quotes/pdf/<%= quote.quote_code %>" class="btn success" style="padding: 8px 16px; font-size: 0.875rem;">PDF</a>
             </div>
           </td>
         </tr>
@@ -65,25 +65,25 @@
 </section>
 <% } else { %>
 <section class="card text-center" id="quotes-list">
-  <div style="padding: 3rem;">
-    <h3>📋 Nenhum orçamento encontrado</h3>
-    <p style="font-size: 1.1rem; color: var(--text-muted); margin: 1rem 0;">Comece criando seu primeiro orçamento profissional</p>
-    <div style="background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 2rem; margin: 2rem 0;">
-      <h4 style="color: var(--primary); margin-bottom: 1rem;">🚀 Recursos Disponíveis:</h4>
-      <div class="grid cols-2" style="text-align: left;">
+  <div style="padding: 4rem 2rem;">
+    <h3 style="color: var(--gray-600); margin-bottom: 1rem;">Nenhuma cotação encontrada</h3>
+    <p style="font-size: 1.125rem; color: var(--gray-500); margin: 1.5rem 0;">Comece criando sua primeira cotação profissional</p>
+    <div style="background: var(--gray-50); border-radius: 16px; padding: 2.5rem; margin: 2.5rem 0; border: 2px solid var(--gray-100);">
+      <h4 style="color: var(--primary-red); margin-bottom: 1.5rem; font-size: 1.25rem;">Recursos Disponíveis</h4>
+      <div class="grid" style="text-align: left;">
         <div>
-          <p>✅ <strong>Geração de PDF</strong></p>
-          <p>✅ <strong>Export para Excel</strong></p>
-          <p>✅ <strong>Múltiplas Moedas</strong></p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Geração de PDF</strong> - Exportação profissional</p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Formato DOCX</strong> - Compatível com Word</p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Múltiplas Moedas</strong> - Real, Dólar e Euro</p>
         </div>
         <div>
-          <p>✅ <strong>Upload de Imagens</strong></p>
-          <p>✅ <strong>Modalidades A/B</strong></p>
-          <p>✅ <strong>Condições de Pagamento</strong></p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Upload de Imagens</strong> - Equipamentos com fotos</p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Modalidades A/B</strong> - CIF e FOB</p>
+          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Condições de Pagamento</strong> - Personalizáveis</p>
         </div>
       </div>
     </div>
-    <a href="/quotes/new" class="btn primary" style="padding: 1rem 2rem; font-size: 1.125rem;">🎯 Criar Primeiro Orçamento</a>
+    <a href="/quotes/new" class="btn primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; font-weight: 600;">Criar Primeira Cotação</a>
   </div>
 </section>
 <% } %>

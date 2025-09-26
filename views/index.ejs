@@ -17,12 +17,12 @@
     <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total de Cotações</p>
   </div>
   <div class="card text-center" style="text-align: center;">
-    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Aprovado').length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Aprovadas</p>
+    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Concluída').length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Concluídas</p>
   </div>
   <div class="card text-center" style="text-align: center;">
     <h3 style="color: #f59e0b; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Rascunho').length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Em Andamento</p>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Rascunhos</p>
   </div>
 </div>
 
@@ -47,7 +47,7 @@
           <td><%= quote.client || quote.company %></td>
           <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
           <td>
-            <span class="status-badge" style="background: <%= quote.status === 'Aprovado' ? '#10b981' : quote.status === 'Rascunho' ? '#f59e0b' : '#6b7280' %>; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+            <span class="status-badge" style="background: <%= quote.status === 'Concluída' ? '#10b981' : quote.status === 'Rascunho' ? '#f59e0b' : '#6b7280' %>; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
               <%= quote.status %>
             </span>
           </td>

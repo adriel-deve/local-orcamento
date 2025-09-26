@@ -1,0 +1,90 @@
+<%- include('../partials/top') %>
+
+<!-- Header Section -->
+<section class="card">
+  <h2>Rascunhos de Cotações</h2>
+  <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem; line-height: 1.7;">
+    Gerencie suas cotações em andamento. Você pode continuar editando, salvar alterações ou finalizar suas cotações rascunho.
+  </p>
+  <div class="actions">
+    <a class="btn primary" href="/quotes/new">Nova Cotação</a>
+    <a class="btn secondary" href="/">Voltar ao Início</a>
+  </div>
+</section>
+
+<!-- Stats Card -->
+<div class="grid">
+  <div class="card text-center" style="text-align: center;">
+    <h3 style="color: #f59e0b; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total de Rascunhos</p>
+  </div>
+</div>
+
+<% if (quotes && quotes.length > 0) { %>
+<section class="card">
+  <h3>Lista de Rascunhos</h3>
+  <div class="quotes-list">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% quotes.forEach(function(quote) { %>
+        <tr>
+          <td><strong style="color: var(--primary-red);"><%= quote.quote_code %></strong></td>
+          <td><%= quote.client || quote.company %></td>
+          <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
+          <td>
+            <span class="status-badge" style="background: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+              <%= quote.status %>
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <a href="/quotes/load/<%= quote.quote_code %>" class="btn primary" style="padding: 8px 16px; font-size: 0.875rem;">Continuar Editando</a>
+              <a href="/quotes/<%= quote.quote_code %>/layout" class="btn secondary" style="padding: 8px 16px; font-size: 0.875rem;">Visualizar</a>
+              <button onclick="deleteQuote('<%= quote.quote_code %>')" class="btn danger" style="padding: 8px 16px; font-size: 0.875rem; background: #dc2626;">Excluir</button>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } else { %>
+<section class="card text-center">
+  <h3>Nenhum Rascunho Encontrado</h3>
+  <p style="color: var(--gray-600); margin-bottom: 2rem;">Você não possui rascunhos salvos no momento.</p>
+  <a href="/quotes/new" class="btn primary">Criar Nova Cotação</a>
+</section>
+<% } %>
+
+<script>
+function deleteQuote(quoteCode) {
+  if (confirm('Tem certeza que deseja excluir este rascunho? Esta ação não pode ser desfeita.')) {
+    fetch(`/quotes/delete/${quoteCode}`, {
+      method: 'DELETE'
+    })
+    .then(response => {
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Erro ao excluir rascunho.');
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao excluir rascunho.');
+    });
+  }
+}
+</script>
+
+<%- include('../partials/bottom') %>

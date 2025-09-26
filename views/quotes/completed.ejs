@@ -1,0 +1,69 @@
+<%- include('../partials/top') %>
+
+<!-- Header Section -->
+<section class="card">
+  <h2>Cotações Concluídas</h2>
+  <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem; line-height: 1.7;">
+    Visualize e gerencie todas as suas cotações finalizadas. Você pode revisar, imprimir ou gerar PDFs das suas propostas.
+  </p>
+  <div class="actions">
+    <a class="btn primary" href="/quotes/new">Nova Cotação</a>
+    <a class="btn secondary" href="/">Voltar ao Início</a>
+  </div>
+</section>
+
+<!-- Stats Card -->
+<div class="grid">
+  <div class="card text-center" style="text-align: center;">
+    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total Concluídas</p>
+  </div>
+</div>
+
+<% if (quotes && quotes.length > 0) { %>
+<section class="card">
+  <h3>Lista de Cotações Concluídas</h3>
+  <div class="quotes-list">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% quotes.forEach(function(quote) { %>
+        <tr>
+          <td><strong style="color: var(--primary-red);"><%= quote.quote_code %></strong></td>
+          <td><%= quote.client || quote.company %></td>
+          <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
+          <td>
+            <span class="status-badge" style="background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+              <%= quote.status %>
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <a href="/quotes/<%= quote.quote_code %>/layout" class="btn secondary" style="padding: 8px 16px; font-size: 0.875rem;">Visualizar</a>
+              <a href="/quotes/<%= quote.quote_code %>/pdf" class="btn success" style="padding: 8px 16px; font-size: 0.875rem;">Gerar PDF</a>
+              <a href="/quotes/duplicate/<%= quote.quote_code %>" class="btn primary" style="padding: 8px 16px; font-size: 0.875rem;">Duplicar</a>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } else { %>
+<section class="card text-center">
+  <h3>Nenhuma Cotação Concluída</h3>
+  <p style="color: var(--gray-600); margin-bottom: 2rem;">Você ainda não possui cotações finalizadas.</p>
+  <a href="/quotes/new" class="btn primary">Criar Nova Cotação</a>
+</section>
+<% } %>
+
+<%- include('../partials/bottom') %>

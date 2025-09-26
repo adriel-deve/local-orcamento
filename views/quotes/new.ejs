@@ -1,4 +1,21 @@
 <%- include('../partials/top') %>
+
+<!-- Seção para carregar cotação existente -->
+<section class="card" style="background: var(--gray-50); border: 2px dashed var(--gray-300);">
+  <h3 style="color: var(--gray-600); margin-bottom: 1rem;">Carregar Cotação Existente (Opcional)</h3>
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <select id="existing_quotes" style="flex: 1; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 1rem;">
+      <option value="">Selecione uma cotação para carregar...</option>
+    </select>
+    <button type="button" onclick="loadExistingQuote()" class="btn secondary" style="white-space: nowrap;">
+      Carregar Dados
+    </button>
+  </div>
+  <p style="color: var(--gray-500); font-size: 0.875rem; margin-top: 0.5rem; margin-bottom: 0;">
+    Carregue uma cotação existente para usar como base ou continuar editando.
+  </p>
+</section>
+
 <section class="card">
   <h2>Nova Cotação</h2>
 
@@ -255,8 +272,8 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn success" onclick="saveQuote()">
-        Salvar Cotação
+      <button type="button" class="btn secondary" onclick="saveDraft()">
+        💾 Salvar Rascunho
       </button>
       <button type="button" class="btn primary" onclick="previewHtml()">
         Concluir Cotação
@@ -519,7 +536,19 @@
     const prevAction = form.action;
     const prevTarget = form.target;
     const prevMethod = form.method;
-    form.action = '/quotes/preview-html';
+
+    // Adicionar indicador de status concluído
+    let statusInput = document.getElementById('completed_status');
+    if (!statusInput) {
+      statusInput = document.createElement('input');
+      statusInput.type = 'hidden';
+      statusInput.id = 'completed_status';
+      statusInput.name = 'status';
+      form.appendChild(statusInput);
+    }
+    statusInput.value = 'Concluída';
+
+    form.action = '/quotes/save-and-preview';
     form.method = 'post';
     form.target = '_blank';
     form.submit();
@@ -535,6 +564,28 @@
     form.action = '/quotes/save';
     form.method = 'post';
     form.target = '';
+    form.submit();
+  }
+
+  function saveDraft(){
+    if (collectPayload() === false) return;
+    const form = document.getElementById('quoteForm');
+    const prevAction = form.action;
+    form.action = '/quotes/save-draft';
+    form.method = 'post';
+    form.target = '';
+
+    // Adicionar indicador de rascunho
+    let statusInput = document.getElementById('draft_status');
+    if (!statusInput) {
+      statusInput = document.createElement('input');
+      statusInput.type = 'hidden';
+      statusInput.id = 'draft_status';
+      statusInput.name = 'status';
+      form.appendChild(statusInput);
+    }
+    statusInput.value = 'Rascunho';
+
     form.submit();
   }
 
@@ -590,6 +641,147 @@
       fields.style.display = 'none';
     }
   }
+
+  // Função para carregar lista de cotações existentes
+  async function loadExistingQuotesList() {
+    try {
+      const response = await fetch('/quotes/list');
+      const quotes = await response.json();
+      const select = document.getElementById('existing_quotes');
+
+      // Limpar opções existentes exceto a primeira
+      while (select.children.length > 1) {
+        select.removeChild(select.lastChild);
+      }
+
+      // Adicionar cotações à lista
+      quotes.forEach(quote => {
+        const option = document.createElement('option');
+        option.value = quote.quote_code;
+        option.textContent = `${quote.quote_code} - ${quote.client || quote.company} (${quote.status})`;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Erro ao carregar lista de cotações:', error);
+    }
+  }
+
+  // Função para carregar dados de uma cotação específica
+  async function loadExistingQuote() {
+    const select = document.getElementById('existing_quotes');
+    const quoteCode = select.value;
+
+    if (!quoteCode) {
+      alert('Selecione uma cotação para carregar.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/quotes/load/${quoteCode}`);
+      const data = await response.json();
+
+      if (!data.success) {
+        alert('Erro ao carregar cotação: ' + data.error);
+        return;
+      }
+
+      const quote = data.quote;
+      const specs = data.specs || [];
+
+      // Carregar dados básicos
+      document.getElementById('quote_code').value = quote.quote_code + '_COPY_' + Date.now();
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('company').value = quote.company || '';
+      document.getElementById('client').value = quote.client || '';
+      document.getElementById('cnpj').value = quote.cnpj || '';
+      document.getElementById('machine_model').value = quote.machine_model || '';
+      document.getElementById('representative').value = quote.representative || '';
+      document.getElementById('supplier').value = quote.supplier || '';
+      document.getElementById('validity').value = quote.validity_days || 15;
+      document.getElementById('delivery').value = quote.delivery_time || '';
+      document.getElementById('notes').value = quote.notes || '';
+
+      // Carregar contato
+      if (document.getElementById('contact_email')) {
+        document.getElementById('contact_email').value = quote.contact_email || '';
+      }
+      if (document.getElementById('contact_phone')) {
+        document.getElementById('contact_phone').value = quote.contact_phone || '';
+      }
+      if (document.getElementById('seller_name')) {
+        document.getElementById('seller_name').value = quote.seller_name || '';
+      }
+
+      // Carregar condições de pagamento
+      const paymentCheckbox = document.getElementById('include_payment_conditions');
+      if (paymentCheckbox && quote.include_payment_conditions) {
+        paymentCheckbox.checked = true;
+        togglePaymentConditions();
+
+        if (document.getElementById('payment_intro')) {
+          document.getElementById('payment_intro').value = quote.payment_intro || '';
+        }
+        // Carregar outros campos de pagamento se existirem...
+      }
+
+      // Carregar especificações técnicas
+      if (quote.tech_spec) {
+        document.getElementById('tech_spec').value = quote.tech_spec;
+      }
+      if (quote.principle) {
+        document.getElementById('principle').value = quote.principle;
+      }
+
+      // Limpar seções existentes
+      const sections = ['sec_equip_a', 'sec_assessoria_a', 'sec_operacionais_a', 'sec_certificados_a',
+                        'sec_equip_b', 'sec_assessoria_b', 'sec_operacionais_b', 'sec_certificados_b'];
+
+      sections.forEach(sectionId => {
+        const container = document.getElementById(sectionId)?.querySelector('.items');
+        if (container) {
+          container.innerHTML = '';
+        }
+      });
+
+      // Carregar itens das especificações
+      specs.forEach(spec => {
+        const desc = spec.description?.toUpperCase() || '';
+        let targetSection = '';
+
+        if (desc.includes('EQUIPAMENTOS_A')) targetSection = 'sec_equip_a';
+        else if (desc.includes('ASSESSORIA_A')) targetSection = 'sec_assessoria_a';
+        else if (desc.includes('OPERACIONAIS_A')) targetSection = 'sec_operacionais_a';
+        else if (desc.includes('CERTIFICADOS_A')) targetSection = 'sec_certificados_a';
+        else if (desc.includes('EQUIPAMENTOS_B')) targetSection = 'sec_equip_b';
+        else if (desc.includes('ASSESSORIA_B')) targetSection = 'sec_assessoria_b';
+        else if (desc.includes('OPERACIONAIS_B')) targetSection = 'sec_operacionais_b';
+        else if (desc.includes('CERTIFICADOS_B')) targetSection = 'sec_certificados_b';
+
+        if (targetSection && spec.items) {
+          spec.items.forEach(item => {
+            addRow(targetSection, {
+              name: item.name,
+              qty: item.qty || 1,
+              unit: item.price || 0,
+              currency: item.currency || 'BRL'
+            });
+          });
+        }
+      });
+
+      alert(`Cotação "${quoteCode}" carregada com sucesso! Código atualizado para evitar duplicatas.`);
+
+      // Resetar seleção
+      select.selectedIndex = 0;
+
+    } catch (error) {
+      console.error('Erro ao carregar cotação:', error);
+      alert('Erro ao carregar cotação. Tente novamente.');
+    }
+  }
+
+  // Carregar lista de cotações ao iniciar a página
+  loadExistingQuotesList();
 
   // Linhas iniciais
   addRow('sec_equip_a');

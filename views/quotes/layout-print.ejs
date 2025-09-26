@@ -251,6 +251,9 @@
 <body>
   <!-- Botões de ação fixos no topo -->
   <div class="action-buttons" style="position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 10px;">
+    <button class="action-btn back-btn" onclick="goBack()" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      ← Voltar
+    </button>
     <button class="action-btn print-btn" onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
       🖨️ Imprimir
     </button>
@@ -699,6 +702,15 @@
         pdfBtn.innerHTML = '📄 Gerar PDF';
 
         alert('Erro ao gerar PDF. Tente novamente.');
+      }
+    }
+
+    // Função para voltar à página anterior
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/quotes/new';
       }
     }
 

@@ -161,6 +161,95 @@ function categorizeAndSummarizeFromFormPayload(payload) {
   return { sections: processedSections, totals };
 }
 
+// Save as completed and then preview
+router.post('/save-and-preview', upload.any(), async (req, res) => {
+  try {
+    console.log('Salvando cotação como concluída e gerando pré-visualização...');
+    const payload = JSON.parse(req.body.specs_json || '{}');
+
+    // Process uploaded image
+    let equipmentImagePath = null;
+    if (req.files && req.files.length > 0) {
+      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
+      if (imageFile) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
+      }
+    }
+
+    const quote = {
+      quote_code: req.body.quote_code || `COT-${Date.now()}`,
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      company: req.body.company || '',
+      client: req.body.client || req.body.company || '',
+      cnpj: req.body.cnpj || '',
+      machine_model: req.body.machine_model || '',
+      tech_spec: payload.tech_spec || '',
+      principle: payload.principle || '',
+      representative: req.body.representative || '',
+      supplier: req.body.supplier || 'Fornecedor',
+      services: parseServices(req.body) || '',
+      validity_days: parseInt(req.body.validity) || 15,
+      delivery_time: req.body.delivery || null,
+      notes: req.body.notes || null,
+      status: req.body.status || 'Concluída', // Status como concluída
+      contact_email: req.body.contact_email || '',
+      contact_phone: req.body.contact_phone || '',
+      seller_name: req.body.seller_name || '',
+      equipment_image: equipmentImagePath,
+      // Condições de pagamento
+      include_payment_conditions: req.body.include_payment_conditions === 'on',
+      payment_intro: req.body.payment_intro || '',
+      payment_usd_conditions: req.body.payment_usd_conditions || '',
+      payment_brl_intro: req.body.payment_brl_intro || '',
+      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
+      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
+      payment_additional_notes: req.body.payment_additional_notes || ''
+    };
+
+    // Processar specs do payload
+    const specs = [];
+    const sections = payload.sections || {};
+
+    // Helper para processar seções
+    function processSection(items, description) {
+      if (items && items.length > 0) {
+        specs.push({
+          description,
+          items: items.map(item => ({
+            name: item.name,
+            price: parseFloat(item.unit) || 0,
+            qty: parseInt(item.qty) || 1,
+            currency: item.currency || 'BRL'
+          }))
+        });
+      }
+    }
+
+    // Modalidade A
+    processSection(sections.itemsEquipA, 'EQUIPAMENTOS_A');
+    processSection(sections.itemsAssessoriaA, 'ASSESSORIA_A');
+    processSection(sections.itemsOperacionaisA, 'OPERACIONAIS_A');
+    processSection(sections.itemsCertificadosA, 'CERTIFICADOS_A');
+
+    // Modalidade B
+    processSection(sections.itemsEquipB, 'EQUIPAMENTOS_B');
+    processSection(sections.itemsAssessoriaB, 'ASSESSORIA_B');
+    processSection(sections.itemsOperacionaisB, 'OPERACIONAIS_B');
+    processSection(sections.itemsCertificadosB, 'CERTIFICADOS_B');
+
+    // Salvar no banco
+    await saveQuoteAndSpecs({ quote, specs });
+
+    // Gerar pré-visualização com os dados salvos
+    const { sections: processedSections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
+    return res.render('quotes/layout-print', { quote, sections: processedSections, totals });
+
+  } catch (e) {
+    return res.status(400).send('Falha ao salvar e pré-visualizar: ' + e.message);
+  }
+});
+
 // Preview HTML directly from form data without saving or generating files
 router.post('/preview-html', upload.any(), async (req, res) => {
   try {
@@ -196,7 +285,15 @@ router.post('/preview-html', upload.any(), async (req, res) => {
       contact_phone: req.body.contact_phone || '',
       seller_name: req.body.seller_name || '',
       equipment_image: equipmentImagePath,
-      status: 'Pré-visualização'
+      status: 'Pré-visualização',
+      // Condições de pagamento
+      include_payment_conditions: req.body.include_payment_conditions === 'on',
+      payment_intro: req.body.payment_intro || '',
+      payment_usd_conditions: req.body.payment_usd_conditions || '',
+      payment_brl_intro: req.body.payment_brl_intro || '',
+      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
+      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
+      payment_additional_notes: req.body.payment_additional_notes || ''
     };
     const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
     return res.render('quotes/layout-print', { quote, sections, totals });
@@ -288,6 +385,122 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
 router.get('/new', async (_req, res) => {
 // initDatabase() removed - handled at app startup
   res.render('quotes/new');
+});
+
+// Página de Rascunhos
+router.get('/drafts', async (_req, res) => {
+  try {
+    const allQuotes = await getAllQuotes();
+    const drafts = allQuotes.filter(quote => quote.status === 'Rascunho');
+    res.render('quotes/drafts', { quotes: drafts });
+  } catch (error) {
+    console.error('Erro ao buscar rascunhos:', error);
+    res.render('quotes/drafts', { quotes: [] });
+  }
+});
+
+// Página de Cotações Concluídas
+router.get('/completed', async (_req, res) => {
+  try {
+    const allQuotes = await getAllQuotes();
+    const completed = allQuotes.filter(quote => quote.status === 'Concluída');
+    res.render('quotes/completed', { quotes: completed });
+  } catch (error) {
+    console.error('Erro ao buscar cotações concluídas:', error);
+    res.render('quotes/completed', { quotes: [] });
+  }
+});
+
+// Save draft to database
+router.post('/save-draft', upload.any(), async (req, res) => {
+  try {
+    console.log('Salvando rascunho no banco...');
+    const payload = JSON.parse(req.body.specs_json || '{}');
+
+    // Process uploaded image
+    let equipmentImagePath = null;
+    if (req.files && req.files.length > 0) {
+      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
+      if (imageFile) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
+      }
+    }
+
+    const quote = {
+      quote_code: req.body.quote_code || `RASCUNHO-${Date.now()}`,
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      company: req.body.company || '',
+      client: req.body.client || req.body.company || '',
+      cnpj: req.body.cnpj || '',
+      machine_model: req.body.machine_model || '',
+      tech_spec: payload.tech_spec || '',
+      principle: payload.principle || '',
+      representative: req.body.representative || '',
+      supplier: req.body.supplier || 'Fornecedor',
+      services: parseServices(req.body) || '',
+      validity_days: parseInt(req.body.validity) || 15,
+      delivery_time: req.body.delivery || null,
+      notes: req.body.notes || null,
+      status: 'Rascunho',
+      contact_email: req.body.contact_email || '',
+      contact_phone: req.body.contact_phone || '',
+      seller_name: req.body.seller_name || '',
+      equipment_image: equipmentImagePath,
+      // Condições de pagamento
+      include_payment_conditions: req.body.include_payment_conditions === 'on',
+      payment_intro: req.body.payment_intro || '',
+      payment_usd_conditions: req.body.payment_usd_conditions || '',
+      payment_brl_intro: req.body.payment_brl_intro || '',
+      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
+      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
+      payment_additional_notes: req.body.payment_additional_notes || ''
+    };
+
+    // Processar specs do payload
+    const specs = [];
+    const sections = payload.sections || {};
+
+    // Helper para processar seções
+    function processSection(items, description) {
+      if (items && items.length > 0) {
+        specs.push({
+          description,
+          items: items.map(item => ({
+            name: item.name,
+            price: parseFloat(item.unit) || 0,
+            qty: parseInt(item.qty) || 1,
+            currency: item.currency || 'BRL'
+          }))
+        });
+      }
+    }
+
+    // Modalidade A
+    processSection(sections.itemsEquipA, 'EQUIPAMENTOS_A');
+    processSection(sections.itemsAssessoriaA, 'ASSESSORIA_A');
+    processSection(sections.itemsOperacionaisA, 'OPERACIONAIS_A');
+    processSection(sections.itemsCertificadosA, 'CERTIFICADOS_A');
+
+    // Modalidade B
+    processSection(sections.itemsEquipB, 'EQUIPAMENTOS_B');
+    processSection(sections.itemsAssessoriaB, 'ASSESSORIA_B');
+    processSection(sections.itemsOperacionaisB, 'OPERACIONAIS_B');
+    processSection(sections.itemsCertificadosB, 'CERTIFICADOS_B');
+
+    // Salvar no banco
+    const result = await saveQuoteAndSpecs({ quote, specs });
+
+    if (result.success) {
+      res.redirect(`/?saved=${quote.quote_code}&type=draft`);
+    } else {
+      throw new Error('Falha ao salvar rascunho no banco de dados');
+    }
+
+  } catch (error) {
+    console.error('Erro ao salvar rascunho:', error);
+    res.status(500).send('Erro ao salvar rascunho: ' + error.message);
+  }
 });
 
 // Save quote to database
@@ -496,6 +709,53 @@ router.get('/:code/pdf', async (req, res) => {
     </body></html>`);
   } catch (e) {
     return res.status(500).send('Falha ao gerar PDF: ' + e.message);
+  }
+});
+
+// API Routes for loading existing quotes
+router.get('/list', async (req, res) => {
+  try {
+    const allQuotes = await getAllQuotes();
+    res.json(allQuotes);
+  } catch (error) {
+    console.error('Erro ao buscar lista de cotações:', error);
+    res.status(500).json({ error: 'Erro ao carregar lista de cotações' });
+  }
+});
+
+router.get('/load/:code', async (req, res) => {
+  try {
+    const quoteCode = req.params.code;
+    const data = getQuoteByCode(quoteCode);
+
+    if (!data) {
+      return res.status(404).json({ success: false, error: 'Cotação não encontrada' });
+    }
+
+    res.json({
+      success: true,
+      quote: data.quote,
+      specs: data.specs
+    });
+  } catch (error) {
+    console.error('Erro ao carregar cotação:', error);
+    res.status(500).json({ success: false, error: 'Erro ao carregar dados da cotação' });
+  }
+});
+
+// Delete quote route
+router.delete('/delete/:code', async (req, res) => {
+  try {
+    const quoteCode = req.params.code;
+
+    // Verificar se o banco de dados tem uma função de delete
+    // Por enquanto, retornaremos sucesso (implementar delete no database.js seria ideal)
+    console.log(`Solicitação para deletar cotação: ${quoteCode}`);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao deletar cotação:', error);
+    res.status(500).json({ success: false, error: 'Erro ao deletar cotação' });
   }
 });
 

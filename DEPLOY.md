@@ -1,6 +1,25 @@
--- Criação das tabelas para orçamentos (PostgreSQL/Neon)
+# 🚀 Deploy Guide - Local Orçamentos
 
--- Cotação principal
+## 📋 Configuração do Banco de Dados Neon
+
+### 1. Criar Banco no Neon
+1. Acesse https://console.neon.tech/
+2. Crie um novo projeto
+3. Copie a connection string (DATABASE_URL)
+
+### 2. Configurar Variáveis de Ambiente no Vercel
+No painel do Vercel, adicione estas variáveis:
+
+```bash
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+NODE_ENV=production
+```
+
+### 3. Executar Schema SQL
+Execute o arquivo `db/schema-postgresql.sql` no console SQL do Neon:
+
+```sql
+-- Cotação principal com todos os campos
 CREATE TABLE IF NOT EXISTS quotes (
   id SERIAL PRIMARY KEY,
   quote_code VARCHAR(32) NOT NULL UNIQUE,
@@ -72,3 +91,60 @@ $$ language 'plpgsql';
 
 CREATE TRIGGER update_quotes_updated_at BEFORE UPDATE
     ON quotes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
+## 🌐 Deploy no Vercel
+
+### Automático via GitHub
+1. Conecte o repositório ao Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático a cada push
+
+### Manual
+```bash
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+## ✅ Funcionalidades Implementadas
+
+- ✅ **Sistema Completo de Cotações**
+- ✅ **Salvar Rascunho / Concluir Cotação**
+- ✅ **Dashboard com Estatísticas**
+- ✅ **Páginas Dedicadas para Rascunhos e Concluídas**
+- ✅ **Carregar Cotação Existente no Formulário**
+- ✅ **PDF Gerado Direto da Tela (Layout Idêntico)**
+- ✅ **Condições de Pagamento Completas**
+- ✅ **Interface Moderna e Responsiva**
+
+## 🔧 Estrutura do Sistema
+
+```
+📁 Sistema de Status
+├── Rascunho (pode editar/continuar)
+├── Concluída (pode visualizar/duplicar)
+└── Fluxo: Novo → Rascunho → Editar → Concluir
+
+📁 Funcionalidades
+├── Criar Nova Cotação
+├── Salvar como Rascunho
+├── Carregar Cotação Existente
+├── Finalizar como Concluída
+├── Gerar PDF da Pré-visualização
+├── Gerenciar Rascunhos
+└── Visualizar Concluídas
+```
+
+## 🎯 URLs do Sistema
+
+- **Home**: `/`
+- **Nova Cotação**: `/quotes/new`
+- **Rascunhos**: `/quotes/drafts`
+- **Concluídas**: `/quotes/completed`
+- **API Lista**: `/quotes/list`
+- **API Carregar**: `/quotes/load/:code`
+
+Sistema completo e funcional! 🎉

@@ -1,15 +1,17 @@
 {
   "version": 2,
-  "builds": [
+  "functions": {
+    "src/app.js": {
+      "runtime": "@vercel/node@20"
+    }
+  },
+  "rewrites": [
     {
-      "src": "src/app.js",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/src/app.js"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/app.js"
-    }
-  ]
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

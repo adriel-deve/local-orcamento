@@ -17,8 +17,8 @@ async function setupNeonDatabase() {
     await client.connect();
     console.log('✅ Conectado com sucesso!');
 
-    // Ler o schema SQL
-    const schemaPath = path.join(process.cwd(), 'db', 'schema-postgresql.sql');
+    // Ler o schema SQL atualizado
+    const schemaPath = path.join(process.cwd(), 'setup-neon-tables.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
 
     console.log('🔄 Executando schema SQL...');

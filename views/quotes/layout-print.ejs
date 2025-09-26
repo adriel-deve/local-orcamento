@@ -249,7 +249,18 @@
   </style>
 </head>
 <body>
-  <button class="print-btn" onclick="window.print()">Imprimir</button>
+  <!-- Botões de ação fixos no topo -->
+  <div class="action-buttons" style="position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 10px;">
+    <button class="action-btn print-btn" onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      🖨️ Imprimir
+    </button>
+    <button class="action-btn pdf-btn" onclick="generatePDFFromPage()" style="background: #dc2626; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      📄 Gerar PDF
+    </button>
+    <button class="action-btn close-btn" onclick="window.close()" style="background: #6b7280; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      ❌ Fechar
+    </button>
+  </div>
   <% const fmt = (val) => Number(val || 0).toFixed(2).replace('.', ','); %>
 
   <!-- PÁGINA PRINCIPAL: Proposta Completa -->
@@ -603,5 +614,102 @@
       </div>
     </div>
   </div>
+
+  <!-- Scripts para geração de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    async function generatePDFFromPage() {
+      try {
+        // Desabilita o botão durante a geração
+        const pdfBtn = document.querySelector('.pdf-btn');
+        const originalText = pdfBtn.innerHTML;
+        pdfBtn.disabled = true;
+        pdfBtn.innerHTML = '⏳ Gerando PDF...';
+
+        // Oculta os botões de ação temporariamente
+        const actionButtons = document.querySelector('.action-buttons');
+        actionButtons.style.display = 'none';
+
+        // Aguarda um pouco para garantir que os elementos sejam ocultados
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Captura cada página separadamente
+        const pages = document.querySelectorAll('.page');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        let isFirstPage = true;
+
+        for (const page of pages) {
+          // Captura a página atual
+          const canvas = await html2canvas(page, {
+            scale: 2, // Alta qualidade
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            width: page.scrollWidth,
+            height: page.scrollHeight,
+            windowWidth: 1200,
+            windowHeight: page.scrollHeight
+          });
+
+          // Converte para imagem
+          const imgData = canvas.toDataURL('image/png');
+
+          // Calcula dimensões para ajustar na página A4
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          // Adiciona nova página se não for a primeira
+          if (!isFirstPage) {
+            pdf.addPage();
+          }
+
+          // Adiciona a imagem ao PDF
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+
+          isFirstPage = false;
+        }
+
+        // Gera o nome do arquivo com código da cotação
+        const quoteCode = '<%= quote.quote_code %>';
+        const fileName = `Proposta_${quoteCode}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+
+        // Faz o download do PDF
+        pdf.save(fileName);
+
+        // Restaura os botões
+        actionButtons.style.display = 'flex';
+        pdfBtn.disabled = false;
+        pdfBtn.innerHTML = originalText;
+
+        // Mensagem de sucesso
+        console.log('PDF gerado com sucesso!');
+
+      } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+
+        // Restaura os botões em caso de erro
+        const actionButtons = document.querySelector('.action-buttons');
+        const pdfBtn = document.querySelector('.pdf-btn');
+        actionButtons.style.display = 'flex';
+        pdfBtn.disabled = false;
+        pdfBtn.innerHTML = '📄 Gerar PDF';
+
+        alert('Erro ao gerar PDF. Tente novamente.');
+      }
+    }
+
+    // Oculta botões de ação na impressão
+    window.addEventListener('beforeprint', () => {
+      document.querySelector('.action-buttons').style.display = 'none';
+    });
+
+    window.addEventListener('afterprint', () => {
+      document.querySelector('.action-buttons').style.display = 'flex';
+    });
+  </script>
 </body>
 </html>

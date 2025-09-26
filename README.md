@@ -47,3 +47,4 @@ npm start
 - â€œGerar orÃ§amentoâ€ cria uma pÃ¡gina de visualizaÃ§Ã£o com totais; vocÃª pode imprimir em PDF pelo navegador. Podemos integrar geraÃ§Ã£o de PDF mais tarde.
 - Campos compatÃ­veis com seu webapp GAS: empresa, representante, fornecedor, data, validade, prazo, serviÃ§os (checkbox), observaÃ§Ãµes, especificaÃ§Ãµes (vÃ¡rias), itens (nome, preÃ§o).
 
+# Database fix deployment

@@ -103,8 +103,12 @@
         <!-- Espaço para imagem do equipamento -->
         <div class="equipment-image-placeholder">
           <div class="image-box">
-            <span>Imagem do Equipamento</span>
-            <p>Dimensões: 600x450px</p>
+            <% if (quote.equipment_image) { %>
+              <img src="<%= quote.equipment_image %>" alt="Imagem do Equipamento" style="max-width: 100%; max-height: 450px; object-fit: contain;">
+            <% } else { %>
+              <span>Imagem do Equipamento</span>
+              <p>Dimensões: 600x450px</p>
+            <% } %>
           </div>
         </div>
 

@@ -578,7 +578,20 @@ router.get('/:code', async (req, res) => {
   const code = req.params.code;
   const data = await getQuoteByCode(code);
   if (!data) return res.status(404).render('404', { message: 'Cotação não encontrada' });
-  res.render('quotes/view', { quote: data.quote, specs: data.specs });
+  const categorized = categorizeSpecs(data.specs);
+  const sections = Object.values(categorized).map(section => ({
+    ...section,
+    totals: totalsFor(section.items)
+  }));
+  const totals = sections.reduce((acc, section) => {
+    const t = section.totals;
+    acc.BRL += t.BRL || 0;
+    acc.USD += t.USD || 0;
+    acc.EUR += t.EUR || 0;
+    return acc;
+  }, { BRL: 0, USD: 0, EUR: 0 });
+
+  res.render('quotes/layout', { quote: data.quote, sections, totals });
 });
 
 router.get('/:code/layout', async (req, res) => {
@@ -607,6 +620,15 @@ router.post('/save', upload.any(), async (req, res, next) => {
     const data = JSON.parse(req.body.specs_json || '{"sections":{}}');
     const sections = data.sections || {};
 
+    // Process uploaded equipment images
+    let equipment_image_path = null;
+    if (req.files && req.files.length > 0) {
+      const equipmentImage = req.files.find(file => file.fieldname === 'equipment_image');
+      if (equipmentImage) {
+        equipment_image_path = '/uploads/' + equipmentImage.filename;
+      }
+    }
+
     const quote = {
       quote_code: req.body.quote_code,
       date: req.body.date,
@@ -622,7 +644,8 @@ router.post('/save', upload.any(), async (req, res, next) => {
       validity_days: Number(req.body.validity) || 15,
       delivery_time: req.body.delivery,
       notes: req.body.notes || '',
-      status: 'Rascunho'
+      status: 'Rascunho',
+      equipment_image: equipment_image_path
     };
 
   // initDatabase() removed - handled at app startup
@@ -727,7 +750,7 @@ router.get('/:code/pdf', async (req, res) => {
 router.get('/load/:code', async (req, res) => {
   try {
     const quoteCode = req.params.code;
-    const data = getQuoteByCode(quoteCode);
+    const data = await getQuoteByCode(quoteCode);
 
     if (!data) {
       return res.status(404).json({ success: false, error: 'Cotação não encontrada' });

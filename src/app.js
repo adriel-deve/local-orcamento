@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import os from 'os';
+import fs from 'fs';
 import quotesRouter from './routes/quotes-router.js';
 import { proxyConfig, proxyDetectionMiddleware } from '../proxy-config.js';
 import { getAllQuotes, initDatabase } from './storage/database.js';
@@ -71,8 +73,14 @@ app.use((req, res, next) => {
 
 // Static files - Root level for Vercel
 const rootPath = process.cwd();
+const tempRoot = path.join(os.tmpdir(), 'local-orcamentos');
 
 console.log('Serving static files from root:', rootPath);
+
+// Ensure writable directories exist when running in production
+if (process.env.NODE_ENV === 'production') {
+  fs.mkdirSync(tempRoot, { recursive: true });
+}
 
 // Serve CSS and JS directly from root folders
 app.use('/css', express.static(path.join(rootPath, 'css'), {
@@ -104,12 +112,15 @@ app.use('/static', express.static(publicPath));
 
 // Uploads and output folders
 const uploadsPath = process.env.NODE_ENV === 'production' ?
-  path.join(rootPath, 'uploads') :
+  path.join(tempRoot, 'uploads') :
   path.join(__dirname, '..', 'uploads');
 
 const outputPath = process.env.NODE_ENV === 'production' ?
-  path.join(rootPath, 'output') :
+  path.join(tempRoot, 'output') :
   path.join(__dirname, '..', 'output');
+
+fs.mkdirSync(uploadsPath, { recursive: true });
+fs.mkdirSync(outputPath, { recursive: true });
 
 app.use('/uploads', express.static(uploadsPath));
 app.use('/output', express.static(outputPath));

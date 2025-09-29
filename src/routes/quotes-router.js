@@ -2,15 +2,22 @@
 import multer from 'multer';
 import path from 'path';
 import * as fs from 'fs';
+import os from 'os';
 import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
 import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote } from '../storage/database.js';
 
 const router = Router();
 
-const uploadDir = path.join(process.cwd(), 'uploads');
+const isProduction = process.env.NODE_ENV === 'production';
+const uploadDir = isProduction ?
+  path.join(os.tmpdir(), 'local-orcamentos', 'uploads') :
+  path.join(process.cwd(), 'uploads');
 fs.mkdirSync(uploadDir, { recursive: true });
-const upload = multer({ dest: uploadDir });
+const upload = multer({
+  dest: uploadDir,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
 
 function parseServices(body) {
   const arr = Array.isArray(body.services) ? body.services : (body.services ? [body.services] : []);
@@ -591,7 +598,7 @@ router.get('/:code', async (req, res) => {
     return acc;
   }, { BRL: 0, USD: 0, EUR: 0 });
 
-  res.render('quotes/layout', { quote: data.quote, sections, totals });
+  res.render('quotes/layout-print', { quote: data.quote, sections, totals });
 });
 
 router.get('/:code/layout', async (req, res) => {
@@ -612,7 +619,7 @@ router.get('/:code/layout', async (req, res) => {
     return acc;
   }, { BRL: 0, USD: 0, EUR: 0 });
 
-  res.render('quotes/layout', { quote: data.quote, sections, totals });
+  res.render('quotes/layout-print', { quote: data.quote, sections, totals });
 });
 
 router.post('/save', upload.any(), async (req, res, next) => {

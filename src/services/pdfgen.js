@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 import PDFDocument from 'pdfkit';
 
 function currencySymbol(cur) {
@@ -48,7 +49,9 @@ function sumTotals(items) {
 export async function generatePdfFromData({ quote, specs }) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const baseDir = path.join(__dirname, '..', '..');
+  const baseDir = process.env.NODE_ENV === 'production'
+    ? path.join(os.tmpdir(), 'local-orcamentos')
+    : path.join(__dirname, '..', '..');
   const outDir = path.join(baseDir, 'output');
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `${quote.quote_code}.pdf`);

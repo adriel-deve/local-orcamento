@@ -689,7 +689,7 @@ router.post('/save', upload.any(), async (req, res, next) => {
       specsPrepared.push({ description: 'CERTIFICADOS_B', items: packItems(sections.itemsCertificadosB, 'CERTIFICADOS_B') });
     }
 
-    saveQuoteAndSpecs({ quote, specs: specsPrepared });
+    await saveQuoteAndSpecs({ quote, specs: specsPrepared });
 
 
     const act = (req.body.action || '').toLowerCase();

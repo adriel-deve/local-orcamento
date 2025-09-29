@@ -1,106 +1,124 @@
 import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const { Client } = pg;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Connection string do Neon
-const connectionString = 'postgresql://neondb_owner:npg_nk0EB9PqrCQV@ep-ancient-voice-adoo5ffm-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const FALLBACK_DATABASE_URL = 'postgresql://neondb_owner:npg_nk0EB9PqrCQV@ep-ancient-voice-adoo5ffm-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const connectionString = process.env.DATABASE_URL || FALLBACK_DATABASE_URL;
+
+if (!process.env.DATABASE_URL) {
+  console.warn('DATABASE_URL não definida. Usando string de fallback local.');
+}
+
+if (!connectionString) {
+  console.error('DATABASE_URL não definido. Configure a variável de ambiente antes de executar o script.');
+  process.exit(1);
+}
+
+const schemaPath = path.join(__dirname, 'setup-neon-tables.sql');
+
+function buildStatements(sql) {
+  const statements = [];
+  let buffer = '';
+
+  sql.split(/\r?\n/).forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('--') || line.startsWith('\\')) {
+      return;
+    }
+
+    buffer += rawLine + '\n';
+    if (line.endsWith(';')) {
+      statements.push(buffer.trim());
+      buffer = '';
+    }
+  });
+
+  if (buffer.trim().length > 0) {
+    statements.push(buffer.trim());
+  }
+
+  return statements;
+}
+
+function describeStatement(sql) {
+  const keyword = sql.split(/\s+/)[0]?.toUpperCase() || 'SQL';
+  const preview = sql.replace(/\s+/g, ' ').slice(0, 60);
+  return `${keyword} ${preview}...`;
+}
 
 async function setupNeonDatabase() {
+  console.log('Conectando ao banco Neon...');
   const client = new Client({
-    connectionString
+    connectionString,
+    ssl: connectionString.includes('sslmode=') ? { rejectUnauthorized: false } : undefined
   });
 
   try {
-    console.log('🔄 Conectando ao banco Neon...');
     await client.connect();
-    console.log('✅ Conectado com sucesso!');
+    console.log('Conexão estabelecida.');
 
-    // Ler o schema SQL atualizado
-    const schemaPath = path.join(process.cwd(), 'setup-neon-tables.sql');
-    const schema = fs.readFileSync(schemaPath, 'utf8');
+    if (!fs.existsSync(schemaPath)) {
+      throw new Error(`Arquivo de schema não encontrado em ${schemaPath}`);
+    }
 
-    console.log('🔄 Executando schema SQL...');
+    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+    const statements = buildStatements(schemaSql);
 
-    // Dividir em comandos individuais e executar
-    const commands = schema
-      .split(';')
-      .map(cmd => cmd.trim())
-      .filter(cmd => cmd.length > 0);
+    console.log(`Executando ${statements.length} comandos SQL...`);
 
-    for (const command of commands) {
-      if (command.includes('CREATE') || command.includes('INSERT')) {
-        try {
-          await client.query(command);
-          console.log(`✅ Executado: ${command.substring(0, 50)}...`);
-        } catch (error) {
-          // Ignorar erros de "já existe"
-          if (error.message.includes('already exists')) {
-            console.log(`⚠️  Já existe: ${command.substring(0, 50)}...`);
-          } else {
-            console.error(`❌ Erro: ${error.message}`);
+    for (const statement of statements) {
+      const label = describeStatement(statement);
+      try {
+        const result = await client.query(statement);
+        const keyword = statement.split(/\s+/)[0]?.toUpperCase() || 'SQL';
+        if (keyword === 'SELECT') {
+          console.log(`[OK] ${label}`);
+          if (result.rows.length && result.rows.length <= 3) {
+            console.log('     ->', result.rows);
           }
+        } else {
+          console.log(`[OK] ${label} (linhas afetadas: ${result.rowCount ?? 0})`);
+        }
+      } catch (error) {
+        if (['42P07', '42710'].includes(error.code) || /already exists/i.test(error.message)) {
+          console.warn(`[INFO] ${label} ignorado (já existe).`);
+        } else if (['42704', '42P01'].includes(error.code) || /does not exist/i.test(error.message)) {
+          console.warn(`[INFO] ${label} ignorado (não existe).`);
+        } else {
+          console.error(`[ERRO] ${label}`);
+          console.error('       ->', error.message);
         }
       }
     }
 
-    // Testar inserção de dados de teste
-    console.log('🔄 Testando inserção de dados...');
-
-    const testQuery = `
-      INSERT INTO quotes (quote_code, date, company, representative, supplier, status)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      ON CONFLICT (quote_code) DO NOTHING
-      RETURNING id
-    `;
-
-    const result = await client.query(testQuery, [
-      'TEST-' + Date.now(),
-      new Date().toISOString().split('T')[0],
-      'Empresa Teste',
-      'Representante Teste',
-      'Fornecedor Teste',
-      'Rascunho'
-    ]);
-
-    if (result.rows.length > 0) {
-      console.log('✅ Dados de teste inseridos com sucesso!');
-      console.log('📄 ID da cotação teste:', result.rows[0].id);
-    }
-
-    // Verificar tabelas criadas
-    const tablesQuery = `
+    console.log('Resumo das tabelas públicas:');
+    const tables = await client.query(`
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = 'public'
-      ORDER BY table_name
-    `;
+      ORDER BY table_name;
+    `);
 
-    const tablesResult = await client.query(tablesQuery);
-    console.log('📋 Tabelas criadas:');
-    tablesResult.rows.forEach(row => {
-      console.log(`   - ${row.table_name}`);
-    });
+    for (const row of tables.rows) {
+      try {
+        const countResult = await client.query(`SELECT COUNT(*)::int AS total FROM "${row.table_name}"`);
+        console.log(`   - ${row.table_name}: ${countResult.rows[0].total}`);
+      } catch (error) {
+        console.warn(`   - ${row.table_name}: não foi possível contar (${error.message})`);
+      }
+    }
 
-    // Contar registros
-    const countQuotes = await client.query('SELECT COUNT(*) as total FROM quotes');
-    const countSpecs = await client.query('SELECT COUNT(*) as total FROM specs');
-    const countItems = await client.query('SELECT COUNT(*) as total FROM items');
-
-    console.log('📊 Estatísticas do banco:');
-    console.log(`   - Quotes: ${countQuotes.rows[0].total}`);
-    console.log(`   - Specs: ${countSpecs.rows[0].total}`);
-    console.log(`   - Items: ${countItems.rows[0].total}`);
-
-    console.log('\n🎉 Banco Neon configurado com sucesso!');
-    console.log('\n📝 Próximos passos:');
-    console.log('1. Configure a variável DATABASE_URL no Vercel');
-    console.log('2. Faça o deploy no Vercel');
-    console.log('3. Teste o sistema em produção');
-
+    console.log('Configuração concluída.');
   } catch (error) {
-    console.error('❌ Erro ao configurar banco:', error);
+    console.error('Falha ao configurar banco:', error.message);
   } finally {
     await client.end();
   }

@@ -12,7 +12,7 @@ export async function initDatabase() {
 
 export async function saveQuoteAndSpecs({ quote, specs }) {
   try {
-    // Inserir or atualizar cotação
+    // Inserir or atualizar cotacao
     const insertQuoteQuery = `
       INSERT INTO quotes (quote_code, date, company, client, cnpj, machine_model, tech_spec, principle,
                          representative, supplier, services, validity_days, delivery_time, notes, status,
@@ -123,7 +123,7 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
 
 export async function getQuoteByCode(code) {
   try {
-    // Buscar cotação
+    // Buscar cotacao
     const [quoteRows] = await pool.execute(
       'SELECT * FROM quotes WHERE quote_code = $1',
       [code]
@@ -155,8 +155,9 @@ export async function getQuoteByCode(code) {
           id: item.id,
           name: item.name,
           price: parseFloat(item.price) || 0,
-          qty: 1,
-          currency: 'BRL'
+          qty: item.qty ? parseInt(item.qty) : 1,
+          currency: item.currency ? String(item.currency).toUpperCase() : 'BRL',
+          days: item.days ? parseInt(item.days) : null
         }))
       });
     }
@@ -190,11 +191,14 @@ export async function deleteQuote(quoteCode) {
     await pool.execute('DELETE FROM specs WHERE quote_id = (SELECT id FROM quotes WHERE quote_code = $1)', [quoteCode]);
 
     // Delete quote
-    const [result] = await pool.execute('DELETE FROM quotes WHERE quote_code = $1', [quoteCode]);
+    const [, meta] = await pool.execute('DELETE FROM quotes WHERE quote_code = $1', [quoteCode]);
 
-    return result.affectedRows > 0;
+    const affected = meta?.affectedRows ?? meta?.rowCount ?? 0;
+    return affected > 0;
   } catch (error) {
-    console.error('Erro ao deletar cotação:', error);
+    console.error('Erro ao deletar cotacao:', error);
     throw error;
   }
 }
+
+

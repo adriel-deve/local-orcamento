@@ -25,12 +25,12 @@
     <div class="grid">
       <div class="field">
         <label>Número da Cotação</label>
-        <input name="quote_code" type="text" placeholder="COT-2025-0001" required />
+        <input id="quote_code" name="quote_code" type="text" placeholder="COT-2025-0001" required />
         <small>Código único identificador da cotação</small>
       </div>
       <div class="field">
         <label>Data da Cotação</label>
-        <input name="date" type="date" required />
+        <input id="date" name="date" type="date" required />
         <small>Data de emissão da cotação</small>
       </div>
     </div>
@@ -40,11 +40,11 @@
     <div class="grid">
       <div class="field">
         <label>Nome do Cliente</label>
-        <input name="client" type="text" placeholder="Nome da empresa cliente" required />
+        <input id="client" name="client" type="text" placeholder="Nome da empresa cliente" required />
       </div>
       <div class="field">
         <label>CNPJ do Cliente</label>
-        <input name="cnpj" type="text" placeholder="00.000.000/0000-00" />
+        <input id="cnpj" name="cnpj" type="text" placeholder="00.000.000/0000-00" />
         <small>CNPJ da empresa cliente (opcional)</small>
       </div>
     </div>
@@ -54,15 +54,15 @@
     <div class="grid">
       <div class="field">
         <label>Empresa Vendedora</label>
-        <input name="company" type="text" placeholder="Nome da empresa vendedora" required />
+        <input id="company" name="company" type="text" placeholder="Nome da empresa vendedora" required />
       </div>
       <div class="field">
         <label>Representante Comercial</label>
-        <input name="representative" type="text" placeholder="Nome do representante" required />
+        <input id="representative" name="representative" type="text" placeholder="Nome do representante" required />
       </div>
       <div class="field">
         <label>Modelo da Máquina</label>
-        <input name="machine_model" type="text" placeholder="Modelo do equipamento" />
+        <input id="machine_model" name="machine_model" type="text" placeholder="Modelo do equipamento" />
         <small>Modelo principal do equipamento cotado</small>
       </div>
     </div>
@@ -72,12 +72,12 @@
     <div class="grid">
       <div class="field">
         <label>Validade da Proposta</label>
-        <input name="validity" type="number" min="1" max="365" value="15" />
+        <input id="validity" name="validity" type="number" min="1" max="365" value="15" />
         <small>Período em dias para validade da cotação</small>
       </div>
       <div class="field">
         <label>Prazo de Entrega</label>
-        <input name="delivery" type="text" placeholder="Ex: 30 dias úteis após aprovação" />
+        <input id="delivery" name="delivery" type="text" placeholder="Ex: 30 dias úteis após aprovação" />
         <small>Tempo estimado para entrega dos equipamentos</small>
       </div>
     </div>
@@ -115,7 +115,7 @@
     <h3>Observações e Notas</h3>
     <div class="field">
       <label>Observações Gerais</label>
-      <textarea name="notes" rows="4" placeholder="Observações importantes, condições especiais, detalhes técnicos adicionais..."></textarea>
+      <textarea id="notes" name="notes" rows="4" placeholder="Observações importantes, condições especiais, detalhes técnicos adicionais..."></textarea>
       <small>Informações complementares que serão incluídas na cotação</small>
     </div>
 
@@ -124,17 +124,17 @@
     <div class="grid">
       <div class="field">
         <label>Nome do Vendedor</label>
-        <input name="seller_name" type="text" placeholder="Nome completo do vendedor responsável" />
+        <input id="seller_name" name="seller_name" type="text" placeholder="Nome completo do vendedor responsável" />
         <small>Vendedor responsável pela proposta</small>
       </div>
       <div class="field">
         <label>Email para Contato</label>
-        <input name="contact_email" type="email" placeholder="vendedor@pharmatec.com.br" />
+        <input id="contact_email" name="contact_email" type="email" placeholder="vendedor@pharmatec.com.br" />
         <small>Email principal para comunicação</small>
       </div>
       <div class="field">
         <label>Telefone para Contato</label>
-        <input name="contact_phone" type="text" placeholder="(11) 99999-9999" />
+        <input id="contact_phone" name="contact_phone" type="text" placeholder="(11) 99999-9999" />
         <small>Telefone comercial para contato direto</small>
       </div>
     </div>
@@ -227,7 +227,7 @@
     <!-- Condições de Pagamento -->
     <div class="payment-conditions-container" style="border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(16, 185, 129, 0.05);">
       <div style="display: flex; align-items: center; margin-bottom: 15px;">
-        <input type="checkbox" id="include_payment_conditions" name="include_payment_conditions" onchange="togglePaymentConditions()" />
+        <input type="checkbox" id="include_payment_conditions" id="include_payment_conditions" name="include_payment_conditions" onchange="togglePaymentConditions()" />
         <label for="include_payment_conditions" style="margin-left: 8px; font-weight: bold; color: #10b981; font-size: 16px;">Incluir Condições de Pagamento</label>
       </div>
 
@@ -236,22 +236,22 @@
 
         <div class="field">
           <label>Introdução das Condições</label>
-          <textarea name="payment_intro" rows="2" placeholder="Texto introdutório das condições de pagamento...">As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:</textarea>
+          <textarea id="payment_intro" name="payment_intro" rows="2" placeholder="Texto introdutório das condições de pagamento...">As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:</textarea>
         </div>
 
         <div class="field">
           <label>Montante em Dólares - Condições</label>
-          <textarea name="payment_usd_conditions" rows="3" placeholder="Condições para valores em dólar...">01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.</textarea>
+          <textarea id="payment_usd_conditions" name="payment_usd_conditions" rows="3" placeholder="Condições para valores em dólar...">01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.</textarea>
         </div>
 
         <div class="field">
           <label>Introdução Montante em Reais</label>
-          <textarea name="payment_brl_intro" rows="2" placeholder="Texto introdutório para valores em reais...">Montante em reais brasileiros de serviços prestados de acordo com a opção:</textarea>
+          <textarea id="payment_brl_intro" name="payment_brl_intro" rows="2" placeholder="Texto introdutório para valores em reais...">Montante em reais brasileiros de serviços prestados de acordo com a opção:</textarea>
         </div>
 
         <div class="field">
           <label>Condições para Modalidade com SAT</label>
-          <textarea name="payment_brl_with_sat" rows="6" placeholder="Condições de pagamento para modalidade com SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03 (três) parcelas pagas através de depósitos ou boletos:
+          <textarea id="payment_brl_with_sat" name="payment_brl_with_sat" rows="6" placeholder="Condições de pagamento para modalidade com SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03 (três) parcelas pagas através de depósitos ou boletos:
 1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
 2. Segunda parcela no valor de 30% do montante em reais, para ser paga na chegada do pedido na empresa ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;
 3. Terceira parcela no valor de 60% do montante em reais, para ser paga 30 dias após aprovação do SAT ou 90 dias corridos após o aceite da invoice, o que ocorrer primeiro;</textarea>
@@ -259,14 +259,14 @@
 
         <div class="field">
           <label>Condições para Modalidade sem SAT</label>
-          <textarea name="payment_brl_without_sat" rows="4" placeholder="Condições de pagamento para modalidade sem SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 02 (duas) parcelas pagas através de depósitos ou boletos:
+          <textarea id="payment_brl_without_sat" name="payment_brl_without_sat" rows="4" placeholder="Condições de pagamento para modalidade sem SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 02 (duas) parcelas pagas através de depósitos ou boletos:
 1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
 2. Segunda parcela no valor de 90% do montante em reais, para ser paga na chegada do pedido no porto aduaneiro;</textarea>
         </div>
 
         <div class="field">
           <label>Observações Adicionais</label>
-          <textarea name="payment_additional_notes" rows="8" placeholder="Observações adicionais sobre condições de pagamento...">Não fazem parte dos serviços prestados pelo Grupo Zanatech os itens anteriores: 1. Honorários de despachantes e manuseio; 2. Despesas de Importação; 3. Transporte até a porta da empresa. Os pagamentos e condições de tais itens são negociados diretamente entre a empresa contratante e a prestadora do serviço em questão. As empresas parceiras recomendadas pelo Grupo Zanatech podem oferecer condições e descontos especiais nas condições pré-estabelecidas. Para o start-up, o EQUIPAMENTO deve estar em ÁREA QUALIFICADA, com fácil acesso às UTILIDADES (ar comprimido, alimentação elétrica) necessárias, caso contrário poderá haver atrasos e custos adicionais.</textarea>
+          <textarea id="payment_additional_notes" name="payment_additional_notes" rows="8" placeholder="Observações adicionais sobre condições de pagamento...">Não fazem parte dos serviços prestados pelo Grupo Zanatech os itens anteriores: 1. Honorários de despachantes e manuseio; 2. Despesas de Importação; 3. Transporte até a porta da empresa. Os pagamentos e condições de tais itens são negociados diretamente entre a empresa contratante e a prestadora do serviço em questão. As empresas parceiras recomendadas pelo Grupo Zanatech podem oferecer condições e descontos especiais nas condições pré-estabelecidas. Para o start-up, o EQUIPAMENTO deve estar em ÁREA QUALIFICADA, com fácil acesso às UTILIDADES (ar comprimido, alimentação elétrica) necessárias, caso contrário poderá haver atrasos e custos adicionais.</textarea>
         </div>
       </div>
     </div>
@@ -667,124 +667,172 @@
   }
 
   // Função para carregar dados de uma cotação específica
+  // Utilitarios para carregar cotacoes existentes
+  async function fetchQuoteData(quoteCode) {
+    const response = await fetch('/quotes/load/' + encodeURIComponent(quoteCode));
+    if (!response.ok) {
+      throw new Error('Falha HTTP ' + response.status);
+    }
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Falha ao carregar cotacao');
+    }
+    return data;
+  }
+
+  function toISODate(value) {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  }
+
+  function setFieldValue(id, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    if (element.type === 'checkbox') {
+      element.checked = Boolean(value);
+    } else {
+      element.value = value ?? '';
+    }
+  }
+
+  function resetQuoteSections() {
+    const sections = ['sec_equip_a','sec_assessoria_a','sec_operacionais_a','sec_certificados_a','sec_equip_b','sec_assessoria_b','sec_operacionais_b','sec_certificados_b'];
+    sections.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const container = section.querySelector('.items');
+      if (container) container.innerHTML = '';
+      const checkboxes = section.querySelectorAll('.checkboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => { cb.checked = false; });
+    });
+  }
+
+  function ensureSectionPlaceholders() {
+    const sections = ['sec_equip_a','sec_assessoria_a','sec_operacionais_a','sec_certificados_a','sec_equip_b','sec_assessoria_b','sec_operacionais_b','sec_certificados_b'];
+    sections.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const container = section.querySelector('.items');
+      if (container && container.querySelectorAll('.item_row').length === 0) {
+        addRow(sectionId);
+      }
+    });
+  }
+
+  function applyServicesSelection(servicesString) {
+    const selected = (servicesString || '').split(';').map(v => v.trim()).filter(Boolean);
+    document.querySelectorAll('.checkboxes input[type="checkbox"]').forEach(cb => {
+      cb.checked = selected.includes(cb.value);
+    });
+  }
+
+  function populateSpecs(specs) {
+    (specs || []).forEach(spec => {
+      const desc = (spec.description || '').toUpperCase();
+      let targetSection = '';
+      if (desc.includes('EQUIPAMENTOS_A')) targetSection = 'sec_equip_a';
+      else if (desc.includes('ASSESSORIA_A')) targetSection = 'sec_assessoria_a';
+      else if (desc.includes('OPERACIONAIS_A')) targetSection = 'sec_operacionais_a';
+      else if (desc.includes('CERTIFICADOS_A')) targetSection = 'sec_certificados_a';
+      else if (desc.includes('EQUIPAMENTOS_B')) targetSection = 'sec_equip_b';
+      else if (desc.includes('ASSESSORIA_B')) targetSection = 'sec_assessoria_b';
+      else if (desc.includes('OPERACIONAIS_B')) targetSection = 'sec_operacionais_b';
+      else if (desc.includes('CERTIFICADOS_B')) targetSection = 'sec_certificados_b';
+      if (targetSection && spec.items) {
+        spec.items.forEach(item => {
+          addRow(targetSection, {
+            name: item.name,
+            qty: item.qty || 1,
+            unit: item.unit ?? item.price ?? 0,
+            price: item.price ?? 0,
+            currency: item.currency || 'BRL',
+            days: item.days || item.days === 0 ? item.days : undefined
+          });
+        });
+      }
+    });
+  }
+
+  function populateFormWithQuoteData(data, options = {}) {
+    const duplicate = options.duplicate === true;
+    const quote = data.quote || {};
+    const specs = data.specs || [];
+    resetQuoteSections();
+    applyServicesSelection(quote.services || '');
+    const todayISO = toISODate(new Date());
+    setFieldValue('quote_code', duplicate ? (quote.quote_code || 'COT') + '-COPY-' + Date.now() : (quote.quote_code || ''));
+    setFieldValue('date', duplicate ? todayISO : (toISODate(quote.date) || todayISO));
+    setFieldValue('company', quote.company || '');
+    setFieldValue('client', quote.client || quote.company || '');
+    setFieldValue('cnpj', quote.cnpj || '');
+    setFieldValue('machine_model', quote.machine_model || '');
+    setFieldValue('representative', quote.representative || '');
+    setFieldValue('supplier', quote.supplier || '');
+    setFieldValue('validity', quote.validity_days != null ? quote.validity_days : 15);
+    setFieldValue('delivery', quote.delivery_time || '');
+    setFieldValue('notes', quote.notes || '');
+    setFieldValue('contact_email', quote.contact_email || '');
+    setFieldValue('contact_phone', quote.contact_phone || '');
+    setFieldValue('seller_name', quote.seller_name || '');
+    setFieldValue('tech_spec', quote.tech_spec || '');
+    setFieldValue('principle', quote.principle || '');
+    const paymentCheckbox = document.getElementById('include_payment_conditions');
+    if (paymentCheckbox) {
+      paymentCheckbox.checked = Boolean(quote.include_payment_conditions);
+      togglePaymentConditions();
+    }
+    setFieldValue('payment_intro', quote.payment_intro || '');
+    setFieldValue('payment_usd_conditions', quote.payment_usd_conditions || '');
+    setFieldValue('payment_brl_intro', quote.payment_brl_intro || '');
+    setFieldValue('payment_brl_with_sat', quote.payment_brl_with_sat || '');
+    setFieldValue('payment_brl_without_sat', quote.payment_brl_without_sat || '');
+    setFieldValue('payment_additional_notes', quote.payment_additional_notes || '');
+    populateSpecs(specs);
+    ensureSectionPlaceholders();
+  }
+
   async function loadExistingQuote() {
     const select = document.getElementById('existing_quotes');
     const quoteCode = select.value;
-
     if (!quoteCode) {
-      alert('Selecione uma cotação para carregar.');
+      alert('Selecione uma cotacao para carregar.');
       return;
     }
-
     try {
-      const response = await fetch(`/quotes/load/${quoteCode}`);
-      const data = await response.json();
-
-      if (!data.success) {
-        alert('Erro ao carregar cotação: ' + data.error);
-        return;
-      }
-
-      const quote = data.quote;
-      const specs = data.specs || [];
-
-      // Carregar dados básicos
-      document.getElementById('quote_code').value = quote.quote_code + '_COPY_' + Date.now();
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      document.getElementById('company').value = quote.company || '';
-      document.getElementById('client').value = quote.client || '';
-      document.getElementById('cnpj').value = quote.cnpj || '';
-      document.getElementById('machine_model').value = quote.machine_model || '';
-      document.getElementById('representative').value = quote.representative || '';
-      document.getElementById('supplier').value = quote.supplier || '';
-      document.getElementById('validity').value = quote.validity_days || 15;
-      document.getElementById('delivery').value = quote.delivery_time || '';
-      document.getElementById('notes').value = quote.notes || '';
-
-      // Carregar contato
-      if (document.getElementById('contact_email')) {
-        document.getElementById('contact_email').value = quote.contact_email || '';
-      }
-      if (document.getElementById('contact_phone')) {
-        document.getElementById('contact_phone').value = quote.contact_phone || '';
-      }
-      if (document.getElementById('seller_name')) {
-        document.getElementById('seller_name').value = quote.seller_name || '';
-      }
-
-      // Carregar condições de pagamento
-      const paymentCheckbox = document.getElementById('include_payment_conditions');
-      if (paymentCheckbox && quote.include_payment_conditions) {
-        paymentCheckbox.checked = true;
-        togglePaymentConditions();
-
-        if (document.getElementById('payment_intro')) {
-          document.getElementById('payment_intro').value = quote.payment_intro || '';
-        }
-        // Carregar outros campos de pagamento se existirem...
-      }
-
-      // Carregar especificações técnicas
-      if (quote.tech_spec) {
-        document.getElementById('tech_spec').value = quote.tech_spec;
-      }
-      if (quote.principle) {
-        document.getElementById('principle').value = quote.principle;
-      }
-
-      // Limpar seções existentes
-      const sections = ['sec_equip_a', 'sec_assessoria_a', 'sec_operacionais_a', 'sec_certificados_a',
-                        'sec_equip_b', 'sec_assessoria_b', 'sec_operacionais_b', 'sec_certificados_b'];
-
-      sections.forEach(sectionId => {
-        const container = document.getElementById(sectionId)?.querySelector('.items');
-        if (container) {
-          container.innerHTML = '';
-        }
-      });
-
-      // Carregar itens das especificações
-      specs.forEach(spec => {
-        const desc = spec.description?.toUpperCase() || '';
-        let targetSection = '';
-
-        if (desc.includes('EQUIPAMENTOS_A')) targetSection = 'sec_equip_a';
-        else if (desc.includes('ASSESSORIA_A')) targetSection = 'sec_assessoria_a';
-        else if (desc.includes('OPERACIONAIS_A')) targetSection = 'sec_operacionais_a';
-        else if (desc.includes('CERTIFICADOS_A')) targetSection = 'sec_certificados_a';
-        else if (desc.includes('EQUIPAMENTOS_B')) targetSection = 'sec_equip_b';
-        else if (desc.includes('ASSESSORIA_B')) targetSection = 'sec_assessoria_b';
-        else if (desc.includes('OPERACIONAIS_B')) targetSection = 'sec_operacionais_b';
-        else if (desc.includes('CERTIFICADOS_B')) targetSection = 'sec_certificados_b';
-
-        if (targetSection && spec.items) {
-          spec.items.forEach(item => {
-            addRow(targetSection, {
-              name: item.name,
-              qty: item.qty || 1,
-              unit: item.price || 0,
-              currency: item.currency || 'BRL'
-            });
-          });
-        }
-      });
-
-      alert(`Cotação "${quoteCode}" carregada com sucesso! Código atualizado para evitar duplicatas.`);
-
-      // Resetar seleção
+      const data = await fetchQuoteData(quoteCode);
+      populateFormWithQuoteData(data, { duplicate: true });
+      alert('Cotacao "' + quoteCode + '" carregada. Um novo codigo foi sugerido para evitar duplicidade.');
       select.selectedIndex = 0;
-
     } catch (error) {
-      console.error('Erro ao carregar cotação:', error);
-      alert('Erro ao carregar cotação. Tente novamente.');
+      console.error('Erro ao carregar cotacao:', error);
+      alert('Erro ao carregar cotacao. Tente novamente.');
+    }
+  }
+
+  async function loadQuoteForEditing(quoteCode) {
+    try {
+      const data = await fetchQuoteData(quoteCode);
+      populateFormWithQuoteData(data, { duplicate: false });
+      console.info('Cotacao ' + quoteCode + ' carregada para edicao.');
+    } catch (error) {
+      console.error('Erro ao carregar cotacao para edicao:', error);
+      alert('Nao foi possivel carregar a cotacao selecionada.');
     }
   }
 
   // Função para carregar dados via query parameters (para duplicação e edição)
-  function loadFromQueryParams() {
+  async function loadFromQueryParams() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    // Campos básicos
+    const loadCode = urlParams.get('load_code');
+    if (loadCode) {
+      await loadQuoteForEditing(loadCode);
+      return;
+    }
+
+    // Campos basicos
     const fields = [
       'quote_code', 'date', 'company', 'client', 'cnpj', 'machine_model',
       'representative', 'supplier', 'services', 'validity_days', 'delivery_time',
@@ -801,7 +849,7 @@
       }
     });
 
-    // Condições de pagamento
+    // Condicoes de pagamento
     const paymentFields = [
       'include_payment_conditions', 'payment_intro', 'payment_usd_conditions',
       'payment_brl_intro', 'payment_brl_with_sat', 'payment_brl_without_sat',
@@ -811,7 +859,7 @@
     paymentFields.forEach(field => {
       const value = urlParams.get(field);
       if (value) {
-        const element = document.querySelector(`[name="${field}"]`);
+        const element = document.querySelector('[name="' + field + '"]');
         if (element) {
           if (element.type === 'checkbox') {
             element.checked = value === 'true';
@@ -825,6 +873,7 @@
       }
     });
   }
+
 
   // Carregar dados via query parameters se existirem
   if (window.location.search) {

@@ -562,10 +562,21 @@ router.post('/save', upload.any(), async (req, res) => {
   }
 });
 
+// Rotas específicas ANTES da rota catch-all /:code
+router.get('/list', async (req, res) => {
+  try {
+    const allQuotes = await getAllQuotes();
+    res.json(allQuotes);
+  } catch (error) {
+    console.error('Erro ao buscar lista de cotações:', error);
+    res.status(500).json({ error: 'Erro ao carregar lista de cotações' });
+  }
+});
+
 router.get('/:code', async (req, res) => {
 // initDatabase() removed - handled at app startup
   const code = req.params.code;
-  const data = getQuoteByCode(code);
+  const data = await getQuoteByCode(code);
   if (!data) return res.status(404).render('404', { message: 'Cotação não encontrada' });
   res.render('quotes/view', { quote: data.quote, specs: data.specs });
 });
@@ -573,7 +584,7 @@ router.get('/:code', async (req, res) => {
 router.get('/:code/layout', async (req, res) => {
 // initDatabase() removed - handled at app startup
   const code = req.params.code;
-  const data = getQuoteByCode(code);
+  const data = await getQuoteByCode(code);
   if (!data) return res.status(404).send('Cotação não encontrada');
   const categorized = categorizeSpecs(data.specs);
   const sections = Object.values(categorized).map(section => ({
@@ -676,7 +687,7 @@ router.get('/:code/xlsx', async (req, res) => {
     const baseDir = process.cwd();
     const outDir = path.join(baseDir, 'output');
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-    const data = getQuoteByCode(code);
+    const data = await getQuoteByCode(code);
     if (!data) return res.status(404).send('Cotação não encontrada');
     const outPath = generateXlsxFromData({ quote: data.quote, specs: data.specs });
     const fileName = path.basename(outPath);
@@ -697,7 +708,7 @@ router.get('/:code/pdf', async (req, res) => {
     const baseDir = process.cwd();
     const outDir = path.join(baseDir, 'output');
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-    const data = getQuoteByCode(code);
+    const data = await getQuoteByCode(code);
     if (!data) return res.status(404).send('Cotação não encontrada');
     const outPath = await generatePdfFromData({ quote: data.quote, specs: data.specs });
     const fileName = path.basename(outPath);
@@ -713,16 +724,6 @@ router.get('/:code/pdf', async (req, res) => {
 });
 
 // API Routes for loading existing quotes
-router.get('/list', async (req, res) => {
-  try {
-    const allQuotes = await getAllQuotes();
-    res.json(allQuotes);
-  } catch (error) {
-    console.error('Erro ao buscar lista de cotações:', error);
-    res.status(500).json({ error: 'Erro ao carregar lista de cotações' });
-  }
-});
-
 router.get('/load/:code', async (req, res) => {
   try {
     const quoteCode = req.params.code;

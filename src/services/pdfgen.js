@@ -46,6 +46,57 @@ function sumTotals(items) {
   return totals;
 }
 
+function safeJoin(baseDir, target) {
+  if (!target) return null;
+  const cleaned = String(target).trim().replace(/^[\/]+/, '');
+  if (!cleaned) return null;
+  const resolved = path.resolve(baseDir, cleaned);
+  const relative = path.relative(baseDir, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    return null;
+  }
+  return resolved;
+}
+
+function resolveEquipmentImagePath(baseDir, imageRef) {
+  if (!imageRef) return null;
+  let source = String(imageRef).trim();
+  if (!source) return null;
+
+  if (source.startsWith('data:')) {
+    return source;
+  }
+
+  try {
+    if (source.startsWith('http://') || source.startsWith('https://')) {
+      const url = new URL(source);
+      source = decodeURIComponent(url.pathname || '');
+    }
+  } catch (err) {
+    console.warn('Erro ao processar URL da imagem do equipamento:', err.message);
+    return null;
+  }
+
+  if (!source) return null;
+
+  if (path.isAbsolute(source) && fs.existsSync(source)) {
+    return source;
+  }
+
+  const withoutLeading = source.replace(/^[\/]+/, '');
+  const candidate = safeJoin(baseDir, withoutLeading);
+  if (candidate && fs.existsSync(candidate)) {
+    return candidate;
+  }
+
+  if (fs.existsSync(source)) {
+    return source;
+  }
+
+  return null;
+}
+
+
 export async function generatePdfFromData({ quote, specs }) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
@@ -62,6 +113,7 @@ export async function generatePdfFromData({ quote, specs }) {
 
   const sections = categorize(specs);
   const globalTotals = { BRL: 0, USD: 0, EUR: 0 };
+  const equipmentImagePath = resolveEquipmentImagePath(baseDir, quote.equipment_image);
 
   function fmt(val){ return Number(val || 0).toFixed(2).replace('.', ','); }
   // Capa
@@ -76,6 +128,24 @@ export async function generatePdfFromData({ quote, specs }) {
   doc.text(`Fornecedor: ${quote.supplier || '-'}`);
   doc.text(`Validade: ${quote.validity_days || 0} dias`);
   doc.text(`Prazo de entrega: ${quote.delivery_time || '-'}`);
+
+  if (equipmentImagePath) {
+    doc.addPage();
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937').text('Imagem do equipamento', { align: 'center' });
+    doc.moveDown(0.5);
+    try {
+      doc.image(equipmentImagePath, {
+        fit: [460, 320],
+        align: 'center'
+      });
+    } catch (err) {
+      console.warn('Falha ao incluir imagem do equipamento no PDF:', err);
+      doc.font('Helvetica').fontSize(10).fillColor('#ef4444').text('Nao foi possivel carregar a imagem do equipamento.', { align: 'center' });
+    }
+    doc.fillColor('#1f2937');
+    doc.moveDown(1);
+  }
+
   doc.addPage();
 
   // Página técnica

@@ -631,12 +631,35 @@
   }
 
   // Função para alternar a visibilidade das condições de pagamento
+  const paymentFieldIds = [
+    'payment_intro',
+    'payment_usd_conditions',
+    'payment_brl_intro',
+    'payment_brl_with_sat',
+    'payment_brl_without_sat',
+    'payment_additional_notes'
+  ];
+  const paymentDefaults = paymentFieldIds.reduce((acc, id) => {
+    const el = document.getElementById(id);
+    acc[id] = el ? (el.defaultValue || el.value || '') : '';
+    return acc;
+  }, {});
+  function applyPaymentDefaultsIfEmpty() {
+    paymentFieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!el.value || !el.value.trim()) {
+        el.value = paymentDefaults[id] || '';
+      }
+    });
+  }
   function togglePaymentConditions() {
     const checkbox = document.getElementById('include_payment_conditions');
     const fields = document.getElementById('payment_conditions_fields');
 
     if (checkbox.checked) {
       fields.style.display = 'block';
+      applyPaymentDefaultsIfEmpty();
     } else {
       fields.style.display = 'none';
     }
@@ -783,12 +806,12 @@
       paymentCheckbox.checked = Boolean(quote.include_payment_conditions);
       togglePaymentConditions();
     }
-    setFieldValue('payment_intro', quote.payment_intro || '');
-    setFieldValue('payment_usd_conditions', quote.payment_usd_conditions || '');
-    setFieldValue('payment_brl_intro', quote.payment_brl_intro || '');
-    setFieldValue('payment_brl_with_sat', quote.payment_brl_with_sat || '');
-    setFieldValue('payment_brl_without_sat', quote.payment_brl_without_sat || '');
-    setFieldValue('payment_additional_notes', quote.payment_additional_notes || '');
+    setFieldValue('payment_intro', quote.payment_intro && quote.payment_intro.trim() ? quote.payment_intro : paymentDefaults.payment_intro);
+    setFieldValue('payment_usd_conditions', quote.payment_usd_conditions && quote.payment_usd_conditions.trim() ? quote.payment_usd_conditions : paymentDefaults.payment_usd_conditions);
+    setFieldValue('payment_brl_intro', quote.payment_brl_intro && quote.payment_brl_intro.trim() ? quote.payment_brl_intro : paymentDefaults.payment_brl_intro);
+    setFieldValue('payment_brl_with_sat', quote.payment_brl_with_sat && quote.payment_brl_with_sat.trim() ? quote.payment_brl_with_sat : paymentDefaults.payment_brl_with_sat);
+    setFieldValue('payment_brl_without_sat', quote.payment_brl_without_sat && quote.payment_brl_without_sat.trim() ? quote.payment_brl_without_sat : paymentDefaults.payment_brl_without_sat);
+    setFieldValue('payment_additional_notes', quote.payment_additional_notes && quote.payment_additional_notes.trim() ? quote.payment_additional_notes : paymentDefaults.payment_additional_notes);
     populateSpecs(specs);
     ensureSectionPlaceholders();
   }

@@ -780,6 +780,57 @@
     }
   }
 
+  // Função para carregar dados via query parameters (para duplicação e edição)
+  function loadFromQueryParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Campos básicos
+    const fields = [
+      'quote_code', 'date', 'company', 'client', 'cnpj', 'machine_model',
+      'representative', 'supplier', 'services', 'validity_days', 'delivery_time',
+      'notes', 'contact_email', 'contact_phone', 'seller_name'
+    ];
+
+    fields.forEach(field => {
+      const value = urlParams.get(field);
+      if (value) {
+        const element = document.getElementById(field);
+        if (element) {
+          element.value = value;
+        }
+      }
+    });
+
+    // Condições de pagamento
+    const paymentFields = [
+      'include_payment_conditions', 'payment_intro', 'payment_usd_conditions',
+      'payment_brl_intro', 'payment_brl_with_sat', 'payment_brl_without_sat',
+      'payment_additional_notes'
+    ];
+
+    paymentFields.forEach(field => {
+      const value = urlParams.get(field);
+      if (value) {
+        const element = document.querySelector(`[name="${field}"]`);
+        if (element) {
+          if (element.type === 'checkbox') {
+            element.checked = value === 'true';
+            if (field === 'include_payment_conditions') {
+              togglePaymentConditions();
+            }
+          } else {
+            element.value = value;
+          }
+        }
+      }
+    });
+  }
+
+  // Carregar dados via query parameters se existirem
+  if (window.location.search) {
+    loadFromQueryParams();
+  }
+
   // Carregar lista de cotações ao iniciar a página
   loadExistingQuotesList();
 

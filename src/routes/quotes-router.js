@@ -4,7 +4,7 @@ import path from 'path';
 import * as fs from 'fs';
 import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
-import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes } from '../storage/database.js';
+import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote } from '../storage/database.js';
 
 const router = Router();
 
@@ -743,16 +743,79 @@ router.get('/load/:code', async (req, res) => {
   }
 });
 
+// View quote route (redirect to layout)
+router.get('/view/:code', async (req, res) => {
+  res.redirect(`/quotes/${req.params.code}/layout`);
+});
+
+// Duplicate quote route
+router.get('/duplicate/:code', async (req, res) => {
+  try {
+    const quoteCode = req.params.code;
+    const quote = await getQuoteByCode(quoteCode);
+
+    if (!quote) {
+      return res.status(404).render('error', { message: 'Cotação não encontrada' });
+    }
+
+    // Generate new quote code with current timestamp
+    const newQuoteCode = `${quote.quote_code}-COPY-${Date.now()}`;
+
+    // Create duplicate with new code and draft status
+    const duplicateQuote = {
+      ...quote,
+      quote_code: newQuoteCode,
+      status: 'Rascunho',
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    // Redirect to new form with pre-filled data
+    const queryParams = new URLSearchParams({
+      quote_code: duplicateQuote.quote_code,
+      date: duplicateQuote.date,
+      company: duplicateQuote.company || '',
+      client: duplicateQuote.client || '',
+      cnpj: duplicateQuote.cnpj || '',
+      machine_model: duplicateQuote.machine_model || '',
+      representative: duplicateQuote.representative || '',
+      supplier: duplicateQuote.supplier || '',
+      services: duplicateQuote.services || '',
+      validity_days: duplicateQuote.validity_days || 15,
+      delivery_time: duplicateQuote.delivery_time || '',
+      notes: duplicateQuote.notes || '',
+      contact_email: duplicateQuote.contact_email || '',
+      contact_phone: duplicateQuote.contact_phone || '',
+      seller_name: duplicateQuote.seller_name || '',
+      include_payment_conditions: duplicateQuote.include_payment_conditions || false,
+      payment_intro: duplicateQuote.payment_intro || '',
+      payment_usd_conditions: duplicateQuote.payment_usd_conditions || '',
+      payment_brl_intro: duplicateQuote.payment_brl_intro || '',
+      payment_brl_with_sat: duplicateQuote.payment_brl_with_sat || '',
+      payment_brl_without_sat: duplicateQuote.payment_brl_without_sat || '',
+      payment_additional_notes: duplicateQuote.payment_additional_notes || ''
+    });
+
+    res.redirect(`/quotes/new?${queryParams.toString()}`);
+  } catch (error) {
+    console.error('Erro ao duplicar cotação:', error);
+    res.status(500).render('error', { message: 'Erro ao duplicar cotação' });
+  }
+});
+
 // Delete quote route
 router.delete('/delete/:code', async (req, res) => {
   try {
     const quoteCode = req.params.code;
 
-    // Verificar se o banco de dados tem uma função de delete
-    // Por enquanto, retornaremos sucesso (implementar delete no database.js seria ideal)
     console.log(`Solicitação para deletar cotação: ${quoteCode}`);
+    const deleted = await deleteQuote(quoteCode);
 
-    res.json({ success: true });
+    if (deleted) {
+      console.log(`Cotação ${quoteCode} deletada com sucesso`);
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ success: false, error: 'Cotação não encontrada' });
+    }
   } catch (error) {
     console.error('Erro ao deletar cotação:', error);
     res.status(500).json({ success: false, error: 'Erro ao deletar cotação' });

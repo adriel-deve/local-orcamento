@@ -180,3 +180,21 @@ export async function getAllQuotes() {
     throw error;
   }
 }
+
+export async function deleteQuote(quoteCode) {
+  try {
+    // Delete items first (due to foreign key constraints)
+    await pool.execute('DELETE FROM items WHERE quote_id = (SELECT id FROM quotes WHERE quote_code = $1)', [quoteCode]);
+
+    // Delete specs
+    await pool.execute('DELETE FROM specs WHERE quote_id = (SELECT id FROM quotes WHERE quote_code = $1)', [quoteCode]);
+
+    // Delete quote
+    const [result] = await pool.execute('DELETE FROM quotes WHERE quote_code = $1', [quoteCode]);
+
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Erro ao deletar cotação:', error);
+    throw error;
+  }
+}

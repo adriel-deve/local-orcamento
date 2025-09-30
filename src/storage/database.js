@@ -18,8 +18,8 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
                          representative, supplier, services, validity_days, delivery_time, notes, status,
                          contact_email, contact_phone, seller_name, equipment_image, include_payment_conditions,
                          payment_intro, payment_usd_conditions, payment_brl_intro, payment_brl_with_sat,
-                         payment_brl_without_sat, payment_additional_notes)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
+                         payment_brl_without_sat, payment_additional_notes, user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
       ON CONFLICT (quote_code)
       DO UPDATE SET
         date = EXCLUDED.date,
@@ -47,6 +47,7 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
         payment_brl_with_sat = EXCLUDED.payment_brl_with_sat,
         payment_brl_without_sat = EXCLUDED.payment_brl_without_sat,
         payment_additional_notes = EXCLUDED.payment_additional_notes,
+        user_id = EXCLUDED.user_id,
         updated_at = CURRENT_TIMESTAMP
       RETURNING id
     `;
@@ -77,7 +78,8 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
       quote.payment_brl_intro || null,
       quote.payment_brl_with_sat || null,
       quote.payment_brl_without_sat || null,
-      quote.payment_additional_notes || null
+      quote.payment_additional_notes || null,
+      quote.user_id || null
     ]);
 
     const quoteId = quoteResult[0]?.id || quoteResult.insertId;
@@ -170,11 +172,28 @@ export async function getQuoteByCode(code) {
   }
 }
 
-export async function getAllQuotes() {
+export async function getAllQuotes(userId = null, userRole = null) {
   try {
-    const [rows] = await pool.execute(
-      'SELECT quote_code, company, date, status, created_at FROM quotes ORDER BY created_at DESC'
-    );
+    let query = 'SELECT quote_code, company, date, status, created_at FROM quotes';
+    const params = [];
+
+    // Filtrar baseado no usuário e role
+    if (userId && userRole) {
+      if (userRole === 'admin') {
+        // Admin vê todas as cotações
+        query += ' ORDER BY created_at DESC';
+      } else {
+        // Usuário comum vê apenas suas cotações em rascunho + todas as concluídas
+        query += ' WHERE (user_id = $1 AND status = $2) OR status = $3 ORDER BY created_at DESC';
+        params.push(userId, 'Rascunho', 'Concluída');
+      }
+    } else {
+      // Se não houver usuário, mostrar apenas concluídas
+      query += ' WHERE status = $1 ORDER BY created_at DESC';
+      params.push('Concluída');
+    }
+
+    const [rows] = await pool.execute(query, params);
     return rows || [];
   } catch (error) {
     console.error('Error getting quotes:', error);

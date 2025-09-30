@@ -416,6 +416,7 @@ router.post('/save-draft', upload.any(), async (req, res) => {
       contact_phone: req.body.contact_phone || '',
       seller_name: req.body.seller_name || '',
       equipment_image: equipmentImagePath,
+      user_id: req.session.userId, // Associar rascunho ao usuário logado
       // Condições de pagamento
       include_payment_conditions: req.body.include_payment_conditions === 'on',
       payment_intro: req.body.payment_intro || '',
@@ -461,14 +462,23 @@ router.post('/save-draft', upload.any(), async (req, res) => {
     const result = await saveQuoteAndSpecs({ quote, specs });
 
     if (result.success) {
-      res.redirect(`/?saved=${quote.quote_code}&type=draft`);
+      // Retornar JSON em vez de redirecionar
+      res.json({
+        success: true,
+        message: 'Rascunho salvo com sucesso!',
+        quote_code: quote.quote_code,
+        location: 'Rascunhos'
+      });
     } else {
       throw new Error('Falha ao salvar rascunho no banco de dados');
     }
 
   } catch (error) {
     console.error('Erro ao salvar rascunho:', error);
-    res.status(500).send('Erro ao salvar rascunho: ' + error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao salvar rascunho: ' + error.message
+    });
   }
 });
 

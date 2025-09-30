@@ -4,9 +4,15 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import os from 'os';
 import fs from 'fs';
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
+import pool from './db.js';
 import quotesRouter from './routes/quotes-router.js';
+import authRouter from './routes/auth-router.js';
+import usersRouter from './routes/users-router.js';
+import { setUserLocals, requireAuth } from './middleware/auth.js';
 import { proxyConfig, proxyDetectionMiddleware } from '../proxy-config.js';
-import { getAllQuotes, initDatabase } from './storage/database.js';
+import { initDatabase } from './storage/database.js';
 
 dotenv.config();
 
@@ -125,6 +131,27 @@ fs.mkdirSync(outputPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 app.use('/output', express.static(outputPath));
 
+// Session configuration
+const PgSession = connectPgSimple(session);
+
+app.use(session({
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session'
+  }),
+  secret: process.env.SESSION_SECRET || 'pharmatec-orcamentos-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  }
+}));
+
+// Set current user in locals for all views
+app.use(setUserLocals);
+
 // Body parsing with better error handling
 app.use(express.json({
   limit: '5mb',
@@ -142,17 +169,21 @@ app.use(express.urlencoded({
 }));
 
 // Routes
-app.get('/', async (req, res) => {
-  try {
-    const quotes = await getAllQuotes();
-    res.render('index', { quotes });
-  } catch (error) {
-    console.error('Error loading quotes:', error);
-    res.render('index', { quotes: [] });
+app.get('/', (req, res) => {
+  if (req.session && req.session.userId) {
+    return res.redirect('/quotes/new');
   }
+  res.redirect('/login');
 });
+
 app.get('/health', (req, res) => res.status(200).send('ok'));
-app.use('/quotes', quotesRouter);
+
+// Auth routes
+app.use('/', authRouter);
+app.use('/users', usersRouter);
+
+// Protected routes
+app.use('/quotes', requireAuth, quotesRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

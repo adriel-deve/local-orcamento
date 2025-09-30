@@ -3,7 +3,7 @@
 -- Cotação principal
 CREATE TABLE IF NOT EXISTS quotes (
   id SERIAL PRIMARY KEY,
-  quote_code VARCHAR(32) NOT NULL UNIQUE,
+  quote_code VARCHAR(255) NOT NULL UNIQUE,
   date DATE NOT NULL,
   company VARCHAR(255) NOT NULL,
   client VARCHAR(255) DEFAULT NULL,

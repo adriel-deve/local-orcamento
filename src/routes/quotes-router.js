@@ -342,68 +342,14 @@ router.get('/test-pdf', async (req, res) => {
   }
 });
 
-// Generate PDF directly from form data without saving
+// Generate PDF - Redirect to print dialog (browser native PDF generation)
 router.post('/generate-pdf', upload.any(), async (req, res) => {
-  try {
-    console.log('Iniciando geracao de PDF via servidor...');
-
-    const payload = JSON.parse(req.body.specs_json || '{}');
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
-
-    if (req.files && req.files.length > 0) {
-      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
-      if (imageFile) {
-        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
-      }
-    }
-
-    const quote = {
-      quote_code: req.body.quote_code || 'PREVIEW',
-      date: req.body.date || new Date().toISOString().split('T')[0],
-      company: req.body.company || '',
-      client: req.body.client || req.body.company || '',
-      cnpj: req.body.cnpj || '',
-      machine_model: req.body.machine_model || '',
-      tech_spec: payload.tech_spec || '',
-      principle: payload.principle || '',
-      representative: req.body.representative || '',
-      supplier: req.body.supplier || '',
-      validity_days: Number(req.body.validity) || 15,
-      delivery_time: req.body.delivery || '',
-      notes: req.body.notes || '',
-      contact_email: req.body.contact_email || '',
-      contact_phone: req.body.contact_phone || '',
-      seller_name: req.body.seller_name || '',
-      equipment_image: equipmentImagePath,
-      status: 'Gerado para PDF',
-      include_payment_conditions: req.body.include_payment_conditions === 'on' || req.body.include_payment_conditions === true,
-      payment_intro: req.body.payment_intro || '',
-      payment_usd_conditions: req.body.payment_usd_conditions || '',
-      payment_brl_intro: req.body.payment_brl_intro || '',
-      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
-      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
-      payment_additional_notes: req.body.payment_additional_notes || ''
-    };
-
-    const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
-
-    const { buffer } = await generatePdfFromData({
-      quote,
-      sections,
-      totals,
-      writeToDisk: false
-    });
-
-    const safeName = `${(quote.quote_code || 'Proposta').replace(/[^a-zA-Z0-9-_]+/g, '_')}.pdf`;
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
-    return res.send(buffer);
-  } catch (e) {
-    console.error('Erro ao gerar PDF:', e);
-    return res.status(500).send('Falha ao gerar PDF: ' + e.message);
-  }
+  // Server-side PDF generation disabled - use browser print functionality
+  return res.status(200).json({
+    success: false,
+    message: 'Use browser print dialog (Ctrl+P) to generate PDF',
+    redirect: 'print'
+  });
 });
 router.get('/new', async (_req, res) => {
 // initDatabase() removed - handled at app startup

@@ -312,7 +312,7 @@
       <% if (quote.equipment_image) { %>
       <div style="text-align: center; margin-bottom: 20px;">
         <h3 class="section-title">Imagem do Equipamento</h3>
-        <img src="<%= quote.equipment_image %>" alt="Equipamento" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px;">
+        <img src="<%= quote.equipment_image %>" alt="Equipamento" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='<p style=color:red;>Erro ao carregar imagem</p>';">
       </div>
         <% } %>
 

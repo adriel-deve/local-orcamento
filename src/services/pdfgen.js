@@ -25,44 +25,24 @@ function toNumber(value, fallback = 0) {
 
 async function resolvePuppeteer() {
   if (!puppeteerBundlePromise) {
-    const isServerless = Boolean(process.env.AWS_REGION || process.env.VERCEL || process.env.LAMBDA_TASK_ROOT);
+    const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
     if (isServerless) {
       puppeteerBundlePromise = (async () => {
         try {
-          const [chromiumModule, puppeteerCoreModule] = await Promise.all([
-            import('@sparticuz/chromium'),
-            import('puppeteer-core')
-          ]);
-
-          const chromium = chromiumModule.default;
-          const puppeteer = puppeteerCoreModule.default;
-
-          // Configure Chromium for serverless
-          const executablePath = await chromium.executablePath();
+          const chromium = await import('chrome-aws-lambda');
 
           return {
-            puppeteer,
+            puppeteer: chromium.default.puppeteer,
             launchOptions: {
-              args: [
-                ...chromium.args,
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--no-first-run',
-                '--no-zygote',
-                '--single-process',
-                '--disable-extensions'
-              ],
-              defaultViewport: chromium.defaultViewport,
-              executablePath,
-              headless: true,
-              ignoreHTTPSErrors: true,
-              timeout: 30000
+              args: chromium.default.args,
+              defaultViewport: chromium.default.defaultViewport,
+              executablePath: await chromium.default.executablePath,
+              headless: chromium.default.headless,
+              ignoreHTTPSErrors: true
             }
           };
         } catch (error) {
-          console.error('Error setting up Chromium for serverless:', error);
+          console.error('Error setting up chrome-aws-lambda:', error);
           throw error;
         }
       })();

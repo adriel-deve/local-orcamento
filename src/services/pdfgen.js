@@ -2,8 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
-import ejs from 'ejs';
-import htmlPdf from 'html-pdf-node';
+import PDFDocument from 'pdfkit';
 
 const SECTION_CATALOG = [
   { key: 'equipamentos_a', label: 'EQUIPAMENTOS_A', title: 'Modalidade A - Equipamentos (CIF)' },
@@ -21,6 +20,15 @@ const BASE_CURRENCIES = ['BRL', 'USD', 'EUR'];
 function toNumber(value, fallback = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
+}
+
+function currencySymbol(cur) {
+  const upper = String(cur || 'BRL').toUpperCase();
+  return upper === 'USD' ? '$' : (upper === 'EUR' ? '€' : 'R$');
+}
+
+function fmt(val) {
+  return Number(val || 0).toFixed(2).replace('.', ',');
 }
 
 function cloneSection(section) {
@@ -132,14 +140,6 @@ function normalizeSections(sections = []) {
   return { sections: cloned, totals };
 }
 
-async function renderHtml({ quote, sections, totals, templatePath }) {
-  return ejs.renderFile(
-    templatePath,
-    { quote, sections, totals, isPdfRender: true },
-    { async: true }
-  );
-}
-
 function ensureSafeFilename(value) {
   if (!value) return `Proposta-${Date.now()}.pdf`;
   return `${String(value).replace(/[^a-zA-Z0-9-_]+/g, '_')}.pdf`;
@@ -158,11 +158,6 @@ export async function generatePdfFromData({
     throw new Error('generatePdfFromData: quote e obrigatorio.');
   }
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const projectRoot = path.join(__dirname, '..', '..');
-  const templatePath = path.join(projectRoot, 'views', 'quotes', 'layout-print.ejs');
-
   let sections;
   let totals;
 
@@ -176,36 +171,142 @@ export async function generatePdfFromData({
     totals = rawTotals || computed.totals;
   }
 
-  const html = await renderHtml({ quote, sections, totals, templatePath });
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks = [];
 
-  let pdfBuffer;
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => {
+      const pdfBuffer = Buffer.concat(chunks);
 
-  try {
-    const options = {
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '12mm', bottom: '14mm', left: '12mm', right: '12mm' }
-    };
+      let outPath = null;
+      if (writeToDisk) {
+        try {
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          const projectRoot = path.join(__dirname, '..', '..');
+          const baseDir = outputDir
+            ? outputDir
+            : (process.env.NODE_ENV === 'production'
+              ? path.join(os.tmpdir(), 'local-orcamentos', 'output')
+              : path.join(projectRoot, 'output'));
+          fs.mkdirSync(baseDir, { recursive: true });
+          const safeName = ensureSafeFilename(filename || quote.quote_code || 'proposta');
+          outPath = path.join(baseDir, safeName);
+          fs.writeFileSync(outPath, pdfBuffer);
+        } catch (error) {
+          console.error('Error writing PDF to disk:', error);
+        }
+      }
 
-    const file = { content: html };
-    pdfBuffer = await htmlPdf.generatePdf(file, options);
-  } catch (error) {
-    console.error('Error generating PDF with html-pdf-node:', error);
-    throw new Error(`Falha ao gerar PDF: ${error.message}`);
-  }
+      resolve({ buffer: pdfBuffer, outPath, sections, totals });
+    });
 
-  let outPath = null;
-  if (writeToDisk) {
-    const baseDir = outputDir
-      ? outputDir
-      : (process.env.NODE_ENV === 'production'
-        ? path.join(os.tmpdir(), 'local-orcamentos', 'output')
-        : path.join(projectRoot, 'output'));
-    fs.mkdirSync(baseDir, { recursive: true });
-    const safeName = ensureSafeFilename(filename || quote.quote_code || 'proposta');
-    outPath = path.join(baseDir, safeName);
-    fs.writeFileSync(outPath, pdfBuffer);
-  }
+    doc.on('error', reject);
 
-  return { buffer: pdfBuffer, outPath, sections, totals };
+    try {
+      // Header - Cover Page
+      doc.font('Helvetica-Bold').fontSize(22).fillColor('#1f2937')
+         .text(`Proposta Comercial ${quote.quote_code || ''}`, { align: 'center' });
+      doc.moveDown(0.5);
+      doc.font('Helvetica').fontSize(14)
+         .text(`Modelo: ${quote.machine_model || '-'}`, { align: 'center' });
+      doc.moveDown(2);
+
+      doc.fontSize(10).fillColor('#4b5563');
+      doc.text(`Cliente: ${quote.client || quote.company || '-'}`);
+      doc.text(`CNPJ: ${quote.cnpj || '-'}`);
+      doc.text(`Representante: ${quote.representative || '-'}`);
+      doc.text(`Fornecedor: ${quote.supplier || '-'}`);
+      doc.text(`Validade: ${quote.validity_days || 0} dias`);
+      doc.text(`Prazo de entrega: ${quote.delivery_time || '-'}`);
+
+      doc.addPage();
+
+      // Technical Specifications
+      if (quote.principle) {
+        doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937')
+           .text('Principio de funcionamento', { underline: true });
+        doc.moveDown(0.3);
+        doc.font('Helvetica').fontSize(10).fillColor('#111827')
+           .text(quote.principle || '-', { align: 'left' });
+        doc.moveDown(1);
+      }
+
+      if (quote.tech_spec) {
+        doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937')
+           .text('Especificacao tecnica', { underline: true });
+        doc.moveDown(0.3);
+        doc.font('Helvetica').fontSize(10).fillColor('#111827')
+           .text(quote.tech_spec || '-', { align: 'left' });
+        doc.moveDown(1);
+      }
+
+      doc.addPage();
+
+      // Financial Details
+      sections.forEach(section => {
+        if (section.items && section.items.length > 0) {
+          doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937')
+             .text(section.title, { underline: true });
+          doc.moveDown(0.4);
+
+          const sectionTotals = { BRL: 0, USD: 0, EUR: 0 };
+
+          section.items.forEach(item => {
+            if (doc.y > 700) doc.addPage();
+
+            doc.font('Helvetica').fontSize(10).fillColor('#111827');
+            doc.text(`${item.name}`, { continued: false });
+            doc.text(`  Qtd: ${item.qty} | Unitario: ${currencySymbol(item.currency)} ${fmt(item.unit)} | Subtotal: ${currencySymbol(item.currency)} ${fmt(item.subtotal)}`);
+            doc.moveDown(0.3);
+
+            sectionTotals[item.currency] = (sectionTotals[item.currency] || 0) + item.subtotal;
+          });
+
+          doc.moveDown(0.4);
+          const parts = [];
+          if (sectionTotals.BRL) parts.push('R$ ' + fmt(sectionTotals.BRL));
+          if (sectionTotals.USD) parts.push('$ ' + fmt(sectionTotals.USD));
+          if (sectionTotals.EUR) parts.push('€ ' + fmt(sectionTotals.EUR));
+          doc.font('Helvetica-Bold').text('Total do bloco: ' + (parts.join(' | ') || 'R$ 0,00'));
+          doc.moveDown(1);
+        }
+      });
+
+      // Global Totals
+      doc.moveDown(1);
+      doc.font('Helvetica-Bold').fontSize(12).text('Totais consolidados:');
+      const globalParts = [];
+      if (totals.general.BRL) globalParts.push('R$ ' + fmt(totals.general.BRL));
+      if (totals.general.USD) globalParts.push('$ ' + fmt(totals.general.USD));
+      if (totals.general.EUR) globalParts.push('€ ' + fmt(totals.general.EUR));
+      doc.font('Helvetica').text(globalParts.join(' | ') || 'R$ 0,00');
+
+      // Payment Conditions
+      if (quote.include_payment_conditions) {
+        doc.addPage();
+        doc.font('Helvetica-Bold').fontSize(14).text('Condicoes de Pagamento');
+        doc.moveDown(0.5);
+        doc.font('Helvetica').fontSize(10);
+        if (quote.payment_intro) {
+          doc.text(quote.payment_intro);
+          doc.moveDown(0.5);
+        }
+        if (quote.payment_usd_conditions) {
+          doc.text('USD: ' + quote.payment_usd_conditions);
+          doc.moveDown(0.3);
+        }
+        if (quote.payment_brl_intro) {
+          doc.text(quote.payment_brl_intro);
+          doc.moveDown(0.3);
+        }
+      }
+
+      doc.end();
+    } catch (error) {
+      doc.end();
+      reject(error);
+    }
+  });
 }

@@ -1,8 +1,9 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import ejs from 'ejs';
+import htmlPdf from 'html-pdf-node';
 
 const SECTION_CATALOG = [
   { key: 'equipamentos_a', label: 'EQUIPAMENTOS_A', title: 'Modalidade A - Equipamentos (CIF)' },
@@ -16,47 +17,10 @@ const SECTION_CATALOG = [
 ];
 
 const BASE_CURRENCIES = ['BRL', 'USD', 'EUR'];
-let puppeteerBundlePromise = null;
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
-}
-
-async function resolvePuppeteer() {
-  if (!puppeteerBundlePromise) {
-    const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
-    if (isServerless) {
-      puppeteerBundlePromise = (async () => {
-        try {
-          const chromium = await import('chrome-aws-lambda');
-
-          return {
-            puppeteer: chromium.default.puppeteer,
-            launchOptions: {
-              args: chromium.default.args,
-              defaultViewport: chromium.default.defaultViewport,
-              executablePath: await chromium.default.executablePath,
-              headless: chromium.default.headless,
-              ignoreHTTPSErrors: true
-            }
-          };
-        } catch (error) {
-          console.error('Error setting up chrome-aws-lambda:', error);
-          throw error;
-        }
-      })();
-    } else {
-      puppeteerBundlePromise = import('puppeteer').then(puppeteerModule => ({
-        puppeteer: puppeteerModule.default,
-        launchOptions: {
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          headless: 'new'
-        }
-      }));
-    }
-  }
-  return puppeteerBundlePromise;
 }
 
 function cloneSection(section) {
@@ -215,32 +179,19 @@ export async function generatePdfFromData({
   const html = await renderHtml({ quote, sections, totals, templatePath });
 
   let pdfBuffer;
-  let browser;
 
   try {
-    const { puppeteer, launchOptions } = await resolvePuppeteer();
-    browser = await puppeteer.launch(launchOptions);
-
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 1800 });
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
-    await page.emulateMediaType('screen');
-    pdfBuffer = await page.pdf({
+    const options = {
       format: 'A4',
       printBackground: true,
       margin: { top: '12mm', bottom: '14mm', left: '12mm', right: '12mm' }
-    });
+    };
+
+    const file = { content: html };
+    pdfBuffer = await htmlPdf.generatePdf(file, options);
   } catch (error) {
-    console.error('Error generating PDF with Puppeteer:', error);
+    console.error('Error generating PDF with html-pdf-node:', error);
     throw new Error(`Falha ao gerar PDF: ${error.message}`);
-  } finally {
-    if (browser) {
-      try {
-        await browser.close();
-      } catch (closeError) {
-        console.warn('Error closing browser:', closeError);
-      }
-    }
   }
 
   let outPath = null;

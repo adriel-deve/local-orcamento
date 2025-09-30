@@ -176,7 +176,29 @@ app.get('/', (req, res) => {
   res.redirect('/login');
 });
 
-app.get('/health', (req, res) => res.status(200).send('ok'));
+app.get('/health', async (req, res) => {
+  try {
+    // Testar conexão com o banco
+    await pool.execute('SELECT 1');
+    res.status(200).json({
+      status: 'ok',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        hasDatabase: !!process.env.DATABASE_URL,
+        hasSessionSecret: !!process.env.SESSION_SECRET
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      database: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Auth routes
 app.use('/', authRouter);

@@ -1,0 +1,95 @@
+================================================================================
+INSTRUÇÕES PARA CONFIGURAR VARIÁVEIS DE AMBIENTE NO VERCEL
+================================================================================
+
+PASSO 1: Acesse o painel do Vercel
+-----------------------------------
+1. Abra: https://vercel.com
+2. Faça login
+3. Selecione o projeto "local-orcamento"
+4. Clique em "Settings" (Configurações)
+5. Clique em "Environment Variables" no menu lateral
+
+PASSO 2: Adicione as variáveis uma por uma
+-------------------------------------------
+
+VARIÁVEL 1: DATABASE_URL
+------------------------
+Name: DATABASE_URL
+Value: postgresql://neondb_owner:npg_nk0EB9PqrCQV@ep-ancient-voice-adoo5ffm-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+Environments: ✅ Production  ✅ Preview  ✅ Development
+Clique em "Save"
+
+VARIÁVEL 2: SESSION_SECRET
+--------------------------
+Name: SESSION_SECRET
+Value: pharmatec-orcamentos-secret-key-2024-v1-production
+
+Environments: ✅ Production  ✅ Preview  ✅ Development
+Clique em "Save"
+
+VARIÁVEL 3: NODE_ENV
+--------------------
+Name: NODE_ENV
+Value: production
+
+Environments: ✅ Production  (NÃO marque Preview nem Development)
+Clique em "Save"
+
+VARIÁVEL 4: DB_TYPE
+-------------------
+Name: DB_TYPE
+Value: postgresql
+
+Environments: ✅ Production  ✅ Preview  ✅ Development
+Clique em "Save"
+
+PASSO 3: Fazer novo deploy
+---------------------------
+Após salvar todas as variáveis:
+
+Opção A - Deploy automático (recomendado):
+1. Volte para a aba "Deployments"
+2. Aguarde o próximo commit ser deployado automaticamente
+
+Opção B - Deploy manual (se tiver pressa):
+1. Vá em "Deployments"
+2. Clique nos 3 pontinhos do último deployment
+3. Clique em "Redeploy"
+4. Confirme
+
+PASSO 4: Verificar se funcionou
+--------------------------------
+1. Aguarde o deploy terminar (leva 1-2 minutos)
+2. Acesse: https://local-orcamento.vercel.app/health
+3. Você deve ver um JSON com:
+   {
+     "status": "ok",
+     "database": "connected",
+     ...
+   }
+4. Se aparecer "connected", está tudo certo!
+
+PASSO 5: Testar o login
+------------------------
+1. Acesse: https://local-orcamento.vercel.app/login
+2. Use as credenciais:
+   Usuário: admin
+   Senha: admin123
+3. Clique em "Entrar"
+4. Se funcionar, você será redirecionado para a tela de nova cotação
+
+================================================================================
+SE AINDA NÃO FUNCIONAR:
+================================================================================
+
+1. Vá em "Deployments"
+2. Clique no deployment mais recente
+3. Clique em "Functions"
+4. Clique em qualquer função (ex: src/app.js)
+5. Role até ver os "Logs"
+6. Procure por erros em vermelho
+7. Me envie o erro que aparecer
+
+================================================================================

@@ -7,7 +7,12 @@ const { Pool } = pg;
 // Configuração para PostgreSQL (Neon)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 10, // Máximo de conexões no pool
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
 // Adapter para compatibilidade com mysql2 interface

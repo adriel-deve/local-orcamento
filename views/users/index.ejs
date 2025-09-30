@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Usuários</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 28px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .message {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #10b981;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 16px;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-admin {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-user {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .nav-links {
+      margin-bottom: 20px;
+    }
+
+    .nav-links a {
+      margin-right: 16px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-links">
+      <a href="/quotes/new">← Voltar para Orçamentos</a>
+      <% if (currentUser && currentUser.role === 'admin') { %>
+        <a href="/quotes">Ver Todas Cotações</a>
+      <% } %>
+      <a href="/logout">Sair</a>
+    </div>
+
+    <div class="header">
+      <h1>Gerenciar Usuários</h1>
+      <a href="/users/new" class="btn btn-primary">+ Novo Usuário</a>
+    </div>
+
+    <% if (message) { %>
+      <div class="message"><%= message %></div>
+    <% } %>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Nome Completo</th>
+          <th>Email</th>
+          <th>Função</th>
+          <th>Status</th>
+          <th>Criado em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><strong><%= user.username %></strong></td>
+            <td><%= user.full_name %></td>
+            <td><%= user.email || '-' %></td>
+            <td>
+              <span class="badge <%= user.role === 'admin' ? 'badge-admin' : 'badge-user' %>">
+                <%= user.role === 'admin' ? 'Administrador' : 'Usuário' %>
+              </span>
+            </td>
+            <td>
+              <span class="badge <%= user.active ? 'badge-active' : 'badge-inactive' %>">
+                <%= user.active ? 'Ativo' : 'Inativo' %>
+              </span>
+            </td>
+            <td><%= new Date(user.created_at).toLocaleDateString('pt-BR') %></td>
+            <td>
+              <div class="actions">
+                <a href="/users/<%= user.id %>/edit" class="btn btn-secondary btn-small">Editar</a>
+                <% if (user.id !== currentUser.id) { %>
+                  <form method="POST" action="/users/<%= user.id %>/delete" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja desativar este usuário?')">
+                    <button type="submit" class="btn btn-danger btn-small">Desativar</button>
+                  </form>
+                <% } %>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

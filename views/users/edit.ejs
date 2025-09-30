@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Usuário</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    input:disabled {
+      background: #f3f4f6;
+      cursor: not-allowed;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c33;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .required {
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-card">
+      <h1>Editar Usuário</h1>
+
+      <% if (error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/users/<%= user.id %>">
+        <div class="form-group">
+          <label for="username">Nome de Usuário</label>
+          <input type="text" id="username" value="<%= user.username %>" disabled>
+          <small style="color: #6b7280;">Nome de usuário não pode ser alterado</small>
+        </div>
+
+        <div class="form-group">
+          <label for="fullName">Nome Completo <span class="required">*</span></label>
+          <input type="text" id="fullName" name="fullName" value="<%= user.full_name %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= user.email || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="role">Função <span class="required">*</span></label>
+          <select id="role" name="role" required>
+            <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>Usuário</option>
+            <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Administrador</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="active">Status <span class="required">*</span></label>
+          <select id="active" name="active" required>
+            <option value="true" <%= user.active ? 'selected' : '' %>>Ativo</option>
+            <option value="false" <%= !user.active ? 'selected' : '' %>>Inativo</option>
+          </select>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          <a href="/users" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

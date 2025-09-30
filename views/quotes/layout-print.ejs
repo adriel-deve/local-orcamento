@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proposta Comercial - <%= quote.quote_code %></title>
   <style>
-    /* CSS otimizado para impressÃ£o */
+    /* CSS otimizado para impressão */
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -30,7 +30,7 @@
       z-index: 1000;
     }
 
-    /* Layout para impressÃ£o */
+    /* Layout para impressão */
     .page {
       width: 210mm;
       min-height: 297mm;
@@ -42,7 +42,7 @@
 
     .page:last-child { page-break-after: avoid; }
 
-    /* CabeÃ§alho */
+    /* Cabeçalho */
     .header {
       display: flex;
       justify-content: space-between;
@@ -90,7 +90,7 @@
       color: #333;
     }
 
-    /* SeÃ§Ãµes */
+    /* Seções */
     .section {
       margin-bottom: 25px;
     }
@@ -178,7 +178,7 @@
       padding-top: 5px;
     }
 
-    /* Termos e condiÃ§Ãµes */
+    /* Termos e condições */
     .terms {
       margin-top: 30px;
       page-break-inside: avoid;
@@ -234,7 +234,7 @@
       text-align: center;
     }
 
-    /* Media queries para impressÃ£o */
+    /* Media queries para impressão */
     @media print {
       body { background: white !important; }
       .print-btn { display: none !important; }
@@ -250,7 +250,7 @@
 </head>
 <body>
   <% const pdfMode = typeof isPdfRender !== "undefined" ? isPdfRender : false; %>
-  <!-- BotÃµes de aÃ§Ã£o fixos no topo -->
+  <!-- Botões de ação fixos no topo -->
   <% if (!pdfMode) { %>
   <div class="action-buttons" style="position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 10px;">
     <button class="action-btn back-btn" onclick="goBack()" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">&larr; Voltar</button>
@@ -260,9 +260,9 @@
   <% } %>
   <% const fmt = (val) => Number(val || 0).toFixed(2).replace('.', ','); %>
 
-  <!-- PÃGINA PRINCIPAL: Proposta Completa -->
+  <!-- PíGINA PRINCIPAL: Proposta Completa -->
   <div class="page">
-    <!-- CabeÃ§alho -->
+    <!-- Cabeçalho -->
     <div class="header">
       <div>
         <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="logo">
@@ -298,13 +298,13 @@
           <span class="data-value"><%= quote.delivery_time || 'A definir' %></span>
         </div>
         <div class="data-item">
-          <span class="data-label">Modelo da MÃ¡quina</span>
+          <span class="data-label">Modelo da Máquina</span>
           <span class="data-value"><%= quote.machine_model || '-' %></span>
         </div>
       </div>
     </div>
 
-    <!-- EspecificaÃ§Ãµes TÃ©cnicas -->
+    <!-- Especificações Técnicas -->
     <% if (quote.tech_spec || quote.principle || quote.equipment_image) { %>
     <div class="section">
       <!-- Imagem do Equipamento -->
@@ -316,12 +316,12 @@
         <% } %>
 
       <% if (quote.tech_spec) { %>
-      <h3 class="section-title">EspecificaÃ§Ã£o TÃ©cnica</h3>
+      <h3 class="section-title">Especificação Técnica</h3>
       <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.tech_spec %></p>
         <% } %>
 
       <% if (quote.principle) { %>
-      <h3 class="section-title">PrincÃ­pio de Funcionamento</h3>
+      <h3 class="section-title">Princípio de Funcionamento</h3>
       <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
         <% } %>
     </div>
@@ -343,7 +343,7 @@
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 40%">DescriÃ§Ã£o</th>
+                <th style="width: 40%">Descrição</th>
                 <th style="width: 8%" class="text-center">Qtd</th>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
                 <th style="width: 8%" class="text-center">Dias</th>
@@ -410,7 +410,7 @@
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 40%">DescriÃ§Ã£o</th>
+                <th style="width: 40%">Descrição</th>
                 <th style="width: 8%" class="text-center">Qtd</th>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
                 <th style="width: 8%" class="text-center">Dias</th>
@@ -462,20 +462,20 @@
       <% } %>
 
 
-    <!-- ObservaÃ§Ãµes -->
+    <!-- Observações -->
     <% if (quote.notes) { %>
     <div class="section">
-      <h3 class="section-title">ObservaÃ§Ãµes</h3>
+      <h3 class="section-title">Observações</h3>
       <p style="font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.notes %></p>
     </div>
       <% } %>
   </div>
 
-  <!-- PÃGINA DE CONDIÃ‡Ã•ES DE PAGAMENTO (se incluÃ­da) -->
+  <!-- PíGINA DE CONDIÇÕES DE PAGAMENTO (se incluída) -->
   <% if (quote.include_payment_conditions === 'on' || quote.include_payment_conditions === true) { %>
   <div class="page page-break">
     <div class="payment-conditions">
-      <h2 style="text-align: center; color: #dc2626; font-size: 16px; margin-bottom: 25px; font-weight: bold;">CONDIÃ‡Ã•ES DE PAGAMENTO</h2>
+      <h2 style="text-align: center; color: #dc2626; font-size: 16px; margin-bottom: 25px; font-weight: bold;">CONDIÇÕES DE PAGAMENTO</h2>
 
       <div style="margin-bottom: 20px;">
         <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
@@ -484,10 +484,10 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">Montante em dÃ³lares americanos independente da opÃ§Ã£o:</h3>
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">Montante em dólares americanos independente da opção:</h3>
         <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
           <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
-            <strong>OPÃ‡ÃƒO A ou OPÃ‡ÃƒO B</strong><br>
+            <strong>OPÇÃO A ou OPÇÃO B</strong><br>
             <%= quote.payment_usd_conditions %>
           </p>
         </div>
@@ -500,7 +500,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÃ‡ÃƒO A ou OPÃ‡ÃƒO B (com SAT)</h3>
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÇÃO A ou OPÇÃO B (com SAT)</h3>
         <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
           <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
             <%= quote.payment_brl_with_sat %>
@@ -509,7 +509,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÃ‡ÃƒO A ou OPÃ‡ÃƒO B (sem SAT)</h3>
+        <h3 style="color: #dc2626; font-size: 12px; margin-bottom: 10px; font-weight: bold;">OPÇÃO A ou OPÇÃO B (sem SAT)</h3>
         <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc2626; margin-bottom: 15px;">
           <p style="font-size: 11px; line-height: 1.6; text-align: justify; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">
             <%= quote.payment_brl_without_sat %>
@@ -526,42 +526,42 @@
   </div>
     <% } %>
 
-  <!-- PÃGINA DE TERMOS E GARANTIAS -->
+  <!-- PíGINA DE TERMOS E GARANTIAS -->
   <div class="page page-break">
-    <!-- Termos e CondiÃ§Ãµes -->
+    <!-- Termos e Condições -->
     <div class="terms">
       <h2 class="terms-title">TERMOS DE GARANTIA GERAIS DO FABRICANTE</h2>
       <div class="terms-content">
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Garantia de materiais elÃ©tricos, mecÃ¢nicos e pneumÃ¡ticos comerciais: conforme garantia do fabricante ou fornecedor.
+          Garantia de materiais elétricos, mecânicos e pneumáticos comerciais: conforme garantia do fabricante ou fornecedor.
         </p>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          <strong>Excluem-se da garantia:</strong> os desgastes normais de uso; defeitos de mau uso, imperÃ­cia ou negligÃªncia no uso; uso inadequado do equipamento; defeitos originados pela falta de cuidados, execuÃ§Ã£o incorreta ou inadequada na limpeza, lubrificaÃ§Ã£o, ou armazenamento do equipamento, bem como exposiÃ§Ã£o a agentes quÃ­micos corrosivos, ou com condiÃ§Ãµes ambientais e/ou elÃ©tricas inadequadas ou deficientes; defeitos ou danos causados por instalaÃ§Ã£o ou manutenÃ§Ã£o tÃ©cnica imprÃ³pria, e ainda, violaÃ§Ã£o, alteraÃ§Ã£o, ou substituiÃ§Ã£o de peÃ§as ou acessÃ³rios, bem como outros itens, por serviÃ§o tÃ©cnico nÃ£o autorizado pelo fabricante; nÃ£o cumprimento de orientaÃ§Ãµes tÃ©cnicas; danos causados por acidente; danos causados por agentes da natureza, assim como pancadas, quedas, queimadas, incÃªndios, enchentes, nevasca, nevoeiro, tambÃ©m furto, roubo, depredaÃ§Ã£o, dentre outros.
-        </p>
-
-        <h3 style="margin: 20px 0 10px 0; color: #dc2626; font-size: 12px;">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</h3>
-
-        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Em linhas completas ou quando necessÃ¡rio, a equipe REPRESENTANTE visitarÃ¡ o cliente, podendo ser acompanhada pela equipe do Grupo Zanatech (despesas de alimentaÃ§Ã£o, hospedagem e deslocamento sÃ£o pagas pelo cliente). O Grupo Zanatech pode traduzir a documentaÃ§Ã£o de inglÃªs para portuguÃªs (serviÃ§o pago pelo cliente) e oferece traduÃ§Ã£o gratuita da IHM de inglÃªs para portuguÃªs caso solicitado pelo REPRESENTANTE. Para novas vendas, a garantia nacional do Grupo Zanatech complementa a garantia do fabricante REPRESENTANTE, sem cancelÃ¡-la ou substituÃ­-la, tendo a validade estipulada previamente, para os equipamentos que forem instalados, qualificados e os operadores treinados por pessoal autorizado pelo Grupo Zanatech ou REPRESENTANTE (serviÃ§o pago pelo cliente). O Grupo Zanatech fornece suporte a clientes locais atravÃ©s da garantia do Grupo Zanatech (sem cobranÃ§a de honorÃ¡rios, apenas hÃ¡ cobranÃ§a das despesas locais) e seu pessoal autorizado pode efetuar reparos e substituiÃ§Ãµes em equipamentos REPRESENTANTE sob garantia, sem invalidÃ¡-la. ServiÃ§os para equipamentos REPRESENTANTE com garantia vencida.
+          <strong>Excluem-se da garantia:</strong> os desgastes normais de uso; defeitos de mau uso, imperícia ou negligência no uso; uso inadequado do equipamento; defeitos originados pela falta de cuidados, execução incorreta ou inadequada na limpeza, lubrificação, ou armazenamento do equipamento, bem como exposição a agentes químicos corrosivos, ou com condições ambientais e/ou elétricas inadequadas ou deficientes; defeitos ou danos causados por instalação ou manutenção técnica imprópria, e ainda, violação, alteração, ou substituição de peças ou acessórios, bem como outros itens, por serviço técnico não autorizado pelo fabricante; não cumprimento de orientações técnicas; danos causados por acidente; danos causados por agentes da natureza, assim como pancadas, quedas, queimadas, incêndios, enchentes, nevasca, nevoeiro, também furto, roubo, depredação, dentre outros.
         </p>
 
         <h3 style="margin: 20px 0 10px 0; color: #dc2626; font-size: 12px;">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</h3>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Informamos que o Grupo Zanatech Ã© o representante exclusivo oficial do REPRESENTANTE para todo o territÃ³rio brasileiro, sendo as Ãºnicas empresas autorizadas a realizar a venda, serviÃ§os de manutenÃ§Ã£o, suporte tÃ©cnico e assistÃªncia para todos os equipamentos da marca REPRESENTANTE.
+          Em linhas completas ou quando necessário, a equipe REPRESENTANTE visitará o cliente, podendo ser acompanhada pela equipe do Grupo Zanatech (despesas de alimentação, hospedagem e deslocamento são pagas pelo cliente). O Grupo Zanatech pode traduzir a documentação de inglês para português (serviço pago pelo cliente) e oferece tradução gratuita da IHM de inglês para português caso solicitado pelo REPRESENTANTE. Para novas vendas, a garantia nacional do Grupo Zanatech complementa a garantia do fabricante REPRESENTANTE, sem cancelá-la ou substituí-la, tendo a validade estipulada previamente, para os equipamentos que forem instalados, qualificados e os operadores treinados por pessoal autorizado pelo Grupo Zanatech ou REPRESENTANTE (serviço pago pelo cliente). O Grupo Zanatech fornece suporte a clientes locais através da garantia do Grupo Zanatech (sem cobrança de honorários, apenas há cobrança das despesas locais) e seu pessoal autorizado pode efetuar reparos e substituições em equipamentos REPRESENTANTE sob garantia, sem invalidá-la. Serviços para equipamentos REPRESENTANTE com garantia vencida.
+        </p>
+
+        <h3 style="margin: 20px 0 10px 0; color: #dc2626; font-size: 12px;">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</h3>
+
+        <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
+          Informamos que o Grupo Zanatech é o representante exclusivo oficial do REPRESENTANTE para todo o território brasileiro, sendo as únicas empresas autorizadas a realizar a venda, serviços de manutenção, suporte técnico e assistência para todos os equipamentos da marca REPRESENTANTE.
         </p>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Esta representaÃ§Ã£o exclusiva foi formalmente estabelecida e certificada pelo REPRESENTANTE, com vigÃªncia assegurada para o perÃ­odo de 2024 a 2027, conforme documento oficial emitido pelo Sr. Boo Han Lee, Presidente do REPRESENTANTE.
+          Esta representação exclusiva foi formalmente estabelecida e certificada pelo REPRESENTANTE, com vigência assegurada para o período de 2024 a 2027, conforme documento oficial emitido pelo Sr. Boo Han Lee, Presidente do REPRESENTANTE.
         </p>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Ao adquirir equipamentos ou contratar serviÃ§os REPRESENTANTE atravÃ©s de empresas do Grupo Zanatech, V.Sa. conta com o respaldo oficial do fabricante e a seguranÃ§a de aquisiÃ§Ã£o legÃ­tima e atendimento qualificado e autorizado.
+          Ao adquirir equipamentos ou contratar serviços REPRESENTANTE através de empresas do Grupo Zanatech, V.Sa. conta com o respaldo oficial do fabricante e a segurança de aquisição legítima e atendimento qualificado e autorizado.
         </p>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
-          Ã‰ um enorme prazer fazer parte do projeto de sua empresa, e ficamos Ã  disposiÃ§Ã£o para quaisquer esclarecimentos.
+          É um enorme prazer fazer parte do projeto de sua empresa, e ficamos í  disposição para quaisquer esclarecimentos.
         </p>
 
         <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; text-align: justify;">
@@ -571,17 +571,17 @@
         <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
           <h4 style="margin-bottom: 10px; color: #dc2626; font-size: 11px;">VALIDADE DA PROPOSTA</h4>
           <p style="margin-bottom: 10px; font-size: 10px;">
-            â€¢ Esta proposta tem validade de <%= quote.validity || 30 %> dias a partir da data de emissÃ£o.<br>
-            â€¢ PreÃ§os sujeitos a alteraÃ§Ã£o sem aviso prÃ©vio apÃ³s vencimento da proposta.<br>
-            â€¢ ConfirmaÃ§Ã£o do pedido mediante assinatura do contrato e pagamento da entrada.
+            • Esta proposta tem validade de <%= quote.validity || 30 %> dias a partir da data de emissão.<br>
+            • Preços sujeitos a alteração sem aviso prévio após vencimento da proposta.<br>
+            • Confirmação do pedido mediante assinatura do contrato e pagamento da entrada.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- InformaÃ§Ãµes de Contato -->
+    <!-- Informações de Contato -->
     <div class="contact-info">
-      <h3 style="margin-bottom: 10px; color: #dc2626;">INFORMAÃ‡Ã•ES PARA CONTATO</h3>
+      <h3 style="margin-bottom: 10px; color: #dc2626;">INFORMAÇÕES PARA CONTATO</h3>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: left;">
         <div>
           <strong>Vendedor:</strong><br>
@@ -604,7 +604,7 @@
         <p style="margin-bottom: 20px; font-weight: bold;">ACEITE DA PROPOSTA</p>
         <div class="signature-line"></div>
         <p style="margin-top: 10px; font-size: 11px;">
-          Assinatura do ResponsÃ¡vel TÃ©cnico<br>
+          Assinatura do Responsável Técnico<br>
           <strong><%= quote.seller_name || 'Representante Pharmatec' %></strong><br>
           Data: ___/___/______
         </p>
@@ -612,7 +612,7 @@
     </div>
   </div>
 
-  <!-- Scripts para geraÃ§Ã£o de PDF -->
+  <!-- Scripts para geração de PDF -->
   <script>
     const isServerPdf = <%= (typeof isPdfRender !== 'undefined' && isPdfRender) ? 'true' : 'false' %>;
     const quoteData = <%- JSON.stringify(quote) %>;

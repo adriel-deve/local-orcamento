@@ -313,7 +313,7 @@ router.post('/preview-html', upload.any(), async (req, res) => {
 router.get('/test-pdf', async (req, res) => {
   try {
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
 
     const { default: PDFDocument } = await import('pdfkit');
     const doc = new PDFDocument();
@@ -331,64 +331,67 @@ router.get('/test-pdf', async (req, res) => {
 // Generate PDF directly from form data without saving
 router.post('/generate-pdf', upload.any(), async (req, res) => {
   try {
-    console.log('Iniciando geração PDF...');
+    console.log('Iniciando geracao de PDF via servidor...');
 
-    // Create simple PDF instead of complex generation
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="orcamento.pdf"');
+    const payload = JSON.parse(req.body.specs_json || '{}');
 
-    const { default: PDFDocument } = await import('pdfkit');
-    const doc = new PDFDocument();
-    doc.pipe(res);
-
-    // Header
-    doc.fontSize(20).text('ORÇAMENTO - Local Orçamentos', 50, 50);
-    doc.fontSize(12);
-
-    // Basic info
-    const quote_code = req.body.quote_code || 'COT-' + Date.now();
-    const company = req.body.company || 'Empresa';
-    const date = req.body.date || new Date().toLocaleDateString('pt-BR');
-
-    doc.text(`Código: ${quote_code}`, 50, 100);
-    doc.text(`Empresa: ${company}`, 50, 120);
-    doc.text(`Data: ${date}`, 50, 140);
-    doc.text(`Representante: ${req.body.representative || 'N/A'}`, 50, 160);
-
-    // Items section
-    doc.text('ITENS:', 50, 200);
-    let yPos = 220;
-
-    try {
-      const payload = JSON.parse(req.body.specs_json || '{}');
-      const sections = payload.sections || {};
-
-      if (sections.itemsEquipA?.length > 0) {
-        doc.text('Modalidade A - Equipamentos:', 50, yPos);
-        yPos += 20;
-        sections.itemsEquipA.forEach(item => {
-          doc.text(`• ${item.name} - ${item.currency} ${item.unit}`, 60, yPos);
-          yPos += 15;
-        });
-        yPos += 10;
+    let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
+    if (req.files && req.files.length > 0) {
+      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
+      if (imageFile) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
       }
-    } catch (error) {
-      console.log('Erro ao processar payload:', error);
-      doc.text('• Erro ao processar itens', 60, yPos);
     }
 
-    // Footer
-    doc.text('Gerado automaticamente pelo Sistema Local Orçamentos', 50, 700);
+    const quote = {
+      quote_code: req.body.quote_code || 'PREVIEW',
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      company: req.body.company || '',
+      client: req.body.client || req.body.company || '',
+      cnpj: req.body.cnpj || '',
+      machine_model: req.body.machine_model || '',
+      tech_spec: payload.tech_spec || '',
+      principle: payload.principle || '',
+      representative: req.body.representative || '',
+      supplier: req.body.supplier || '',
+      services: parseServices(req.body),
+      validity_days: Number(req.body.validity) || 15,
+      delivery_time: req.body.delivery || '',
+      notes: req.body.notes || '',
+      contact_email: req.body.contact_email || '',
+      contact_phone: req.body.contact_phone || '',
+      seller_name: req.body.seller_name || '',
+      equipment_image: equipmentImagePath,
+      status: 'Gerado para PDF',
+      include_payment_conditions: req.body.include_payment_conditions === 'on' || req.body.include_payment_conditions === true,
+      payment_intro: req.body.payment_intro || '',
+      payment_usd_conditions: req.body.payment_usd_conditions || '',
+      payment_brl_intro: req.body.payment_brl_intro || '',
+      payment_brl_with_sat: req.body.payment_brl_with_sat || '',
+      payment_brl_without_sat: req.body.payment_brl_without_sat || '',
+      payment_additional_notes: req.body.payment_additional_notes || ''
+    };
 
-    doc.end();
+    const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
 
+    const { buffer } = await generatePdfFromData({
+      quote,
+      sections,
+      totals,
+      writeToDisk: false
+    });
+
+    const safeName = `${(quote.quote_code || 'Proposta').replace(/[^a-zA-Z0-9-_]+/g, '_')}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
+    return res.send(buffer);
   } catch (e) {
     console.error('Erro ao gerar PDF:', e);
     return res.status(500).send('Falha ao gerar PDF: ' + e.message);
   }
 });
-
-
 router.get('/new', async (_req, res) => {
 // initDatabase() removed - handled at app startup
   res.render('quotes/new');
@@ -740,7 +743,7 @@ router.get('/:code/pdf', async (req, res) => {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
     const data = await getQuoteByCode(code);
     if (!data) return res.status(404).send('Cotação não encontrada');
-    const outPath = await generatePdfFromData({ quote: data.quote, specs: data.specs });
+    const { outPath } = await generatePdfFromData({ quote: data.quote, specs: data.specs });
     const fileName = path.basename(outPath);
     const publicUrl = `/output/${fileName}`;
     return res.status(200).send(`<!doctype html><html><head><meta charset="utf-8"><title>PDF</title></head><body>
@@ -854,3 +857,11 @@ router.delete('/delete/:code', async (req, res) => {
 });
 
 export default router;
+
+
+
+
+
+
+
+

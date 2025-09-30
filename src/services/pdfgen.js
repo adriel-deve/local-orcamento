@@ -1,222 +1,214 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import os from 'os';
-import PDFDocument from 'pdfkit';
+import { fileURLToPath } from 'url';
+import ejs from 'ejs';
+import puppeteer from 'puppeteer';
 
-function currencySymbol(cur) {
-  const upper = String(cur || 'BRL').toUpperCase();
-  return upper === 'USD' ? '$' : (upper === 'EUR' ? '€' : 'R$');
+const SECTION_CATALOG = [
+  { key: 'equipamentos_a', label: 'EQUIPAMENTOS_A', title: 'Modalidade A - Equipamentos (CIF)' },
+  { key: 'assessoria_a', label: 'ASSESSORIA_A', title: 'Modalidade A - Servicos de Assessoria (CIF)' },
+  { key: 'operacionais_a', label: 'OPERACIONAIS_A', title: 'Modalidade A - Servicos Operacionais (CIF)' },
+  { key: 'certificados_a', label: 'CERTIFICADOS_A', title: 'Modalidade A - Certificados (CIF)' },
+  { key: 'equipamentos_b', label: 'EQUIPAMENTOS_B', title: 'Modalidade B - Equipamentos (FOB)' },
+  { key: 'assessoria_b', label: 'ASSESSORIA_B', title: 'Modalidade B - Servicos de Assessoria (FOB)' },
+  { key: 'operacionais_b', label: 'OPERACIONAIS_B', title: 'Modalidade B - Servicos Operacionais (FOB)' },
+  { key: 'certificados_b', label: 'CERTIFICADOS_B', title: 'Modalidade B - Certificados (FOB)' }
+];
+
+const BASE_CURRENCIES = ['BRL', 'USD', 'EUR'];
+
+function toNumber(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
 }
 
-function normalizeItem(item, sectionName) {
-  const qty = Number(item.qty || 1);
-  const unit = Number(item.unit || item.price || 0);
-  const currency = String(item.currency || 'BRL').toUpperCase();
-  const subtotal = qty * unit;
-  return { name: item.name || '', qty, unit, currency, subtotal, section: sectionName };
+function cloneSection(section) {
+  const key = section.key || '';
+  const title = section.title || '';
+  const items = (section.items || []).map(item => {
+    const qty = toNumber(item.qty ?? item.quantity ?? 1, 1);
+    const unit = toNumber(item.unit ?? item.unit_price ?? item.price ?? 0, 0);
+    const currency = String(item.currency || 'BRL').toUpperCase();
+    const subtotal = item.subtotal != null ? toNumber(item.subtotal, qty * unit) : qty * unit;
+    const days = item.days ?? item.dias ?? item.duration ?? null;
+    const base = {
+      name: item.name || item.description || '',
+      qty,
+      unit,
+      currency,
+      subtotal
+    };
+    if (days !== null && days !== '' && days !== undefined) {
+      base.days = days;
+    }
+    return base;
+  });
+  return { key, title, items };
 }
 
-function categorize(specs) {
-  const sections = [
-    { key: 'equip', title: 'Equipamentos', items: [] },
-    { key: 'assessoria', title: 'Serviços de assessoria na importação', items: [] },
-    { key: 'operacionais', title: 'Serviços operacionais e preventivos', items: [] },
-    { key: 'certificados', title: 'Certificados', items: [] }
-  ];
-  const map = {
-    EQUIP: sections[0],
-    ASSESS: sections[1],
-    OPERACION: sections[2],
-    CERTIFIC: sections[3]
+function computeTotals(sections = [], usedCurrencies = new Set()) {
+  const totals = {
+    modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
+    modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
+    general: { BRL: 0, USD: 0, EUR: 0 },
+    usedCurrencies: []
   };
-  (specs || []).forEach(section => {
-    const label = (section.description || '').toUpperCase();
-    const bucket = label.includes('CERTIFIC') ? map.CERTIFIC : (label.includes('OPERACION') ? map.OPERACION : (label.includes('ASSESS') ? map.ASSESS : map.EQUIP));
-    (section.items || []).forEach(item => bucket.items.push(normalizeItem(item, section.description || '')));
-  });
-  return sections;
-}
 
-function sumTotals(items) {
-  const totals = { BRL: 0, USD: 0, EUR: 0 };
-  (items || []).forEach(it => {
-    totals[it.currency] = (totals[it.currency] || 0) + it.subtotal;
+  sections.forEach(section => {
+    (section.items || []).forEach(item => {
+      const currency = item.currency || 'BRL';
+      const subtotal = toNumber(item.subtotal, 0);
+      usedCurrencies.add(currency);
+
+      if (!totals.general[currency]) totals.general[currency] = 0;
+      totals.general[currency] += subtotal;
+
+      if (section.key.includes('_a')) {
+        if (!totals.modalidadeA[currency]) totals.modalidadeA[currency] = 0;
+        totals.modalidadeA[currency] += subtotal;
+      } else if (section.key.includes('_b')) {
+        if (!totals.modalidadeB[currency]) totals.modalidadeB[currency] = 0;
+        totals.modalidadeB[currency] += subtotal;
+      }
+    });
   });
+
+  BASE_CURRENCIES.forEach(currency => {
+    totals.modalidadeA[currency] = totals.modalidadeA[currency] || 0;
+    totals.modalidadeB[currency] = totals.modalidadeB[currency] || 0;
+    totals.general[currency] = totals.general[currency] || 0;
+  });
+
+  totals.usedCurrencies = Array.from(usedCurrencies);
   return totals;
 }
 
-function safeJoin(baseDir, target) {
-  if (!target) return null;
-  const cleaned = String(target).trim().replace(/^[\/]+/, '');
-  if (!cleaned) return null;
-  const resolved = path.resolve(baseDir, cleaned);
-  const relative = path.relative(baseDir, resolved);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    return null;
-  }
-  return resolved;
-}
+function deriveSectionsFromSpecs(specs = []) {
+  const map = new Map(
+    SECTION_CATALOG.map(def => [def.key, { key: def.key, title: def.title, items: [] }])
+  );
+  const usedCurrencies = new Set();
 
-function resolveEquipmentImagePath(baseDir, imageRef) {
-  if (!imageRef) return null;
-  let source = String(imageRef).trim();
-  if (!source) return null;
+  specs.forEach(section => {
+    const label = String(section.description || '').toUpperCase();
+    const def = SECTION_CATALOG.find(entry => label.includes(entry.label));
+    if (!def) return;
+    const target = map.get(def.key);
 
-  if (source.startsWith('data:')) {
-    return source;
-  }
-
-  try {
-    if (source.startsWith('http://') || source.startsWith('https://')) {
-      const url = new URL(source);
-      source = decodeURIComponent(url.pathname || '');
-    }
-  } catch (err) {
-    console.warn('Erro ao processar URL da imagem do equipamento:', err.message);
-    return null;
-  }
-
-  if (!source) return null;
-
-  if (path.isAbsolute(source) && fs.existsSync(source)) {
-    return source;
-  }
-
-  const withoutLeading = source.replace(/^[\/]+/, '');
-  const candidate = safeJoin(baseDir, withoutLeading);
-  if (candidate && fs.existsSync(candidate)) {
-    return candidate;
-  }
-
-  if (fs.existsSync(source)) {
-    return source;
-  }
-
-  return null;
-}
-
-
-export async function generatePdfFromData({ quote, specs }) {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const baseDir = process.env.NODE_ENV === 'production'
-    ? path.join(os.tmpdir(), 'local-orcamentos')
-    : path.join(__dirname, '..', '..');
-  const outDir = path.join(baseDir, 'output');
-  fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, `${quote.quote_code}.pdf`);
-
-  const doc = new PDFDocument({ size: 'A4', margin: 40 });
-  const stream = fs.createWriteStream(outPath);
-  doc.pipe(stream);
-
-  const sections = categorize(specs);
-  const globalTotals = { BRL: 0, USD: 0, EUR: 0 };
-  const equipmentImagePath = resolveEquipmentImagePath(baseDir, quote.equipment_image);
-
-  function fmt(val){ return Number(val || 0).toFixed(2).replace('.', ','); }
-  // Capa
-  doc.font('Helvetica-Bold').fontSize(22).fillColor('#1f2937').text(`Proposta Comercial ${quote.quote_code || ''}`, { align: 'center' });
-  doc.moveDown(0.5);
-  doc.font('Helvetica').fontSize(14).text(`Modelo: ${quote.machine_model || '-'}`, { align: 'center' });
-  doc.moveDown(2);
-  doc.fontSize(10).fillColor('#4b5563');
-  doc.text(`Cliente: ${quote.client || quote.company || '-'}`);
-  doc.text(`CNPJ: ${quote.cnpj || '-'}`);
-  doc.text(`Representante: ${quote.representative || '-'}`);
-  doc.text(`Fornecedor: ${quote.supplier || '-'}`);
-  doc.text(`Validade: ${quote.validity_days || 0} dias`);
-  doc.text(`Prazo de entrega: ${quote.delivery_time || '-'}`);
-
-  if (equipmentImagePath) {
-    doc.addPage();
-    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937').text('Imagem do equipamento', { align: 'center' });
-    doc.moveDown(0.5);
-    try {
-      doc.image(equipmentImagePath, {
-        fit: [460, 320],
-        align: 'center'
-      });
-    } catch (err) {
-      console.warn('Falha ao incluir imagem do equipamento no PDF:', err);
-      doc.font('Helvetica').fontSize(10).fillColor('#ef4444').text('Nao foi possivel carregar a imagem do equipamento.', { align: 'center' });
-    }
-    doc.fillColor('#1f2937');
-    doc.moveDown(1);
-  }
-
-  doc.addPage();
-
-  // Página técnica
-  doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937').text('Princípio de funcionamento', { underline: true });
-  doc.moveDown(0.3);
-  doc.font('Helvetica').fontSize(10).fillColor('#111827').text(quote.principle || '-', { align: 'left' });
-  doc.moveDown(1);
-  doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937').text('Especificação técnica', { underline: true });
-  doc.moveDown(0.3);
-  doc.font('Helvetica').fontSize(10).fillColor('#111827').text(quote.tech_spec || '-', { align: 'left' });
-  doc.addPage();
-
-  // Detalhamento financeiro
-  sections.forEach(section => {
-    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2937').text(section.title, { underline: true });
-    doc.moveDown(0.4);
-    if (!section.items.length) {
-      doc.font('Helvetica-Oblique').fontSize(10).fillColor('#6b7280').text('Nenhum item cadastrado.');
-    } else {
-      const startY = doc.y;
-      doc.font('Helvetica-Bold').fontSize(10);
-      doc.text('Descrição', { continued: true, width: 220 });
-      doc.text('Qtd', { continued: true, width: 40 });
-      doc.text('Unitário', { continued: true, width: 70 });
-      doc.text('Moeda', { continued: true, width: 50 });
-      doc.text('Subtotal');
-      doc.moveDown(0.2);
-      doc.font('Helvetica').fontSize(10);
-      section.items.forEach(item => {
-        if (doc.y > 780) { doc.addPage(); }
-        doc.text(item.name, { continued: true, width: 220 });
-        doc.text(String(item.qty), { continued: true, width: 40 });
-        doc.text(`${currencySymbol(item.currency)} ${fmt(item.unit)}`, { continued: true, width: 70 });
-        doc.text(item.currency, { continued: true, width: 50 });
-        doc.text(`${currencySymbol(item.currency)} ${fmt(item.subtotal)}`);
-      });
-      const totals = sumTotals(section.items);
-      globalTotals.BRL += totals.BRL;
-      globalTotals.USD += totals.USD;
-      globalTotals.EUR += totals.EUR;
-      doc.moveDown(0.4);
-      const parts = [];
-      if (totals.BRL) parts.push('R$ ' + fmt(totals.BRL));
-      if (totals.USD) parts.push('$ ' + fmt(totals.USD));
-      if (totals.EUR) parts.push('€ ' + fmt(totals.EUR));
-      doc.font('Helvetica-Bold').text('Total do bloco: ' + (parts.join(' | ') || 'R$ 0,00'));
-      doc.moveDown(1);
-    }
+    (section.items || []).forEach(item => {
+      const qty = toNumber(item.qty ?? item.quantity ?? 1, 1);
+      const unit = toNumber(item.unit ?? item.unit_price ?? item.price ?? 0, 0);
+      const currency = String(item.currency || 'BRL').toUpperCase();
+      const subtotal = qty * unit;
+      const days = item.days ?? item.dias ?? item.duration ?? null;
+      const normalized = {
+        name: item.name || item.description || '',
+        qty,
+        unit,
+        currency,
+        subtotal
+      };
+      if (days !== null && days !== '' && days !== undefined) {
+        normalized.days = days;
+      }
+      target.items.push(normalized);
+      usedCurrencies.add(currency);
+    });
   });
 
-  const globalParts = [];
-  if (globalTotals.BRL) globalParts.push('R$ ' + fmt(globalTotals.BRL));
-  if (globalTotals.USD) globalParts.push('$ ' + fmt(globalTotals.USD));
-  if (globalTotals.EUR) globalParts.push('€ ' + fmt(globalTotals.EUR));
-  const combos = [];
-  if (globalTotals.BRL && globalTotals.USD) combos.push('R$ ' + fmt(globalTotals.BRL) + ' + $ ' + fmt(globalTotals.USD));
-  if (globalTotals.BRL && globalTotals.EUR) combos.push('R$ ' + fmt(globalTotals.BRL) + ' + € ' + fmt(globalTotals.EUR));
-  if (!combos.length) {
-    if (globalTotals.BRL) combos.push('R$ ' + fmt(globalTotals.BRL));
-    else if (globalTotals.USD) combos.push('$ ' + fmt(globalTotals.USD));
-    else if (globalTotals.EUR) combos.push('€ ' + fmt(globalTotals.EUR));
-    else combos.push('R$ 0,00');
+  const sections = Array.from(map.values());
+  const totals = computeTotals(sections, usedCurrencies);
+  return { sections, totals };
+}
+
+function normalizeSections(sections = []) {
+  const cloned = (sections || []).map(cloneSection);
+  const usedCurrencies = new Set();
+  cloned.forEach(section => {
+    section.items.forEach(item => usedCurrencies.add(item.currency));
+  });
+  const totals = computeTotals(cloned, usedCurrencies);
+  return { sections: cloned, totals };
+}
+
+async function renderHtml({ quote, sections, totals, templatePath }) {
+  return ejs.renderFile(
+    templatePath,
+    { quote, sections, totals, isPdfRender: true },
+    { async: true }
+  );
+}
+
+function ensureSafeFilename(value) {
+  if (!value) return `Proposta-${Date.now()}.pdf`;
+  return `${String(value).replace(/[^a-zA-Z0-9-_]+/g, '_')}.pdf`;
+}
+
+export async function generatePdfFromData({
+  quote,
+  specs = [],
+  sections: rawSections,
+  totals: rawTotals,
+  writeToDisk = true,
+  outputDir,
+  filename
+}) {
+  if (!quote) {
+    throw new Error('generatePdfFromData: quote e obrigatorio.');
   }
 
-  doc.font('Helvetica-Bold').fontSize(12).text('Totais consolidados:');
-  doc.font('Helvetica').text(globalParts.join(' | ') || 'R$ 0,00');
-  doc.moveDown(0.4);
-  doc.font('Helvetica-Bold').text('Combinações:');
-  doc.font('Helvetica').text(combos.join(' | '));
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const projectRoot = path.join(__dirname, '..', '..');
+  const templatePath = path.join(projectRoot, 'views', 'quotes', 'layout-print.ejs');
 
-  doc.end();
-  await new Promise(resolve => stream.on('finish', resolve));
-  return outPath;
+  let sections;
+  let totals;
+
+  if (rawSections && rawSections.length) {
+    const normalized = normalizeSections(rawSections);
+    sections = normalized.sections;
+    totals = rawTotals || normalized.totals;
+  } else {
+    const computed = deriveSectionsFromSpecs(specs);
+    sections = computed.sections;
+    totals = rawTotals || computed.totals;
+  }
+
+  const html = await renderHtml({ quote, sections, totals, templatePath });
+
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+  });
+
+  let pdfBuffer;
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.emulateMediaType('screen');
+    pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '12mm', bottom: '14mm', left: '12mm', right: '12mm' }
+    });
+  } finally {
+    await browser.close();
+  }
+
+  let outPath = null;
+  if (writeToDisk) {
+    const baseDir = outputDir
+      ? outputDir
+      : (process.env.NODE_ENV === 'production'
+        ? path.join(os.tmpdir(), 'local-orcamentos', 'output')
+        : path.join(projectRoot, 'output'));
+    fs.mkdirSync(baseDir, { recursive: true });
+    const safeName = ensureSafeFilename(filename || quote.quote_code || 'proposta');
+    outPath = path.join(baseDir, safeName);
+    fs.writeFileSync(outPath, pdfBuffer);
+  }
+
+  return { buffer: pdfBuffer, outPath, sections, totals };
 }

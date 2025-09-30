@@ -708,12 +708,32 @@
         }
         formData.append('specs_json', JSON.stringify(specsPayload));
 
-        // Use browser's print functionality instead of server-side generation
-        alert('Geracao de PDF via servidor desabilitada.\n\nUse o botao "Imprimir" ou pressione Ctrl+P para gerar o PDF usando o navegador.');
-        window.print();
+        const response = await fetch('/quotes/generate-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          const message = errorText ? errorText.substring(0, 500) : `Resposta invalida do servidor: ${response.status}`;
+          throw new Error(message);
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        const today = new Date().toISOString().slice(0, 10);
+        const sanitizedCode = (quoteData.quote_code || 'PREVIEW').replace(/[^a-zA-Z0-9-_]+/g, '_');
+        anchor.href = downloadUrl;
+        anchor.download = `Proposta_${sanitizedCode}_${today}.pdf`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(downloadUrl);
       } catch (error) {
         console.error('Erro ao gerar PDF:', error);
-        alert('Use o botao "Imprimir" para gerar o PDF.');
+        const message = (error && error.message) ? error.message : 'Erro ao gerar PDF no servidor. Tente novamente.';
+        alert(message);
       } finally {
         if (actionButtons) actionButtons.style.display = 'flex';
         if (pdfBtn) {

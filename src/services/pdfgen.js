@@ -3,7 +3,6 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import ejs from 'ejs';
-import puppeteer from 'puppeteer';
 
 const SECTION_CATALOG = [
   { key: 'equipamentos_a', label: 'EQUIPAMENTOS_A', title: 'Modalidade A - Equipamentos (CIF)' },
@@ -17,10 +16,45 @@ const SECTION_CATALOG = [
 ];
 
 const BASE_CURRENCIES = ['BRL', 'USD', 'EUR'];
+let puppeteerBundlePromise = null;
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
+}
+
+async function resolvePuppeteer() {
+  if (!puppeteerBundlePromise) {
+    const isServerless = Boolean(process.env.AWS_REGION || process.env.VERCEL || process.env.LAMBDA_TASK_ROOT);
+    if (isServerless) {
+      puppeteerBundlePromise = Promise.all([
+        import('@sparticuz/chromium'),
+        import('puppeteer-core')
+      ]).then(async ([chromiumModule, puppeteerCoreModule]) => {
+        const chromium = chromiumModule.default;
+        const puppeteer = puppeteerCoreModule.default;
+        const executablePath = await chromium.executablePath();
+        return {
+          puppeteer,
+          launchOptions: {
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath,
+            headless: chromium.headless
+          }
+        };
+      });
+    } else {
+      puppeteerBundlePromise = import('puppeteer').then(puppeteerModule => ({
+        puppeteer: puppeteerModule.default,
+        launchOptions: {
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          headless: 'new'
+        }
+      }));
+    }
+  }
+  return puppeteerBundlePromise;
 }
 
 function cloneSection(section) {
@@ -32,7 +66,7 @@ function cloneSection(section) {
     const currency = String(item.currency || 'BRL').toUpperCase();
     const subtotal = item.subtotal != null ? toNumber(item.subtotal, qty * unit) : qty * unit;
     const days = item.days ?? item.dias ?? item.duration ?? null;
-    const base = {
+    const normalized = {
       name: item.name || item.description || '',
       qty,
       unit,
@@ -40,9 +74,9 @@ function cloneSection(section) {
       subtotal
     };
     if (days !== null && days !== '' && days !== undefined) {
-      base.days = days;
+      normalized.days = days;
     }
-    return base;
+    return normalized;
   });
   return { key, title, items };
 }
@@ -178,15 +212,14 @@ export async function generatePdfFromData({
 
   const html = await renderHtml({ quote, sections, totals, templatePath });
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-  });
+  const { puppeteer, launchOptions } = await resolvePuppeteer();
+  const browser = await puppeteer.launch(launchOptions);
 
   let pdfBuffer;
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setViewport({ width: 1280, height: 1800 });
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
     await page.emulateMediaType('screen');
     pdfBuffer = await page.pdf({
       format: 'A4',

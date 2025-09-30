@@ -27,23 +27,45 @@ async function resolvePuppeteer() {
   if (!puppeteerBundlePromise) {
     const isServerless = Boolean(process.env.AWS_REGION || process.env.VERCEL || process.env.LAMBDA_TASK_ROOT);
     if (isServerless) {
-      puppeteerBundlePromise = Promise.all([
-        import('@sparticuz/chromium'),
-        import('puppeteer-core')
-      ]).then(async ([chromiumModule, puppeteerCoreModule]) => {
-        const chromium = chromiumModule.default;
-        const puppeteer = puppeteerCoreModule.default;
-        const executablePath = await chromium.executablePath();
-        return {
-          puppeteer,
-          launchOptions: {
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath,
-            headless: chromium.headless
-          }
-        };
-      });
+      puppeteerBundlePromise = (async () => {
+        try {
+          const [chromiumModule, puppeteerCoreModule] = await Promise.all([
+            import('@sparticuz/chromium'),
+            import('puppeteer-core')
+          ]);
+
+          const chromium = chromiumModule.default;
+          const puppeteer = puppeteerCoreModule.default;
+
+          // Configure Chromium for serverless
+          const executablePath = await chromium.executablePath();
+
+          return {
+            puppeteer,
+            launchOptions: {
+              args: [
+                ...chromium.args,
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-extensions'
+              ],
+              defaultViewport: chromium.defaultViewport,
+              executablePath,
+              headless: true,
+              ignoreHTTPSErrors: true,
+              timeout: 30000
+            }
+          };
+        } catch (error) {
+          console.error('Error setting up Chromium for serverless:', error);
+          throw error;
+        }
+      })();
     } else {
       puppeteerBundlePromise = import('puppeteer').then(puppeteerModule => ({
         puppeteer: puppeteerModule.default,
@@ -212,11 +234,13 @@ export async function generatePdfFromData({
 
   const html = await renderHtml({ quote, sections, totals, templatePath });
 
-  const { puppeteer, launchOptions } = await resolvePuppeteer();
-  const browser = await puppeteer.launch(launchOptions);
-
   let pdfBuffer;
+  let browser;
+
   try {
+    const { puppeteer, launchOptions } = await resolvePuppeteer();
+    browser = await puppeteer.launch(launchOptions);
+
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 1800 });
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
@@ -226,8 +250,17 @@ export async function generatePdfFromData({
       printBackground: true,
       margin: { top: '12mm', bottom: '14mm', left: '12mm', right: '12mm' }
     });
+  } catch (error) {
+    console.error('Error generating PDF with Puppeteer:', error);
+    throw new Error(`Falha ao gerar PDF: ${error.message}`);
   } finally {
-    await browser.close();
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.warn('Error closing browser:', closeError);
+      }
+    }
   }
 
   let outPath = null;

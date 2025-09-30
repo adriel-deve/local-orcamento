@@ -174,13 +174,27 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
     console.log('Salvando cotação como concluída e gerando pré-visualização...');
     const payload = JSON.parse(req.body.specs_json || '{}');
 
-    // Process uploaded image
-    let equipmentImagePath = null;
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
+
     if (req.files && req.files.length > 0) {
       const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
       if (imageFile) {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
         equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
+      }
+    }
+
+    if (equipmentImagePath) {
+      const trimmed = String(equipmentImagePath).trim();
+      if (!trimmed) {
+        equipmentImagePath = null;
+      } else if (trimmed.startsWith('data:')) {
+        equipmentImagePath = trimmed;
+      } else if (/^https?:/i.test(trimmed)) {
+        equipmentImagePath = trimmed;
+      } else {
+        const sanitized = trimmed.replace(/^\/+/, '');
+        equipmentImagePath = `${baseUrl}/${sanitized}`;
       }
     }
 
@@ -334,6 +348,30 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
     console.log('Iniciando geracao de PDF via servidor...');
 
     const payload = JSON.parse(req.body.specs_json || '{}');
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
+
+    if (req.files && req.files.length > 0) {
+      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
+      if (imageFile) {
+        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
+      }
+    }
+
+    if (equipmentImagePath) {
+      const trimmed = String(equipmentImagePath).trim();
+      if (!trimmed) {
+        equipmentImagePath = null;
+      } else if (trimmed.startsWith('data:')) {
+        equipmentImagePath = trimmed;
+      } else if (/^https?:/i.test(trimmed)) {
+        equipmentImagePath = trimmed;
+      } else {
+        const sanitized = trimmed.replace(/^\/+/, '');
+        equipmentImagePath = `${baseUrl}/${sanitized}`;
+      }
+    }
 
     let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
     if (req.files && req.files.length > 0) {

@@ -1,9 +1,17 @@
 // Authentication middleware
 
 export function requireAuth(req, res, next) {
+  console.log('[AUTH MIDDLEWARE] Checking authentication for:', req.url);
+  console.log('[AUTH MIDDLEWARE] Session exists:', !!req.session);
+  console.log('[AUTH MIDDLEWARE] Session userId:', req.session?.userId);
+  console.log('[AUTH MIDDLEWARE] Session ID:', req.sessionID);
+
   if (req.session && req.session.userId) {
+    console.log('[AUTH MIDDLEWARE] ✅ User authenticated:', req.session.username);
     return next();
   }
+
+  console.log('[AUTH MIDDLEWARE] ❌ Not authenticated, redirecting to /login');
   return res.redirect('/login');
 }
 

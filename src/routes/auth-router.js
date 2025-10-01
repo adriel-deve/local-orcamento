@@ -37,8 +37,21 @@ router.post('/login', async (req, res) => {
     req.session.fullName = user.full_name;
     req.session.userRole = user.role;
 
-    console.log('[AUTH] Session set, redirecting to /quotes/new');
-    res.redirect('/quotes/new');
+    console.log('[AUTH] Session values set:', {
+      userId: req.session.userId,
+      username: req.session.username,
+      sessionID: req.sessionID
+    });
+
+    // Save session explicitly before redirect
+    req.session.save((err) => {
+      if (err) {
+        console.error('[AUTH] Error saving session:', err);
+        return res.render('login', { error: 'Erro ao salvar sessão. Tente novamente.' });
+      }
+      console.log('[AUTH] Session saved successfully, redirecting to /quotes/new');
+      res.redirect('/quotes/new');
+    });
   } catch (error) {
     console.error('[AUTH] Login error:', error);
     res.render('login', { error: 'Erro ao fazer login. Tente novamente.' });

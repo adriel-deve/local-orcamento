@@ -137,7 +137,8 @@ const PgSession = connectPgSimple(session);
 app.use(session({
   store: new PgSession({
     pool: pool,
-    tableName: 'session'
+    tableName: 'session',
+    createTableIfMissing: false
   }),
   secret: process.env.SESSION_SECRET || 'pharmatec-orcamentos-secret-key-change-in-production',
   resave: false,
@@ -145,8 +146,10 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-  }
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    sameSite: 'lax'
+  },
+  proxy: true // Trust the reverse proxy (Vercel)
 }));
 
 // Set current user in locals for all views

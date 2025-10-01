@@ -12,19 +12,19 @@ export async function createUser({ username, password, fullName, email, role = '
     RETURNING id, username, full_name, email, role, created_at
   `;
 
-  const result = await pool.query(query, [username, passwordHash, fullName, email, role]);
-  return result.rows[0];
+  const [rows] = await pool.query(query, [username, passwordHash, fullName, email, role]);
+  return rows[0];
 }
 
 export async function authenticateUser(username, password) {
   const query = 'SELECT * FROM users WHERE username = $1 AND active = TRUE';
-  const result = await pool.query(query, [username]);
+  const [rows] = await pool.query(query, [username]);
 
-  if (result.rows.length === 0) {
+  if (rows.length === 0) {
     return null;
   }
 
-  const user = result.rows[0];
+  const user = rows[0];
   const isValid = await bcrypt.compare(password, user.password_hash);
 
   if (!isValid) {
@@ -38,14 +38,14 @@ export async function authenticateUser(username, password) {
 
 export async function getAllUsers() {
   const query = 'SELECT id, username, full_name, email, role, active, created_at FROM users ORDER BY created_at DESC';
-  const result = await pool.query(query);
-  return result.rows;
+  const [rows] = await pool.query(query);
+  return rows;
 }
 
 export async function getUserById(id) {
   const query = 'SELECT id, username, full_name, email, role, active, created_at FROM users WHERE id = $1';
-  const result = await pool.query(query, [id]);
-  return result.rows[0];
+  const [rows] = await pool.query(query, [id]);
+  return rows[0];
 }
 
 export async function updateUser(id, { fullName, email, role, active }) {
@@ -56,8 +56,8 @@ export async function updateUser(id, { fullName, email, role, active }) {
     RETURNING id, username, full_name, email, role, active
   `;
 
-  const result = await pool.query(query, [fullName, email, role, active, id]);
-  return result.rows[0];
+  const [rows] = await pool.query(query, [fullName, email, role, active, id]);
+  return rows[0];
 }
 
 export async function deleteUser(id) {

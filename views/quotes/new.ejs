@@ -272,7 +272,7 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn secondary" onclick="saveDraft()">
+      <button type="button" class="btn secondary" onclick="saveDraft(event)">
         💾 Salvar Rascunho
       </button>
       <button type="button" class="btn primary" onclick="previewHtml()">
@@ -567,7 +567,7 @@
     form.submit();
   }
 
-  async function saveDraft(){
+  async function saveDraft(event){
     if (collectPayload() === false) return;
 
     const form = document.getElementById('quoteForm');
@@ -575,7 +575,7 @@
     formData.set('status', 'Rascunho');
 
     // Mostrar indicador de carregamento
-    const draftBtn = event.target;
+    const draftBtn = event.currentTarget;
     const originalText = draftBtn.textContent;
     draftBtn.disabled = true;
     draftBtn.textContent = 'Salvando...';

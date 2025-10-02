@@ -1,207 +1,187 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciar Usuários</title>
-  <link rel="stylesheet" href="/static/css/main.css">
-  <style>
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
+<%- include('../partials/top') %>
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
+<style>
+  .users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
 
-    .header h1 {
-      color: #333;
-      font-size: 28px;
-    }
+  .users-header h2 {
+    color: #1a1a1a;
+    font-size: 28px;
+    margin: 0;
+  }
 
-    .btn {
-      padding: 12px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-block;
-      transition: transform 0.2s;
-    }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+  }
 
-    .btn:hover {
-      transform: translateY(-2px);
-    }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
 
-    .btn-primary {
-      background: #667eea;
-      color: white;
-    }
+  .btn-primary {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+  }
 
-    .btn-secondary {
-      background: #6b7280;
-      color: white;
-    }
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
 
-    .btn-danger {
-      background: #dc2626;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+  .btn-danger {
+    background: #dc2626;
+    color: white;
+  }
 
-    .message {
-      background: #d1fae5;
-      color: #065f46;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #10b981;
-    }
+  .message {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border-left: 4px solid #10b981;
+    font-weight: 500;
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
 
-    th, td {
-      padding: 16px;
-      text-align: left;
-    }
+  .users-table th,
+  .users-table td {
+    padding: 16px;
+    text-align: left;
+  }
 
-    th {
-      background: #f3f4f6;
-      font-weight: 600;
-      color: #374151;
-    }
+  .users-table th {
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
 
-    tr:hover {
-      background: #f9fafb;
-    }
+  .users-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s ease;
+  }
 
-    .badge {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+  .users-table tbody tr:hover {
+    background: #f9fafb;
+  }
 
-    .badge-admin {
-      background: #fef3c7;
-      color: #92400e;
-    }
+  .users-table tbody tr:last-child {
+    border-bottom: none;
+  }
 
-    .badge-user {
-      background: #dbeafe;
-      color: #1e40af;
-    }
+  .badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+  }
 
-    .badge-active {
-      background: #d1fae5;
-      color: #065f46;
-    }
+  .badge-admin {
+    background: #fef3c7;
+    color: #92400e;
+  }
 
-    .badge-inactive {
-      background: #fee2e2;
-      color: #991b1b;
-    }
+  .badge-user {
+    background: #dbeafe;
+    color: #1e40af;
+  }
 
-    .actions {
-      display: flex;
-      gap: 8px;
-    }
+  .badge-active {
+    background: #d1fae5;
+    color: #065f46;
+  }
 
-    .btn-small {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
+  .badge-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
 
-    .nav-links {
-      margin-bottom: 20px;
-    }
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
 
-    .nav-links a {
-      margin-right: 16px;
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 500;
-    }
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+</style>
 
-    .nav-links a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="nav-links">
-      <a href="/quotes/new">← Voltar para Orçamentos</a>
-      <% if (currentUser && currentUser.role === 'admin') { %>
-        <a href="/quotes">Ver Todas Cotações</a>
-      <% } %>
-      <a href="/logout">Sair</a>
-    </div>
+<div class="users-header">
+  <h2>👥 Gerenciar Usuários</h2>
+  <a href="/users/new" class="btn btn-primary">+ Novo Usuário</a>
+</div>
 
-    <div class="header">
-      <h1>Gerenciar Usuários</h1>
-      <a href="/users/new" class="btn btn-primary">+ Novo Usuário</a>
-    </div>
+<% if (message) { %>
+  <div class="message"><%= message %></div>
+<% } %>
 
-    <% if (message) { %>
-      <div class="message"><%= message %></div>
-    <% } %>
+<table class="users-table">
+  <thead>
+    <tr>
+      <th>Usuário</th>
+      <th>Nome Completo</th>
+      <th>Email</th>
+      <th>Função</th>
+      <th>Status</th>
+      <th>Criado em</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% users.forEach(user => { %>
+      <tr>
+        <td><strong><%= user.username %></strong></td>
+        <td><%= user.full_name %></td>
+        <td><%= user.email || '-' %></td>
+        <td>
+          <span class="badge <%= user.role === 'admin' ? 'badge-admin' : 'badge-user' %>">
+            <%= user.role === 'admin' ? 'Administrador' : 'Usuário' %>
+          </span>
+        </td>
+        <td>
+          <span class="badge <%= user.active ? 'badge-active' : 'badge-inactive' %>">
+            <%= user.active ? 'Ativo' : 'Inativo' %>
+          </span>
+        </td>
+        <td><%= new Date(user.created_at).toLocaleDateString('pt-BR') %></td>
+        <td>
+          <div class="actions">
+            <a href="/users/<%= user.id %>/edit" class="btn btn-secondary btn-small">Editar</a>
+            <% if (user.id !== currentUser.id) { %>
+              <form method="POST" action="/users/<%= user.id %>/delete" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja desativar este usuário?')">
+                <button type="submit" class="btn btn-danger btn-small">Desativar</button>
+              </form>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Usuário</th>
-          <th>Nome Completo</th>
-          <th>Email</th>
-          <th>Função</th>
-          <th>Status</th>
-          <th>Criado em</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% users.forEach(user => { %>
-          <tr>
-            <td><strong><%= user.username %></strong></td>
-            <td><%= user.full_name %></td>
-            <td><%= user.email || '-' %></td>
-            <td>
-              <span class="badge <%= user.role === 'admin' ? 'badge-admin' : 'badge-user' %>">
-                <%= user.role === 'admin' ? 'Administrador' : 'Usuário' %>
-              </span>
-            </td>
-            <td>
-              <span class="badge <%= user.active ? 'badge-active' : 'badge-inactive' %>">
-                <%= user.active ? 'Ativo' : 'Inativo' %>
-              </span>
-            </td>
-            <td><%= new Date(user.created_at).toLocaleDateString('pt-BR') %></td>
-            <td>
-              <div class="actions">
-                <a href="/users/<%= user.id %>/edit" class="btn btn-secondary btn-small">Editar</a>
-                <% if (user.id !== currentUser.id) { %>
-                  <form method="POST" action="/users/<%= user.id %>/delete" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja desativar este usuário?')">
-                    <button type="submit" class="btn btn-danger btn-small">Desativar</button>
-                  </form>
-                <% } %>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</body>
-</html>
+<%- include('../partials/bottom') %>

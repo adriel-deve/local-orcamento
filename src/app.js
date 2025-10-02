@@ -117,6 +117,10 @@ const publicPath = process.env.NODE_ENV === 'production' ?
 
 app.use('/static', express.static(publicPath));
 
+// Image folder
+const imagePath = path.join(__dirname, '..', 'image');
+app.use('/image', express.static(imagePath));
+
 // Uploads and output folders
 const uploadsPath = process.env.NODE_ENV === 'production' ?
   path.join(tempRoot, 'uploads') :

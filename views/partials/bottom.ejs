@@ -4,6 +4,30 @@
         </footer>
       </div>
     </div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+
+        // Salvar estado no localStorage
+        if (sidebar.classList.contains('collapsed')) {
+          localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+          localStorage.setItem('sidebarCollapsed', 'false');
+        }
+      }
+
+      // Restaurar estado do sidebar ao carregar a página
+      document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+        if (isCollapsed) {
+          sidebar.classList.add('collapsed');
+        }
+      });
+    </script>
   </body>
   </html>
 

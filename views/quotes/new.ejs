@@ -567,27 +567,96 @@
     form.submit();
   }
 
-  function saveDraft(){
+  async function saveDraft(){
     if (collectPayload() === false) return;
+
     const form = document.getElementById('quoteForm');
-    const prevAction = form.action;
-    form.action = '/quotes/save-draft';
-    form.method = 'post';
-    form.target = '';
+    const formData = new FormData(form);
+    formData.set('status', 'Rascunho');
 
-    // Adicionar indicador de rascunho
-    let statusInput = document.getElementById('draft_status');
-    if (!statusInput) {
-      statusInput = document.createElement('input');
-      statusInput.type = 'hidden';
-      statusInput.id = 'draft_status';
-      statusInput.name = 'status';
-      form.appendChild(statusInput);
+    // Mostrar indicador de carregamento
+    const draftBtn = event.target;
+    const originalText = draftBtn.textContent;
+    draftBtn.disabled = true;
+    draftBtn.textContent = 'Salvando...';
+
+    try {
+      const response = await fetch('/quotes/save-draft', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Criar mensagem de sucesso
+        showMessage('success', `✅ ${result.message}<br><small>Código: ${result.quote_code} | Local: ${result.location}</small>`);
+
+        // Atualizar código da cotação se foi gerado um novo
+        if (result.quote_code) {
+          document.getElementById('quote_code').value = result.quote_code;
+        }
+      } else {
+        showMessage('error', `❌ Erro: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar rascunho:', error);
+      showMessage('error', '❌ Erro ao salvar rascunho. Tente novamente.');
+    } finally {
+      draftBtn.disabled = false;
+      draftBtn.textContent = originalText;
     }
-    statusInput.value = 'Rascunho';
-
-    form.submit();
   }
+
+  function showMessage(type, message) {
+    // Remover mensagens anteriores
+    const oldMsg = document.getElementById('save-message');
+    if (oldMsg) oldMsg.remove();
+
+    // Criar nova mensagem
+    const msgDiv = document.createElement('div');
+    msgDiv.id = 'save-message';
+    msgDiv.innerHTML = message;
+    msgDiv.style.cssText = `
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      z-index: 10000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: slideDown 0.3s ease;
+      ${type === 'success'
+        ? 'background: #059669; color: white;'
+        : 'background: #dc2626; color: white;'
+      }
+    `;
+
+    document.body.appendChild(msgDiv);
+
+    // Auto remover após 5 segundos
+    setTimeout(() => {
+      msgDiv.style.animation = 'slideUp 0.3s ease';
+      setTimeout(() => msgDiv.remove(), 300);
+    }, 5000);
+  }
+
+  // Adicionar animações CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideDown {
+      from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(0); opacity: 1; }
+      to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
 
 
 

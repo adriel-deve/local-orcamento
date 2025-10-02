@@ -523,11 +523,26 @@
     <div class="container">
       <header>
         <h1>Local Orçamentos</h1>
+        <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+          <div style="position: absolute; top: 20px; right: 40px; color: white; text-align: right; z-index: 10;">
+            <div style="font-size: 0.875rem; opacity: 0.9;">Bem-vindo,</div>
+            <div style="font-weight: 600; font-size: 1rem;"><%= currentUser.fullName || currentUser.username %></div>
+            <% if (currentUser.role === 'admin') { %>
+              <div style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px;">ADMIN</div>
+            <% } %>
+          </div>
+        <% } %>
         <nav>
           <a href="/">Início</a>
           <a href="/quotes/new">Nova Cotação</a>
           <a href="/quotes/drafts">Rascunhos</a>
           <a href="/quotes/completed">Cotações Concluídas</a>
+          <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') { %>
+            <a href="/users">👥 Gerenciar Usuários</a>
+          <% } %>
+          <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+            <a href="/logout">Sair</a>
+          <% } %>
         </nav>
       </header>
       <main>

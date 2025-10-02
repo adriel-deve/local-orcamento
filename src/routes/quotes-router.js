@@ -806,11 +806,18 @@ router.get('/duplicate/:code', async (req, res) => {
 });
 
 // Delete quote route
-router.delete('/delete/:code', async (req, res) => {
+// Deletar cotação (suporta DELETE e POST)
+const handleDeleteQuote = async (req, res) => {
   try {
     const quoteCode = req.params.code;
+    const userRole = req.session?.userRole;
 
-    console.log(`Solicitação para deletar cotação: ${quoteCode}`);
+    // Verificar se é admin
+    if (userRole !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Apenas administradores podem excluir cotações' });
+    }
+
+    console.log(`Solicitação para deletar cotação: ${quoteCode} por ${req.session?.username}`);
     const deleted = await deleteQuote(quoteCode);
 
     if (deleted) {
@@ -823,7 +830,10 @@ router.delete('/delete/:code', async (req, res) => {
     console.error('Erro ao deletar cotação:', error);
     res.status(500).json({ success: false, error: 'Erro ao deletar cotação' });
   }
-});
+};
+
+router.delete('/delete/:code', handleDeleteQuote);
+router.post('/:code/delete', handleDeleteQuote);
 
 // API: Dashboard Stats
 router.get('/api/dashboard-stats', async (req, res) => {

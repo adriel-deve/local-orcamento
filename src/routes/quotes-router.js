@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import os from 'os';
 import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
-import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote } from '../storage/database.js';
+import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote, updateQuoteBusinessStatus, getDashboardStats } from '../storage/database.js';
 
 const router = Router();
 
@@ -822,6 +822,47 @@ router.delete('/delete/:code', async (req, res) => {
   } catch (error) {
     console.error('Erro ao deletar cotação:', error);
     res.status(500).json({ success: false, error: 'Erro ao deletar cotação' });
+  }
+});
+
+// API: Dashboard Stats
+router.get('/api/dashboard-stats', async (req, res) => {
+  try {
+    const userId = req.session?.userId;
+    const userRole = req.session?.userRole;
+
+    const stats = await getDashboardStats(userId, userRole);
+    res.json(stats);
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
+    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+  }
+});
+
+// API: Atualizar status de negócio da cotação
+router.post('/api/quotes/:code/status', async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { status, purchaseOrder, reason } = req.body;
+    const userId = req.session?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Não autenticado' });
+    }
+
+    const updated = await updateQuoteBusinessStatus(code, status, userId, {
+      purchaseOrder,
+      reason
+    });
+
+    if (updated) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ success: false, error: 'Cotação não encontrada' });
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    res.status(500).json({ success: false, error: 'Erro ao atualizar status' });
   }
 });
 

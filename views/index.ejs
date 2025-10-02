@@ -1,91 +1,381 @@
 <%- include('partials/top') %>
 
-<!-- Hero Section -->
-<section class="card">
-  <h2>Sistema de Orçamentos Pharmatec</h2>
-  <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem; line-height: 1.7;">Gerencie cotações profissionais com facilidade. Crie, visualize e exporte orçamentos em PDF e DOCX de forma rápida e eficiente com nossa plataforma integrada.</p>
-  <div class="actions">
-    <a class="btn primary" href="/quotes/new">Nova Cotação</a>
-    <a class="btn secondary" href="#quotes-list">Ver Histórico</a>
-  </div>
-</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #dc2626;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+  }
+
+  .stat-card h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #dc2626;
+  }
+
+  .stat-card p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .stat-card.green h3 { color: #059669; border-left-color: #059669; }
+  .stat-card.orange h3 { color: #f59e0b; border-left-color: #f59e0b; }
+  .stat-card.blue h3 { color: #3b82f6; border-left-color: #3b82f6; }
+  .stat-card.purple h3 { color: #8b5cf6; border-left-color: #8b5cf6; }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .chart-card h3 {
+    margin: 0 0 20px 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+
+  .table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
+  }
+
+  .table-card h3 {
+    margin: 0 0 20px 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .data-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .data-table tr:hover {
+    background: #f9fafb;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+</style>
+
+<h2 style="margin-bottom: 24px; color: #1f2937;">📊 Dashboard</h2>
 
 <!-- Stats Cards -->
-<div class="grid">
-  <div class="card text-center" style="text-align: center;">
-    <h3 style="color: var(--primary-red); font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total de Cotações</p>
+<div class="dashboard-grid">
+  <div class="stat-card">
+    <h3 id="totalQuotes">0</h3>
+    <p>Total de Cotações</p>
   </div>
-  <div class="card text-center" style="text-align: center;">
-    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Concluída').length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Concluídas</p>
+
+  <div class="stat-card green">
+    <h3 id="completedQuotes">0</h3>
+    <p>Concluídas</p>
   </div>
-  <div class="card text-center" style="text-align: center;">
-    <h3 style="color: #f59e0b; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.filter(q => q.status === 'Rascunho').length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Rascunhos</p>
+
+  <div class="stat-card orange">
+    <h3 id="draftQuotes">0</h3>
+    <p>Rascunhos</p>
+  </div>
+
+  <% if (currentUser && currentUser.role === 'admin') { %>
+  <div class="stat-card blue">
+    <h3 id="totalUsers">0</h3>
+    <p>Usuários Ativos</p>
+  </div>
+  <% } %>
+</div>
+
+<!-- Charts -->
+<div class="chart-grid">
+  <div class="chart-card">
+    <h3>Status das Cotações Concluídas</h3>
+    <div class="chart-container">
+      <canvas id="businessStatusChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Cotações por Status</h3>
+    <div class="chart-container">
+      <canvas id="statusChart"></canvas>
+    </div>
   </div>
 </div>
 
-<% if (quotes && quotes.length > 0) { %>
-<section class="card" id="quotes-list">
-  <h3>Cotações Recentes</h3>
-  <div class="quotes-list">
-    <table>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Cliente</th>
-          <th>Data</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% quotes.forEach(function(quote) { %>
-        <tr>
-          <td><strong style="color: var(--primary-red);"><%= quote.quote_code %></strong></td>
-          <td><%= quote.client || quote.company %></td>
-          <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
-          <td>
-            <span class="status-badge" style="background: <%= quote.status === 'Concluída' ? '#10b981' : quote.status === 'Rascunho' ? '#f59e0b' : '#6b7280' %>; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-              <%= quote.status %>
-            </span>
-          </td>
-          <td>
-            <div style="display: flex; gap: 8px;">
-              <a href="/quotes/view/<%= quote.quote_code %>" class="btn secondary" style="padding: 8px 16px; font-size: 0.875rem;">Visualizar</a>
-              <a href="/quotes/pdf/<%= quote.quote_code %>" class="btn success" style="padding: 8px 16px; font-size: 0.875rem;">PDF</a>
-            </div>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</section>
-<% } else { %>
-<section class="card text-center" id="quotes-list">
-  <div style="padding: 4rem 2rem;">
-    <h3 style="color: var(--gray-600); margin-bottom: 1rem;">Nenhuma cotação encontrada</h3>
-    <p style="font-size: 1.125rem; color: var(--gray-500); margin: 1.5rem 0;">Comece criando sua primeira cotação profissional</p>
-    <div style="background: var(--gray-50); border-radius: 16px; padding: 2.5rem; margin: 2.5rem 0; border: 2px solid var(--gray-100);">
-      <h4 style="color: var(--primary-red); margin-bottom: 1.5rem; font-size: 1.25rem;">Recursos Disponíveis</h4>
-      <div class="grid" style="text-align: left;">
-        <div>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Geração de PDF</strong> - Exportação profissional</p>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Formato DOCX</strong> - Compatível com Word</p>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Múltiplas Moedas</strong> - Real, Dólar e Euro</p>
-        </div>
-        <div>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Upload de Imagens</strong> - Equipamentos com fotos</p>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Modalidades A/B</strong> - CIF e FOB</p>
-          <p style="margin: 0.75rem 0; color: var(--gray-700);"><strong>Condições de Pagamento</strong> - Personalizáveis</p>
-        </div>
-      </div>
-    </div>
-    <a href="/quotes/new" class="btn primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; font-weight: 600;">Criar Primeira Cotação</a>
-  </div>
-</section>
+<!-- Top Suppliers -->
+<div class="table-card">
+  <h3>🏭 Top 10 Fornecedores</h3>
+  <table class="data-table" id="suppliersTable">
+    <thead>
+      <tr>
+        <th>Fornecedor</th>
+        <th style="text-align: right;">Cotações</th>
+        <th style="width: 50%;">Participação</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Top Clients -->
+<div class="table-card">
+  <h3>🏢 Top 10 Clientes</h3>
+  <table class="data-table" id="clientsTable">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th style="text-align: right;">Cotações</th>
+        <th style="width: 50%;">Participação</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<% if (currentUser && currentUser.role === 'admin') { %>
+<!-- Quotes by User -->
+<div class="table-card">
+  <h3>👤 Cotações por Usuário</h3>
+  <table class="data-table" id="usersTable">
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th style="text-align: right;">Cotações</th>
+        <th style="width: 50%;">Desempenho</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+    </tbody>
+  </table>
+</div>
 <% } %>
+
+<script>
+  // Buscar dados do dashboard
+  async function loadDashboard() {
+    try {
+      const response = await fetch('/api/dashboard-stats');
+      const stats = await response.json();
+
+      // Atualizar cards
+      document.getElementById('totalQuotes').textContent = stats.totalQuotes || 0;
+      document.getElementById('completedQuotes').textContent = (stats.byStatus?.['Concluída'] || 0);
+      document.getElementById('draftQuotes').textContent = stats.totalDrafts || 0;
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+      <% } %>
+
+      // Gráfico de Business Status (Pizza)
+      const businessStatusCtx = document.getElementById('businessStatusChart');
+      const businessStatusData = stats.byBusinessStatus || {};
+      new Chart(businessStatusCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Ativa', 'Com Pedido', 'Finalizada', 'Baixa'],
+          datasets: [{
+            data: [
+              businessStatusData.ativa || 0,
+              businessStatusData.pedido_compra || 0,
+              businessStatusData.finalizada || 0,
+              businessStatusData.baixa || 0
+            ],
+            backgroundColor: ['#3b82f6', '#8b5cf6', '#059669', '#ef4444'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+      // Gráfico de Status (Barra)
+      const statusCtx = document.getElementById('statusChart');
+      const statusData = stats.byStatus || {};
+      new Chart(statusCtx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(statusData),
+          datasets: [{
+            label: 'Cotações',
+            data: Object.values(statusData),
+            backgroundColor: '#dc2626',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+
+      // Tabela de Fornecedores
+      const suppliersTable = document.getElementById('suppliersTable').querySelector('tbody');
+      const suppliers = stats.bySupplier || [];
+      const maxSupplier = Math.max(...suppliers.map(s => s.count), 1);
+
+      if (suppliers.length > 0) {
+        suppliersTable.innerHTML = suppliers.map(s => `
+          <tr>
+            <td><strong>${s.supplier}</strong></td>
+            <td style="text-align: right;"><strong>${s.count}</strong></td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${(s.count / maxSupplier * 100)}%"></div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        suppliersTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum fornecedor encontrado</td></tr>';
+      }
+
+      // Tabela de Clientes
+      const clientsTable = document.getElementById('clientsTable').querySelector('tbody');
+      const clients = stats.byClient || [];
+      const maxClient = Math.max(...clients.map(c => c.count), 1);
+
+      if (clients.length > 0) {
+        clientsTable.innerHTML = clients.map(c => `
+          <tr>
+            <td><strong>${c.client}</strong></td>
+            <td style="text-align: right;"><strong>${c.count}</strong></td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${(c.count / maxClient * 100)}%"></div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        clientsTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum cliente encontrado</td></tr>';
+      }
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      // Tabela de Usuários
+      const usersTable = document.getElementById('usersTable').querySelector('tbody');
+      const users = stats.byUser || [];
+      const maxUser = Math.max(...users.map(u => u.count), 1);
+
+      if (users.length > 0) {
+        usersTable.innerHTML = users.map(u => `
+          <tr>
+            <td><strong>${u.full_name || u.username}</strong></td>
+            <td style="text-align: right;"><strong>${u.count}</strong></td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${(u.count / maxUser * 100)}%"></div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        usersTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum usuário encontrado</td></tr>';
+      }
+      <% } %>
+
+    } catch (error) {
+      console.error('Erro ao carregar dashboard:', error);
+    }
+  }
+
+  // Carregar ao iniciar
+  loadDashboard();
+</script>
 
 <%- include('partials/bottom') %>

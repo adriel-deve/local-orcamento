@@ -1,69 +1,405 @@
 <%- include('../partials/top') %>
 
-<!-- Header Section -->
-<section class="card">
-  <h2>Cotações Concluídas</h2>
-  <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem; line-height: 1.7;">
-    Visualize e gerencie todas as suas cotações finalizadas. Você pode revisar, imprimir ou gerar PDFs das suas propostas.
-  </p>
-  <div class="actions">
-    <a class="btn primary" href="/quotes/new">Nova Cotação</a>
-    <a class="btn secondary" href="/">Voltar ao Início</a>
-  </div>
-</section>
+<style>
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+  }
+
+  .status-badge.ativa { background: #3b82f6; color: white; }
+  .status-badge.pedido_compra { background: #8b5cf6; color: white; }
+  .status-badge.finalizada { background: #059669; color: white; }
+  .status-badge.baixa { background: #ef4444; color: white; }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-small {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-view { background: #6b7280; color: white; }
+  .btn-view:hover { background: #4b5563; }
+
+  .btn-pdf { background: #059669; color: white; }
+  .btn-pdf:hover { background: #047857; }
+
+  .btn-duplicate { background: #3b82f6; color: white; }
+  .btn-duplicate:hover { background: #2563eb; }
+
+  .btn-status { background: #8b5cf6; color: white; }
+  .btn-status:hover { background: #7c3aed; }
+
+  .btn-delete { background: #ef4444; color: white; }
+  .btn-delete:hover { background: #dc2626; }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s;
+  }
+
+  .modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-content h3 {
+    margin: 0 0 20px 0;
+    color: #1f2937;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .form-group select,
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .form-group select:focus,
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #dc2626;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+
+  .btn-cancel {
+    background: #6b7280;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .btn-submit {
+    background: #dc2626;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .btn-cancel:hover { background: #4b5563; }
+  .btn-submit:hover { background: #b91c1c; }
+
+  .quotes-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+  }
+
+  .quotes-table th,
+  .quotes-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .quotes-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .quotes-table tr:hover {
+    background: #f9fafb;
+  }
+</style>
+
+<h2 style="margin-bottom: 24px; color: #1f2937;">✅ Cotações Concluídas</h2>
 
 <!-- Stats Card -->
-<div class="grid">
-  <div class="card text-center" style="text-align: center;">
-    <h3 style="color: #059669; font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;"><%= quotes ? quotes.length : 0 %></h3>
-    <p style="margin: 0; color: var(--gray-500); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Total Concluídas</p>
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px;">
+  <div class="stat-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #059669;">
+    <h3 style="font-size: 2.5rem; font-weight: 700; margin: 0 0 8px 0; color: #059669;"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: #6b7280; font-size: 0.875rem; font-weight: 600; text-transform: uppercase;">Total Concluídas</p>
   </div>
 </div>
 
 <% if (quotes && quotes.length > 0) { %>
 <section class="card">
-  <h3>Lista de Cotações Concluídas</h3>
-  <div class="quotes-list">
-    <table>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Cliente</th>
-          <th>Data</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% quotes.forEach(function(quote) { %>
-        <tr>
-          <td><strong style="color: var(--primary-red);"><%= quote.quote_code %></strong></td>
-          <td><%= quote.client || quote.company %></td>
-          <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
-          <td>
-            <span class="status-badge" style="background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-              <%= quote.status %>
-            </span>
-          </td>
-          <td>
-            <div style="display: flex; gap: 8px;">
-              <a href="/quotes/<%= quote.quote_code %>/layout" class="btn secondary" style="padding: 8px 16px; font-size: 0.875rem;">Visualizar</a>
-              <a href="/quotes/<%= quote.quote_code %>/pdf" class="btn success" style="padding: 8px 16px; font-size: 0.875rem;">Gerar PDF</a>
-              <a href="/quotes/duplicate/<%= quote.quote_code %>" class="btn primary" style="padding: 8px 16px; font-size: 0.875rem;">Duplicar</a>
-            </div>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h3 style="margin: 0;">Lista de Cotações</h3>
+    <div style="display: flex; gap: 8px;">
+      <a class="btn primary" href="/quotes/new" style="padding: 10px 20px;">Nova Cotação</a>
+      <a class="btn secondary" href="/" style="padding: 10px 20px;">Início</a>
+    </div>
   </div>
+
+  <table class="quotes-table">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Cliente</th>
+        <th>Fornecedor</th>
+        <th>Data</th>
+        <th>Status Negócio</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% quotes.forEach(function(quote) { %>
+      <tr data-quote-code="<%= quote.quote_code %>">
+        <td><strong style="color: #dc2626;"><%= quote.quote_code %></strong></td>
+        <td><%= quote.client || '-' %></td>
+        <td><%= quote.supplier || '-' %></td>
+        <td><%= new Date(quote.date).toLocaleDateString('pt-BR') %></td>
+        <td>
+          <span class="status-badge <%= quote.business_status || 'ativa' %>">
+            <%
+              const statusLabel = {
+                'ativa': 'Ativa',
+                'pedido_compra': 'Com Pedido',
+                'finalizada': 'Finalizada',
+                'baixa': 'Baixa'
+              };
+            %>
+            <%= statusLabel[quote.business_status] || 'Ativa' %>
+          </span>
+          <% if (quote.purchase_order) { %>
+            <br><small style="color: #6b7280;">PC: <%= quote.purchase_order %></small>
+          <% } %>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <a href="/quotes/<%= quote.quote_code %>/layout" class="btn-small btn-view">Visualizar</a>
+            <a href="/quotes/<%= quote.quote_code %>/pdf" class="btn-small btn-pdf">PDF</a>
+            <button onclick="openStatusModal('<%= quote.quote_code %>', '<%= quote.business_status || 'ativa' %>')" class="btn-small btn-status">Status</button>
+            <% if (currentUser && currentUser.role === 'admin') { %>
+              <button onclick="deleteQuote('<%= quote.quote_code %>')" class="btn-small btn-delete">Excluir</button>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
 </section>
 <% } else { %>
 <section class="card text-center">
-  <h3>Nenhuma Cotação Concluída</h3>
-  <p style="color: var(--gray-600); margin-bottom: 2rem;">Você ainda não possui cotações finalizadas.</p>
-  <a href="/quotes/new" class="btn primary">Criar Nova Cotação</a>
+  <div style="padding: 4rem 2rem;">
+    <h3 style="color: #6b7280; margin-bottom: 1rem;">Nenhuma Cotação Concluída</h3>
+    <p style="color: #9ca3af; margin-bottom: 2rem;">Você ainda não possui cotações finalizadas.</p>
+    <a href="/quotes/new" class="btn primary" style="padding: 12px 32px; font-size: 1rem;">Criar Nova Cotação</a>
+  </div>
 </section>
 <% } %>
+
+<!-- Modal de Status -->
+<div id="statusModal" class="modal">
+  <div class="modal-content">
+    <h3>Atualizar Status da Cotação</h3>
+    <form id="statusForm">
+      <input type="hidden" id="modalQuoteCode">
+
+      <div class="form-group">
+        <label for="businessStatus">Status de Negócio</label>
+        <select id="businessStatus" required>
+          <option value="ativa">Ativa</option>
+          <option value="pedido_compra">Com Pedido de Compra</option>
+          <option value="finalizada">Finalizada</option>
+          <option value="baixa">Baixa (Não deu certo)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="purchaseOrderGroup" style="display: none;">
+        <label for="purchaseOrder">Número do Pedido de Compra</label>
+        <input type="text" id="purchaseOrder" placeholder="Ex: PC-2024-001">
+      </div>
+
+      <div class="form-group" id="reasonGroup" style="display: none;">
+        <label for="baixaReason">Motivo da Baixa</label>
+        <textarea id="baixaReason" placeholder="Descreva o motivo da baixa..."></textarea>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
+        <button type="submit" class="btn-submit">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Controle do modal
+  const modal = document.getElementById('statusModal');
+  const statusSelect = document.getElementById('businessStatus');
+  const purchaseOrderGroup = document.getElementById('purchaseOrderGroup');
+  const reasonGroup = document.getElementById('reasonGroup');
+
+  // Mostrar/ocultar campos baseado no status
+  statusSelect.addEventListener('change', function() {
+    purchaseOrderGroup.style.display = this.value === 'pedido_compra' ? 'block' : 'none';
+    reasonGroup.style.display = this.value === 'baixa' ? 'block' : 'none';
+  });
+
+  function openStatusModal(quoteCode, currentStatus) {
+    document.getElementById('modalQuoteCode').value = quoteCode;
+    document.getElementById('businessStatus').value = currentStatus || 'ativa';
+
+    // Trigger change para mostrar campos corretos
+    statusSelect.dispatchEvent(new Event('change'));
+
+    modal.classList.add('active');
+  }
+
+  function closeStatusModal() {
+    modal.classList.remove('active');
+    document.getElementById('statusForm').reset();
+  }
+
+  // Fechar modal ao clicar fora
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeStatusModal();
+    }
+  });
+
+  // Submeter formulário de status
+  document.getElementById('statusForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const quoteCode = document.getElementById('modalQuoteCode').value;
+    const status = document.getElementById('businessStatus').value;
+    const purchaseOrder = document.getElementById('purchaseOrder').value;
+    const reason = document.getElementById('baixaReason').value;
+
+    try {
+      const response = await fetch(`/api/quotes/${quoteCode}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status,
+          purchaseOrder: status === 'pedido_compra' ? purchaseOrder : null,
+          reason: status === 'baixa' ? reason : null
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Status atualizado com sucesso!');
+        location.reload();
+      } else {
+        alert('Erro ao atualizar status: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao atualizar status');
+    }
+  });
+
+  // Excluir cotação (admin apenas)
+  async function deleteQuote(quoteCode) {
+    if (!confirm(`Tem certeza que deseja EXCLUIR a cotação ${quoteCode}?\n\nEsta ação não pode ser desfeita!`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/quotes/${quoteCode}/delete`, {
+        method: 'POST'
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Cotação excluída com sucesso!');
+        // Remover linha da tabela
+        const row = document.querySelector(`tr[data-quote-code="${quoteCode}"]`);
+        if (row) {
+          row.remove();
+        }
+        // Recarregar se não houver mais cotações
+        const tbody = document.querySelector('.quotes-table tbody');
+        if (!tbody.querySelectorAll('tr').length) {
+          location.reload();
+        }
+      } else {
+        alert('Erro ao excluir cotação: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao excluir cotação');
+    }
+  }
+</script>
 
 <%- include('../partials/bottom') %>

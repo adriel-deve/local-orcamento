@@ -174,7 +174,7 @@ export async function getQuoteByCode(code) {
 
 export async function getAllQuotes(userId = null, userRole = null) {
   try {
-    let query = 'SELECT quote_code, company, date, status, created_at FROM quotes';
+    let query = 'SELECT quote_code, company, client, supplier, date, status, business_status, purchase_order, created_at FROM quotes';
     const params = [];
 
     // Filtrar baseado no usuário e role

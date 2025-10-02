@@ -220,4 +220,129 @@ export async function deleteQuote(quoteCode) {
   }
 }
 
+// Atualizar status de negócio da cotação
+export async function updateQuoteBusinessStatus(quoteCode, status, userId, data = {}) {
+  try {
+    let query = 'UPDATE quotes SET business_status = $1';
+    const params = [status];
+    let paramIndex = 2;
+
+    if (status === 'pedido_compra' && data.purchaseOrder) {
+      query += `, purchase_order = $${paramIndex++}`;
+      params.push(data.purchaseOrder);
+    }
+
+    if (status === 'finalizada') {
+      query += `, closed_at = CURRENT_TIMESTAMP, closed_by = $${paramIndex++}`;
+      params.push(userId);
+    }
+
+    if (status === 'baixa' && data.reason) {
+      query += `, baixa_reason = $${paramIndex++}, baixa_at = CURRENT_TIMESTAMP, baixa_by = $${paramIndex++}`;
+      params.push(data.reason, userId);
+    }
+
+    query += ` WHERE quote_code = $${paramIndex}`;
+    params.push(quoteCode);
+
+    const [, meta] = await pool.execute(query, params);
+    const affected = meta?.affectedRows ?? meta?.rowCount ?? 0;
+    return affected > 0;
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    throw error;
+  }
+}
+
+// Estatísticas para o dashboard
+export async function getDashboardStats(userId = null, userRole = null) {
+  try {
+    const stats = {};
+
+    // Total de usuários (apenas admin)
+    if (userRole === 'admin') {
+      const [userRows] = await pool.execute('SELECT COUNT(*) as count FROM users WHERE active = true');
+      stats.totalUsers = userRows[0]?.count || 0;
+    }
+
+    // Filtro baseado em role
+    const userFilter = userRole === 'admin' ? '' : ` WHERE user_id = $1`;
+    const userParam = userRole === 'admin' ? [] : [userId];
+
+    // Total de cotações
+    const [quoteRows] = await pool.execute(`SELECT COUNT(*) as count FROM quotes${userFilter}`, userParam);
+    stats.totalQuotes = quoteRows[0]?.count || 0;
+
+    // Cotações por status
+    const [statusRows] = await pool.execute(`
+      SELECT status, COUNT(*) as count
+      FROM quotes${userFilter}
+      GROUP BY status
+    `, userParam);
+    stats.byStatus = statusRows.reduce((acc, row) => {
+      acc[row.status] = row.count;
+      return acc;
+    }, {});
+
+    // Cotações por business_status
+    const [businessStatusRows] = await pool.execute(`
+      SELECT business_status, COUNT(*) as count
+      FROM quotes
+      WHERE status = 'Concluída'${userRole === 'admin' ? '' : ' AND user_id = $1'}
+      GROUP BY business_status
+    `, userParam);
+    stats.byBusinessStatus = businessStatusRows.reduce((acc, row) => {
+      acc[row.business_status || 'ativa'] = row.count;
+      return acc;
+    }, {});
+
+    // Cotações por fornecedor
+    const [supplierRows] = await pool.execute(`
+      SELECT supplier, COUNT(*) as count
+      FROM quotes
+      WHERE supplier IS NOT NULL AND supplier != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+      GROUP BY supplier
+      ORDER BY count DESC
+      LIMIT 10
+    `, userParam);
+    stats.bySupplier = supplierRows;
+
+    // Cotações por cliente
+    const [clientRows] = await pool.execute(`
+      SELECT client, COUNT(*) as count
+      FROM quotes
+      WHERE client IS NOT NULL AND client != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+      GROUP BY client
+      ORDER BY count DESC
+      LIMIT 10
+    `, userParam);
+    stats.byClient = clientRows;
+
+    // Cotações por usuário (apenas admin)
+    if (userRole === 'admin') {
+      const [userQuoteRows] = await pool.execute(`
+        SELECT u.username, u.full_name, COUNT(q.id) as count
+        FROM users u
+        LEFT JOIN quotes q ON u.id = q.user_id
+        WHERE u.active = true
+        GROUP BY u.id, u.username, u.full_name
+        ORDER BY count DESC
+      `);
+      stats.byUser = userQuoteRows;
+    }
+
+    // Rascunhos
+    const [draftRows] = await pool.execute(`
+      SELECT COUNT(*) as count FROM quotes
+      WHERE status = 'Rascunho'${userRole === 'admin' ? '' : ' AND user_id = $1'}
+    `, userParam);
+    stats.totalDrafts = draftRows[0]?.count || 0;
+
+    return stats;
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
+    throw error;
+  }
+}
+
 

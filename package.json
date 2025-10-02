@@ -6,6 +6,7 @@
     "scripts": {
         "start": "node src/app.js",
         "init:db": "node src/init-db.js",
+        "migrate": "node src/tools/migrate-status-fields.js",
         "pdf:make": "node src/tools/make-pdf.js",
         "xlsx:make": "node src/tools/make-xlsx.js",
         "claude": "cmd /c npx -y @anthropic-ai/claude-code",

@@ -186,11 +186,25 @@ app.use(express.urlencoded({
 }));
 
 // Routes
-app.get('/', (req, res) => {
-  if (req.session && req.session.userId) {
-    return res.redirect('/quotes/new');
+app.get('/', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.redirect('/login');
   }
-  res.redirect('/login');
+
+  // Renderizar dashboard
+  try {
+    res.render('index', {
+      currentUser: {
+        id: req.session.userId,
+        username: req.session.username,
+        fullName: req.session.fullName,
+        role: req.session.userRole
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao renderizar dashboard:', error);
+    res.redirect('/quotes/new');
+  }
 });
 
 app.get('/health', async (req, res) => {

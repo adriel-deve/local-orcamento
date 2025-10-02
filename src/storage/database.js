@@ -4,6 +4,40 @@ export async function initDatabase() {
   try {
     await pool.execute('SELECT 1');
     console.log('Database connection established');
+
+    // Tentar criar colunas de status se não existirem (para PostgreSQL/Neon)
+    try {
+      const usePostgreSQL = process.env.DATABASE_URL || process.env.DB_TYPE === 'postgresql';
+
+      if (usePostgreSQL) {
+        console.log('Checking database schema...');
+
+        // Adicionar colunas se não existirem
+        await pool.execute(`
+          ALTER TABLE quotes
+          ADD COLUMN IF NOT EXISTS business_status VARCHAR(20) DEFAULT 'ativa',
+          ADD COLUMN IF NOT EXISTS purchase_order VARCHAR(128) DEFAULT NULL,
+          ADD COLUMN IF NOT EXISTS closed_at TIMESTAMP DEFAULT NULL,
+          ADD COLUMN IF NOT EXISTS closed_by INTEGER DEFAULT NULL,
+          ADD COLUMN IF NOT EXISTS baixa_reason TEXT DEFAULT NULL,
+          ADD COLUMN IF NOT EXISTS baixa_at TIMESTAMP DEFAULT NULL,
+          ADD COLUMN IF NOT EXISTS baixa_by INTEGER DEFAULT NULL
+        `).catch(err => {
+          if (!err.message.includes('already exists')) {
+            console.error('Error adding columns:', err.message);
+          }
+        });
+
+        // Criar índices
+        await pool.execute(`CREATE INDEX IF NOT EXISTS idx_quotes_business_status ON quotes(business_status)`).catch(() => {});
+        await pool.execute(`CREATE INDEX IF NOT EXISTS idx_quotes_supplier ON quotes(supplier)`).catch(() => {});
+        await pool.execute(`CREATE INDEX IF NOT EXISTS idx_quotes_client ON quotes(client)`).catch(() => {});
+
+        console.log('✅ Database schema up to date');
+      }
+    } catch (migrationError) {
+      console.log('⚠️  Migration skipped (might already be applied):', migrationError.message);
+    }
   } catch (error) {
     console.error('Database connection failed:', error);
     throw error;

@@ -7,6 +7,7 @@ import fs from 'fs';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import pool from './db.js';
+import pg from 'pg';
 import quotesRouter from './routes/quotes-router.js';
 import authRouter from './routes/auth-router.js';
 import usersRouter from './routes/users-router.js';
@@ -131,12 +132,21 @@ fs.mkdirSync(outputPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 app.use('/output', express.static(outputPath));
 
-// Session configuration
+// Session configuration - create native PG pool for session store
+const { Pool: PgPool } = pg;
+const sessionPool = new PgPool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 5
+});
+
 const PgSession = connectPgSimple(session);
 
 app.use(session({
   store: new PgSession({
-    pool: pool,
+    pool: sessionPool, // Use native PG pool for session store
     tableName: 'session',
     createTableIfMissing: false
   }),

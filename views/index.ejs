@@ -1,6 +1,7 @@
 <%- include('partials/top') %>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <style>
   .dashboard-header {
@@ -291,7 +292,7 @@
 <div class="dashboard-grid">
   <div class="stat-card">
     <div class="stat-card-icon">
-      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
     </div>
     <div class="stat-card-content">
       <h3 id="totalQuotes">0</h3>
@@ -301,7 +302,7 @@
 
   <div class="stat-card green">
     <div class="stat-card-icon">
-      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
     </div>
     <div class="stat-card-content">
       <h3 id="completedQuotes">0</h3>
@@ -311,7 +312,7 @@
 
   <div class="stat-card orange">
     <div class="stat-card-icon">
-      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
     </div>
     <div class="stat-card-content">
       <h3 id="draftQuotes">0</h3>
@@ -322,7 +323,7 @@
   <% if (currentUser && currentUser.role === 'admin') { %>
   <div class="stat-card blue">
     <div class="stat-card-icon">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
     </div>
     <div class="stat-card-content">
       <h3 id="totalUsers">0</h3>
@@ -398,7 +399,7 @@
 <div class="chart-grid">
   <div class="chart-card">
     <div class="chart-card-header">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
       <h3>Status das Cotações Concluídas</h3>
     </div>
     <div class="chart-container">
@@ -408,7 +409,7 @@
 
   <div class="chart-card">
     <div class="chart-card-header">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
       <h3>Cotações por Status Geral</h3>
     </div>
     <div class="chart-container">
@@ -417,17 +418,34 @@
   </div>
 </div>
 
-<!-- Supplier Comparison Chart -->
-<div class="chart-card" style="margin-top: 24px;">
-  <div class="chart-card-header">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-    </svg>
-    <h3>Comparativo de Fornecedores - Top 10</h3>
+<!-- Comparison Charts Grid -->
+<div class="chart-grid" style="margin-top: 24px;">
+  <!-- Supplier Comparison Chart -->
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+      <h3>Comparativo de Fornecedores - Top 10</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="supplierComparisonChart"></canvas>
+    </div>
   </div>
-  <div class="chart-container">
-    <canvas id="supplierComparisonChart"></canvas>
+
+  <!-- Client Comparison Chart -->
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <h3>Comparativo de Clientes - Top 10</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="clientComparisonChart"></canvas>
+    </div>
   </div>
 </div>
 
@@ -435,7 +453,7 @@
 <div class="table-card">
   <div class="table-card-header">
     <h3>
-      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
       Top 10 Fornecedores
     </h3>
   </div>
@@ -457,7 +475,7 @@
 <div class="table-card">
   <div class="table-card-header">
     <h3>
-      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
       Top 10 Clientes
     </h3>
   </div>
@@ -480,7 +498,7 @@
 <div class="table-card">
   <div class="table-card-header">
     <h3>
-      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
       Desempenho por Usuário
     </h3>
   </div>
@@ -575,6 +593,30 @@
                 usePointStyle: true,
                 pointStyle: 'circle'
               }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            },
+            datalabels: {
+              display: true,
+              color: '#fff',
+              font: {
+                weight: 'bold',
+                size: 14
+              },
+              formatter: function(value, context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return percentage > 5 ? `${percentage}%` : ''; // Só mostra se > 5%
+              }
             }
           },
           cutout: '65%'
@@ -645,10 +687,74 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
+            datalabels: { display: false },
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.label}: ${context.parsed.y} cotações`;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                  return `${context.label}: ${context.parsed.y} cotações (${percentage}%)`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                font: { weight: '600' },
+                precision: 0
+              },
+              grid: { color: '#f3f4f6' }
+            },
+            x: {
+              ticks: {
+                font: { weight: '600', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+
+      // Gráfico Comparativo de Clientes
+      const clientComparisonCtx = document.getElementById('clientComparisonChart');
+      const clients = stats.byClient || [];
+
+      // Gerar cores gradientes para cada cliente
+      const clientColors = clients.map((_, index) => {
+        const hue = (index * 360 / clients.length) + 180; // Offset de 180 para cores diferentes dos fornecedores
+        return `hsl(${hue}, 65%, 50%)`;
+      });
+
+      new Chart(clientComparisonCtx, {
+        type: 'bar',
+        data: {
+          labels: clients.map(c => c.client),
+          datasets: [{
+            label: 'Cotações por Cliente',
+            data: clients.map(c => c.count),
+            backgroundColor: clientColors,
+            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                  return `${context.label}: ${context.parsed.y} cotações (${percentage}%)`;
                 }
               }
             }

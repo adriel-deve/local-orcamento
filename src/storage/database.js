@@ -291,8 +291,8 @@ export async function updateQuoteBusinessStatus(quoteCode, status, userId, data 
       updates.push(`baixa_by = NULL`);
     }
 
-    const query = `UPDATE quotes SET ${updates.join(', ')} WHERE quote_code = $${paramIndex}`;
     params.push(quoteCode);
+    const query = `UPDATE quotes SET ${updates.join(', ')} WHERE quote_code = $${paramIndex}`;
 
     console.log('[UPDATE STATUS] Query:', query);
     console.log('[UPDATE STATUS] Params:', params);

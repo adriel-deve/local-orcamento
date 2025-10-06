@@ -841,10 +841,15 @@ router.get('/api/dashboard-stats', async (req, res) => {
     const userId = req.session?.userId;
     const userRole = req.session?.userRole;
 
+    console.log(`[DASHBOARD STATS] User: ${userId}, Role: ${userRole}`);
+
     const stats = await getDashboardStats(userId, userRole);
+
+    console.log('[DASHBOARD STATS] Stats:', JSON.stringify(stats, null, 2));
+
     res.json(stats);
   } catch (error) {
-    console.error('Erro ao buscar estatísticas:', error);
+    console.error('[DASHBOARD STATS] Error:', error);
     res.status(500).json({ error: 'Erro ao buscar estatísticas' });
   }
 });

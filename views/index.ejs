@@ -488,8 +488,16 @@
 <script>
   async function loadDashboard() {
     try {
-      const response = await fetch('/api/dashboard-stats');
+      console.log('[DASHBOARD] Fetching stats...');
+      const response = await fetch('/quotes/api/dashboard-stats');
+
+      if (!response.ok) {
+        console.error('[DASHBOARD] Response not OK:', response.status, response.statusText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const stats = await response.json();
+      console.log('[DASHBOARD] Stats received:', stats);
 
       // Atualizar cards
       document.getElementById('totalQuotes').textContent = stats.totalQuotes || 0;
@@ -661,11 +669,17 @@
       <% } %>
 
     } catch (error) {
-      console.error('Erro ao carregar dashboard:', error);
+      console.error('[DASHBOARD] Error loading dashboard:', error);
+      alert('Erro ao carregar dados do dashboard. Por favor, recarregue a página.\n\nDetalhes: ' + error.message);
     }
   }
 
-  loadDashboard();
+  // Carregar dashboard quando página estiver pronta
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  } else {
+    loadDashboard();
+  }
 </script>
 
 <%- include('partials/bottom') %>

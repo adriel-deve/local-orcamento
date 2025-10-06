@@ -3,154 +3,331 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dashboard-header h1 svg {
+    width: 32px;
+    height: 32px;
+    stroke: #dc2626;
+  }
+
   .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
     margin-bottom: 32px;
   }
 
   .stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-left: 4px solid #dc2626;
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .stat-card:hover::before {
+    opacity: 1;
   }
 
   .stat-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15), 0 4px 12px rgba(0,0,0,0.08);
   }
 
-  .stat-card h3 {
-    font-size: 2.5rem;
-    font-weight: 700;
+  .stat-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  }
+
+  .stat-card-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: #dc2626;
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  .stat-card.green .stat-card-icon {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  }
+
+  .stat-card.green .stat-card-icon svg {
+    stroke: #059669;
+  }
+
+  .stat-card.orange .stat-card-icon {
+    background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  }
+
+  .stat-card.orange .stat-card-icon svg {
+    stroke: #f59e0b;
+  }
+
+  .stat-card.blue .stat-card-icon {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  }
+
+  .stat-card.blue .stat-card-icon svg {
+    stroke: #3b82f6;
+  }
+
+  .stat-card-content h3 {
+    font-size: 2.75rem;
+    font-weight: 800;
     margin: 0 0 8px 0;
-    color: #dc2626;
+    color: #1f2937;
+    line-height: 1;
   }
 
-  .stat-card p {
+  .stat-card-content p {
     margin: 0;
     color: #6b7280;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.5px;
   }
-
-  .stat-card.green h3 { color: #059669; border-left-color: #059669; }
-  .stat-card.orange h3 { color: #f59e0b; border-left-color: #f59e0b; }
-  .stat-card.blue h3 { color: #3b82f6; border-left-color: #3b82f6; }
-  .stat-card.purple h3 { color: #8b5cf6; border-left-color: #8b5cf6; }
 
   .chart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 24px;
     margin-bottom: 32px;
   }
 
   .chart-card {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
   }
 
-  .chart-card h3 {
-    margin: 0 0 20px 0;
+  .chart-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .chart-card-header svg {
+    width: 24px;
+    height: 24px;
+    stroke: #dc2626;
+    flex-shrink: 0;
+  }
+
+  .chart-card-header h3 {
+    margin: 0;
     color: #1f2937;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.125rem;
+    font-weight: 700;
   }
 
   .chart-container {
     position: relative;
-    height: 300px;
+    height: 320px;
   }
 
   .table-card {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
     margin-bottom: 24px;
   }
 
-  .table-card h3 {
-    margin: 0 0 20px 0;
+  .table-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .table-card-header h3 {
+    margin: 0;
     color: #1f2937;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.125rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .data-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
   .data-table th,
   .data-table td {
-    padding: 12px;
+    padding: 14px 16px;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
   }
 
   .data-table th {
     background: #f9fafb;
-    font-weight: 600;
+    font-weight: 700;
     color: #374151;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .data-table th:first-child {
+    border-top-left-radius: 8px;
+  }
+
+  .data-table th:last-child {
+    border-top-right-radius: 8px;
+  }
+
+  .data-table td {
+    border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+    font-weight: 500;
   }
 
   .data-table tr:hover {
     background: #f9fafb;
   }
 
+  .data-table tr:last-child td {
+    border-bottom: none;
+  }
+
   .progress-bar {
     width: 100%;
-    height: 8px;
+    height: 10px;
     background: #e5e7eb;
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #dc2626, #ef4444);
-    border-radius: 4px;
-    transition: width 0.3s ease;
+    border-radius: 5px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .chart-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
-<h2 style="margin-bottom: 24px; color: #1f2937;">📊 Dashboard</h2>
+<div class="dashboard-header">
+  <h1>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+    </svg>
+    Dashboard
+  </h1>
+</div>
 
 <!-- Stats Cards -->
 <div class="dashboard-grid">
   <div class="stat-card">
-    <h3 id="totalQuotes">0</h3>
-    <p>Total de Cotações</p>
+    <div class="stat-card-icon">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+    </div>
+    <div class="stat-card-content">
+      <h3 id="totalQuotes">0</h3>
+      <p>Total de Cotações</p>
+    </div>
   </div>
 
   <div class="stat-card green">
-    <h3 id="completedQuotes">0</h3>
-    <p>Concluídas</p>
+    <div class="stat-card-icon">
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+    </div>
+    <div class="stat-card-content">
+      <h3 id="completedQuotes">0</h3>
+      <p>Concluídas</p>
+    </div>
   </div>
 
   <div class="stat-card orange">
-    <h3 id="draftQuotes">0</h3>
-    <p>Rascunhos</p>
+    <div class="stat-card-icon">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+    </div>
+    <div class="stat-card-content">
+      <h3 id="draftQuotes">0</h3>
+      <p>Rascunhos</p>
+    </div>
   </div>
 
   <% if (currentUser && currentUser.role === 'admin') { %>
   <div class="stat-card blue">
-    <h3 id="totalUsers">0</h3>
-    <p>Usuários Ativos</p>
+    <div class="stat-card-icon">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    </div>
+    <div class="stat-card-content">
+      <h3 id="totalUsers">0</h3>
+      <p>Usuários Ativos</p>
+    </div>
   </div>
   <% } %>
 </div>
@@ -158,14 +335,20 @@
 <!-- Charts -->
 <div class="chart-grid">
   <div class="chart-card">
-    <h3>Status das Cotações Concluídas</h3>
+    <div class="chart-card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+      <h3>Status das Cotações Concluídas</h3>
+    </div>
     <div class="chart-container">
       <canvas id="businessStatusChart"></canvas>
     </div>
   </div>
 
   <div class="chart-card">
-    <h3>Cotações por Status</h3>
+    <div class="chart-card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <h3>Cotações por Status Geral</h3>
+    </div>
     <div class="chart-container">
       <canvas id="statusChart"></canvas>
     </div>
@@ -174,34 +357,44 @@
 
 <!-- Top Suppliers -->
 <div class="table-card">
-  <h3>🏭 Top 10 Fornecedores</h3>
+  <div class="table-card-header">
+    <h3>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      Top 10 Fornecedores
+    </h3>
+  </div>
   <table class="data-table" id="suppliersTable">
     <thead>
       <tr>
         <th>Fornecedor</th>
-        <th style="text-align: right;">Cotações</th>
-        <th style="width: 50%;">Participação</th>
+        <th style="text-align: right; width: 100px;">Cotações</th>
+        <th style="width: 45%;">Participação</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+      <tr><td colspan="3" class="empty-state">Carregando dados...</td></tr>
     </tbody>
   </table>
 </div>
 
 <!-- Top Clients -->
 <div class="table-card">
-  <h3>🏢 Top 10 Clientes</h3>
+  <div class="table-card-header">
+    <h3>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      Top 10 Clientes
+    </h3>
+  </div>
   <table class="data-table" id="clientsTable">
     <thead>
       <tr>
         <th>Cliente</th>
-        <th style="text-align: right;">Cotações</th>
-        <th style="width: 50%;">Participação</th>
+        <th style="text-align: right; width: 100px;">Cotações</th>
+        <th style="width: 45%;">Participação</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+      <tr><td colspan="3" class="empty-state">Carregando dados...</td></tr>
     </tbody>
   </table>
 </div>
@@ -209,24 +402,28 @@
 <% if (currentUser && currentUser.role === 'admin') { %>
 <!-- Quotes by User -->
 <div class="table-card">
-  <h3>👤 Cotações por Usuário</h3>
+  <div class="table-card-header">
+    <h3>
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: #dc2626;" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      Desempenho por Usuário
+    </h3>
+  </div>
   <table class="data-table" id="usersTable">
     <thead>
       <tr>
         <th>Usuário</th>
-        <th style="text-align: right;">Cotações</th>
-        <th style="width: 50%;">Desempenho</th>
+        <th style="text-align: right; width: 100px;">Cotações</th>
+        <th style="width: 45%;">Produtividade</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td colspan="3" style="text-align: center; color: #9ca3af;">Carregando...</td></tr>
+      <tr><td colspan="3" class="empty-state">Carregando dados...</td></tr>
     </tbody>
   </table>
 </div>
 <% } %>
 
 <script>
-  // Buscar dados do dashboard
   async function loadDashboard() {
     try {
       const response = await fetch('/api/dashboard-stats');
@@ -245,9 +442,9 @@
       const businessStatusCtx = document.getElementById('businessStatusChart');
       const businessStatusData = stats.byBusinessStatus || {};
       new Chart(businessStatusCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-          labels: ['Ativa', 'Com Pedido', 'Finalizada', 'Baixa'],
+          labels: ['Ativa', 'Com Pedido de Compra', 'Finalizada', 'Baixa'],
           datasets: [{
             data: [
               businessStatusData.ativa || 0,
@@ -256,8 +453,8 @@
               businessStatusData.baixa || 0
             ],
             backgroundColor: ['#3b82f6', '#8b5cf6', '#059669', '#ef4444'],
-            borderWidth: 2,
-            borderColor: '#fff'
+            borderWidth: 0,
+            hoverOffset: 8
           }]
         },
         options: {
@@ -265,13 +462,20 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom'
+              position: 'bottom',
+              labels: {
+                padding: 16,
+                font: { size: 12, weight: '600' },
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
             }
-          }
+          },
+          cutout: '65%'
         }
       });
 
-      // Gráfico de Status (Barra)
+      // Gráfico de Status (Barra Horizontal)
       const statusCtx = document.getElementById('statusChart');
       const statusData = stats.byStatus || {};
       new Chart(statusCtx, {
@@ -282,23 +486,26 @@
             label: 'Cotações',
             data: Object.values(statusData),
             backgroundColor: '#dc2626',
-            borderRadius: 8
+            borderRadius: 8,
+            barThickness: 40
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          indexAxis: 'y',
           plugins: {
-            legend: {
-              display: false
-            }
+            legend: { display: false }
           },
           scales: {
-            y: {
+            x: {
               beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
+              ticks: { stepSize: 1, font: { weight: '600' } },
+              grid: { color: '#f3f4f6' }
+            },
+            y: {
+              ticks: { font: { weight: '600', size: 13 } },
+              grid: { display: false }
             }
           }
         }
@@ -310,10 +517,10 @@
       const maxSupplier = Math.max(...suppliers.map(s => s.count), 1);
 
       if (suppliers.length > 0) {
-        suppliersTable.innerHTML = suppliers.map(s => `
+        suppliersTable.innerHTML = suppliers.map((s, index) => `
           <tr>
             <td><strong>${s.supplier}</strong></td>
-            <td style="text-align: right;"><strong>${s.count}</strong></td>
+            <td style="text-align: right;"><span style="font-size: 1.25rem; font-weight: 700; color: #dc2626;">${s.count}</span></td>
             <td>
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${(s.count / maxSupplier * 100)}%"></div>
@@ -322,7 +529,7 @@
           </tr>
         `).join('');
       } else {
-        suppliersTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum fornecedor encontrado</td></tr>';
+        suppliersTable.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum fornecedor encontrado</td></tr>';
       }
 
       // Tabela de Clientes
@@ -334,7 +541,7 @@
         clientsTable.innerHTML = clients.map(c => `
           <tr>
             <td><strong>${c.client}</strong></td>
-            <td style="text-align: right;"><strong>${c.count}</strong></td>
+            <td style="text-align: right;"><span style="font-size: 1.25rem; font-weight: 700; color: #dc2626;">${c.count}</span></td>
             <td>
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${(c.count / maxClient * 100)}%"></div>
@@ -343,7 +550,7 @@
           </tr>
         `).join('');
       } else {
-        clientsTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum cliente encontrado</td></tr>';
+        clientsTable.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum cliente encontrado</td></tr>';
       }
 
       <% if (currentUser && currentUser.role === 'admin') { %>
@@ -356,7 +563,7 @@
         usersTable.innerHTML = users.map(u => `
           <tr>
             <td><strong>${u.full_name || u.username}</strong></td>
-            <td style="text-align: right;"><strong>${u.count}</strong></td>
+            <td style="text-align: right;"><span style="font-size: 1.25rem; font-weight: 700; color: #dc2626;">${u.count}</span></td>
             <td>
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${(u.count / maxUser * 100)}%"></div>
@@ -365,7 +572,7 @@
           </tr>
         `).join('');
       } else {
-        usersTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">Nenhum usuário encontrado</td></tr>';
+        usersTable.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum usuário encontrado</td></tr>';
       }
       <% } %>
 
@@ -374,7 +581,6 @@
     }
   }
 
-  // Carregar ao iniciar
   loadDashboard();
 </script>
 

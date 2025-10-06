@@ -257,30 +257,51 @@ export async function deleteQuote(quoteCode) {
 // Atualizar status de negócio da cotação
 export async function updateQuoteBusinessStatus(quoteCode, status, userId, data = {}) {
   try {
-    let query = 'UPDATE quotes SET business_status = $1';
+    const updates = ['business_status = $1'];
     const params = [status];
     let paramIndex = 2;
 
-    if (status === 'pedido_compra' && data.purchaseOrder) {
-      query += `, purchase_order = $${paramIndex++}`;
-      params.push(data.purchaseOrder);
+    // Adicionar purchase_order
+    if (status === 'pedido_compra') {
+      updates.push(`purchase_order = $${paramIndex++}`);
+      params.push(data.purchaseOrder || null);
+    } else {
+      updates.push(`purchase_order = NULL`);
     }
 
+    // Adicionar campos de finalizada
     if (status === 'finalizada') {
-      query += `, closed_at = CURRENT_TIMESTAMP, closed_by = $${paramIndex++}`;
+      updates.push(`closed_at = CURRENT_TIMESTAMP`);
+      updates.push(`closed_by = $${paramIndex++}`);
       params.push(userId);
+    } else {
+      updates.push(`closed_at = NULL`);
+      updates.push(`closed_by = NULL`);
     }
 
-    if (status === 'baixa' && data.reason) {
-      query += `, baixa_reason = $${paramIndex++}, baixa_at = CURRENT_TIMESTAMP, baixa_by = $${paramIndex++}`;
-      params.push(data.reason, userId);
+    // Adicionar campos de baixa
+    if (status === 'baixa') {
+      updates.push(`baixa_reason = $${paramIndex++}`);
+      updates.push(`baixa_at = CURRENT_TIMESTAMP`);
+      updates.push(`baixa_by = $${paramIndex++}`);
+      params.push(data.reason || null, userId);
+    } else {
+      updates.push(`baixa_reason = NULL`);
+      updates.push(`baixa_at = NULL`);
+      updates.push(`baixa_by = NULL`);
     }
 
-    query += ` WHERE quote_code = $${paramIndex}`;
+    const query = `UPDATE quotes SET ${updates.join(', ')} WHERE quote_code = $${paramIndex}`;
     params.push(quoteCode);
+
+    console.log('[UPDATE STATUS] Query:', query);
+    console.log('[UPDATE STATUS] Params:', params);
 
     const [, meta] = await pool.execute(query, params);
     const affected = meta?.affectedRows ?? meta?.rowCount ?? 0;
+
+    console.log('[UPDATE STATUS] Affected rows:', affected);
+
     return affected > 0;
   } catch (error) {
     console.error('Erro ao atualizar status:', error);

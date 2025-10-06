@@ -187,13 +187,55 @@
 <!-- Stats Card -->
 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px;">
   <div class="stat-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #059669;">
-    <h3 style="font-size: 2.5rem; font-weight: 700; margin: 0 0 8px 0; color: #059669;"><%= quotes ? quotes.length : 0 %></h3>
-    <p style="margin: 0; color: #6b7280; font-size: 0.875rem; font-weight: 600; text-transform: uppercase;">Total Concluídas</p>
+    <h3 style="font-size: 2.5rem; font-weight: 700; margin: 0 0 8px 0; color: #059669;" id="totalDisplayed"><%= quotes ? quotes.length : 0 %></h3>
+    <p style="margin: 0; color: #6b7280; font-size: 0.875rem; font-weight: 600; text-transform: uppercase;">Total Exibidas</p>
   </div>
 </div>
 
 <% if (quotes && quotes.length > 0) { %>
 <section class="card">
+  <!-- Filtros e Pesquisa -->
+  <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 2px solid #e5e7eb;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: end;">
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 0.875rem;">
+          🔍 Pesquisar por Nome
+        </label>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Digite cliente, fornecedor ou código..."
+          style="width: 100%; padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 0.875rem;"
+          oninput="filterQuotes()"
+        />
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 0.875rem;">
+          📊 Filtrar por Status de Negócio
+        </label>
+        <select
+          id="statusFilter"
+          style="width: 100%; padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; cursor: pointer;"
+          onchange="filterQuotes()"
+        >
+          <option value="">Todos os Status</option>
+          <option value="ativa">🔵 Ativa</option>
+          <option value="pedido_compra">🟣 Com Pedido de Compra</option>
+          <option value="finalizada">🟢 Finalizada</option>
+          <option value="baixa">🔴 Baixa (Não Concretizada)</option>
+        </select>
+      </div>
+      <div>
+        <button
+          onclick="clearFilters()"
+          style="width: 100%; padding: 10px 14px; background: #dc2626; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem;"
+        >
+          🔄 Limpar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
     <h3 style="margin: 0;">Lista de Cotações</h3>
     <div style="display: flex; gap: 8px;">
@@ -215,7 +257,7 @@
     </thead>
     <tbody>
       <% quotes.forEach(function(quote) { %>
-      <tr data-quote-code="<%= quote.quote_code %>">
+      <tr data-quote-code="<%= quote.quote_code %>" data-business-status="<%= quote.business_status || 'ativa' %>">
         <td><strong style="color: #dc2626;"><%= quote.quote_code %></strong></td>
         <td><%= quote.client || '-' %></td>
         <td><%= quote.supplier || '-' %></td>
@@ -399,6 +441,45 @@
       console.error('Erro:', error);
       alert('Erro ao excluir cotação');
     }
+  }
+
+  // Filtrar cotações
+  function filterQuotes() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('.quotes-table tbody tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const code = row.cells[0]?.textContent.toLowerCase() || '';
+      const client = row.cells[1]?.textContent.toLowerCase() || '';
+      const supplier = row.cells[2]?.textContent.toLowerCase() || '';
+      const businessStatus = row.getAttribute('data-business-status') || '';
+
+      const matchesSearch = !searchTerm ||
+        code.includes(searchTerm) ||
+        client.includes(searchTerm) ||
+        supplier.includes(searchTerm);
+
+      const matchesStatus = !statusFilter || businessStatus === statusFilter;
+
+      if (matchesSearch && matchesStatus) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Atualizar contador
+    document.getElementById('totalDisplayed').textContent = visibleCount;
+  }
+
+  // Limpar filtros
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    filterQuotes();
   }
 </script>
 

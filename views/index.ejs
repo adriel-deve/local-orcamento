@@ -417,6 +417,20 @@
   </div>
 </div>
 
+<!-- Supplier Comparison Chart -->
+<div class="chart-card" style="margin-top: 24px;">
+  <div class="chart-card-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+    </svg>
+    <h3>Comparativo de Fornecedores - Top 10</h3>
+  </div>
+  <div class="chart-container">
+    <canvas id="supplierComparisonChart"></canvas>
+  </div>
+</div>
+
 <!-- Top Suppliers -->
 <div class="table-card">
   <div class="table-card-header">
@@ -603,9 +617,66 @@
         }
       });
 
+      // Gráfico Comparativo de Fornecedores
+      const supplierComparisonCtx = document.getElementById('supplierComparisonChart');
+      const suppliers = stats.bySupplier || [];
+
+      // Gerar cores gradientes para cada fornecedor
+      const supplierColors = suppliers.map((_, index) => {
+        const hue = (index * 360 / suppliers.length);
+        return `hsl(${hue}, 70%, 55%)`;
+      });
+
+      new Chart(supplierComparisonCtx, {
+        type: 'bar',
+        data: {
+          labels: suppliers.map(s => s.supplier),
+          datasets: [{
+            label: 'Cotações por Fornecedor',
+            data: suppliers.map(s => s.count),
+            backgroundColor: supplierColors,
+            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.parsed.y} cotações`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                font: { weight: '600' },
+                precision: 0
+              },
+              grid: { color: '#f3f4f6' }
+            },
+            x: {
+              ticks: {
+                font: { weight: '600', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+
       // Tabela de Fornecedores
       const suppliersTable = document.getElementById('suppliersTable').querySelector('tbody');
-      const suppliers = stats.bySupplier || [];
       const maxSupplier = Math.max(...suppliers.map(s => s.count), 1);
 
       if (suppliers.length > 0) {

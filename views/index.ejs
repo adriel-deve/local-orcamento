@@ -1,7 +1,6 @@
 <%- include('partials/top') %>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <style>
   .dashboard-header {
@@ -565,6 +564,7 @@
 
       // Gráfico de Business Status (Pizza)
       const businessStatusCtx = document.getElementById('businessStatusChart');
+
       new Chart(businessStatusCtx, {
         type: 'doughnut',
         data: {
@@ -603,19 +603,6 @@
                   const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                   return `${label}: ${value} (${percentage}%)`;
                 }
-              }
-            },
-            datalabels: {
-              display: true,
-              color: '#fff',
-              font: {
-                weight: 'bold',
-                size: 14
-              },
-              formatter: function(value, context) {
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                return percentage > 5 ? `${percentage}%` : ''; // Só mostra se > 5%
               }
             }
           },
@@ -687,7 +674,6 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            datalabels: { display: false },
             tooltip: {
               callbacks: {
                 label: function(context) {
@@ -748,7 +734,6 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            datalabels: { display: false },
             tooltip: {
               callbacks: {
                 label: function(context) {

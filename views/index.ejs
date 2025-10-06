@@ -332,6 +332,68 @@
   <% } %>
 </div>
 
+<!-- Business Status Cards -->
+<div class="dashboard-grid" style="margin-top: 24px;">
+  <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+    <div class="stat-card-content">
+      <h3 id="ativasCount" style="color: #3b82f6;">0</h3>
+      <p style="color: #3b82f6;">Cotações Ativas</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+    <div class="stat-card-content">
+      <h3 id="pedidoCompraCount" style="color: #8b5cf6;">0</h3>
+      <p style="color: #8b5cf6;">Com Pedido de Compra</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #059669;">
+    <div class="stat-card-content">
+      <h3 id="finalizadasCount" style="color: #059669;">0</h3>
+      <p style="color: #059669;">Finalizadas</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #ef4444;">
+    <div class="stat-card-content">
+      <h3 id="baixasCount" style="color: #ef4444;">0</h3>
+      <p style="color: #ef4444;">Baixas (Não Concretizadas)</p>
+    </div>
+  </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="dashboard-grid" style="margin-top: 24px;">
+  <div class="stat-card" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #059669;">
+    <div class="stat-card-content">
+      <h3 id="conversionRate" style="color: #059669;">0%</h3>
+      <p style="color: #047857; font-weight: 700;">Taxa de Conversão (Finalizadas + Pedidos)</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+    <div class="stat-card-content">
+      <h3 id="successRate" style="color: #d97706;">0%</h3>
+      <p style="color: #b45309; font-weight: 700;">Taxa de Sucesso (Excluindo Baixas)</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6;">
+    <div class="stat-card-content">
+      <h3 id="totalSuppliers" style="color: #2563eb;">0</h3>
+      <p style="color: #1d4ed8; font-weight: 700;">Fornecedores Únicos</p>
+    </div>
+  </div>
+
+  <div class="stat-card" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #6366f1;">
+    <div class="stat-card-content">
+      <h3 id="totalClients" style="color: #4f46e5;">0</h3>
+      <p style="color: #4338ca; font-weight: 700;">Clientes Únicos</p>
+    </div>
+  </div>
+</div>
+
 <!-- Charts -->
 <div class="chart-grid">
   <div class="chart-card">
@@ -438,9 +500,31 @@
       document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
       <% } %>
 
+      // Atualizar cards de business status
+      const businessStatusData = stats.byBusinessStatus || {};
+      const ativasCount = businessStatusData.ativa || 0;
+      const pedidoCompraCount = businessStatusData.pedido_compra || 0;
+      const finalizadasCount = businessStatusData.finalizada || 0;
+      const baixasCount = businessStatusData.baixa || 0;
+
+      document.getElementById('ativasCount').textContent = ativasCount;
+      document.getElementById('pedidoCompraCount').textContent = pedidoCompraCount;
+      document.getElementById('finalizadasCount').textContent = finalizadasCount;
+      document.getElementById('baixasCount').textContent = baixasCount;
+
+      // Calcular métricas de performance
+      const totalConcluidas = stats.byStatus?.['Concluída'] || 0;
+      const conversionCount = finalizadasCount + pedidoCompraCount;
+      const conversionRate = totalConcluidas > 0 ? ((conversionCount / totalConcluidas) * 100).toFixed(1) : 0;
+      const successRate = totalConcluidas > 0 ? (((totalConcluidas - baixasCount) / totalConcluidas) * 100).toFixed(1) : 0;
+
+      document.getElementById('conversionRate').textContent = conversionRate + '%';
+      document.getElementById('successRate').textContent = successRate + '%';
+      document.getElementById('totalSuppliers').textContent = (stats.bySupplier || []).length;
+      document.getElementById('totalClients').textContent = (stats.byClient || []).length;
+
       // Gráfico de Business Status (Pizza)
       const businessStatusCtx = document.getElementById('businessStatusChart');
-      const businessStatusData = stats.byBusinessStatus || {};
       new Chart(businessStatusCtx, {
         type: 'doughnut',
         data: {

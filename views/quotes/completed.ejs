@@ -341,7 +341,7 @@
     const reason = document.getElementById('baixaReason').value;
 
     try {
-      const response = await fetch(`/api/quotes/${quoteCode}/status`, {
+      const response = await fetch(`/quotes/${quoteCode}/status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

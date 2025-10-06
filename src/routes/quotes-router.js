@@ -850,7 +850,7 @@ router.get('/api/dashboard-stats', async (req, res) => {
 });
 
 // API: Atualizar status de negócio da cotação
-router.post('/api/quotes/:code/status', async (req, res) => {
+router.post('/:code/status', async (req, res) => {
   try {
     const { code } = req.params;
     const { status, purchaseOrder, reason } = req.body;
@@ -860,19 +860,23 @@ router.post('/api/quotes/:code/status', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Não autenticado' });
     }
 
+    console.log(`[STATUS UPDATE] Quote: ${code}, Status: ${status}, User: ${userId}`);
+
     const updated = await updateQuoteBusinessStatus(code, status, userId, {
       purchaseOrder,
       reason
     });
 
     if (updated) {
+      console.log(`[STATUS UPDATE] Success for quote ${code}`);
       res.json({ success: true });
     } else {
+      console.log(`[STATUS UPDATE] Quote ${code} not found`);
       res.status(404).json({ success: false, error: 'Cotação não encontrada' });
     }
   } catch (error) {
-    console.error('Erro ao atualizar status:', error);
-    res.status(500).json({ success: false, error: 'Erro ao atualizar status' });
+    console.error('[STATUS UPDATE] Error:', error);
+    res.status(500).json({ success: false, error: 'Erro ao atualizar status: ' + error.message });
   }
 });
 

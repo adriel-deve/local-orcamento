@@ -322,19 +322,28 @@ export async function getDashboardStats(userId = null, userRole = null) {
 
     // Query única otimizada para pegar múltiplos counts de uma vez
     // Usando CASE em vez de FILTER para compatibilidade com MySQL
+    // COALESCE garante que SUM retorne 0 em vez de NULL quando não há registros
     const [aggregatedRows] = await pool.execute(`
       SELECT
         COUNT(*) as total_quotes,
-        SUM(CASE WHEN status = 'Concluída' THEN 1 ELSE 0 END) as completed_quotes,
-        SUM(CASE WHEN status = 'Rascunho' THEN 1 ELSE 0 END) as draft_quotes,
-        SUM(CASE WHEN status = 'Concluída' AND COALESCE(business_status, 'ativa') = 'ativa' THEN 1 ELSE 0 END) as ativa_count,
-        SUM(CASE WHEN status = 'Concluída' AND business_status = 'pedido_compra' THEN 1 ELSE 0 END) as pedido_compra_count,
-        SUM(CASE WHEN status = 'Concluída' AND business_status = 'finalizada' THEN 1 ELSE 0 END) as finalizada_count,
-        SUM(CASE WHEN status = 'Concluída' AND business_status = 'baixa' THEN 1 ELSE 0 END) as baixa_count
+        COALESCE(SUM(CASE WHEN status = 'Concluída' THEN 1 ELSE 0 END), 0) as completed_quotes,
+        COALESCE(SUM(CASE WHEN status = 'Rascunho' THEN 1 ELSE 0 END), 0) as draft_quotes,
+        COALESCE(SUM(CASE WHEN status = 'Concluída' AND COALESCE(business_status, 'ativa') = 'ativa' THEN 1 ELSE 0 END), 0) as ativa_count,
+        COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'pedido_compra' THEN 1 ELSE 0 END), 0) as pedido_compra_count,
+        COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'finalizada' THEN 1 ELSE 0 END), 0) as finalizada_count,
+        COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'baixa' THEN 1 ELSE 0 END), 0) as baixa_count
       FROM quotes${userFilter}
     `, userParam);
 
+    console.log('[getDashboardStats] Raw aggregated data:', aggregatedRows[0]);
+
     const agg = aggregatedRows[0];
+    console.log('[getDashboardStats] Parsing aggregated data - types:', {
+      total_quotes: typeof agg.total_quotes,
+      completed_quotes: typeof agg.completed_quotes,
+      draft_quotes: typeof agg.draft_quotes
+    });
+
     stats.totalQuotes = parseInt(agg.total_quotes) || 0;
     stats.totalDrafts = parseInt(agg.draft_quotes) || 0;
     stats.byStatus = {
@@ -348,7 +357,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
       'baixa': parseInt(agg.baixa_count) || 0
     };
 
-    console.log('[getDashboardStats] Aggregated stats:', stats);
+    console.log('[getDashboardStats] Parsed stats:', JSON.stringify(stats, null, 2));
 
     // Total de usuários (apenas admin) - query simples
     if (userRole === 'admin') {
@@ -398,16 +407,20 @@ export async function getDashboardStats(userId = null, userRole = null) {
     }
 
     // Executar todas as queries em paralelo
+    console.log('[getDashboardStats] Executing parallel queries...');
     const results = await Promise.all(parallelQueries);
+    console.log('[getDashboardStats] Parallel queries completed');
 
     // Processar resultados
     const [supplierRows] = results[0];
+    console.log('[getDashboardStats] Supplier rows count:', supplierRows?.length || 0);
     stats.bySupplier = supplierRows.map(row => ({
       supplier: row.supplier,
       count: parseInt(row.count) || 0
     }));
 
     const [clientRows] = results[1];
+    console.log('[getDashboardStats] Client rows count:', clientRows?.length || 0);
     stats.byClient = clientRows.map(row => ({
       client: row.client,
       count: parseInt(row.count) || 0
@@ -415,6 +428,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
 
     if (userRole === 'admin' && results[2]) {
       const [userQuoteRows] = results[2];
+      console.log('[getDashboardStats] User rows count:', userQuoteRows?.length || 0);
       stats.byUser = userQuoteRows.map(row => ({
         username: row.username,
         full_name: row.full_name,
@@ -423,8 +437,8 @@ export async function getDashboardStats(userId = null, userRole = null) {
     }
 
     const elapsed = Date.now() - startTime;
-    console.log(`[getDashboardStats] Completed in ${elapsed}ms`);
-    console.log('[getDashboardStats] Returning stats:', JSON.stringify(stats, null, 2));
+    console.log(`[getDashboardStats] ✅ Completed in ${elapsed}ms`);
+    console.log('[getDashboardStats] Final stats object:', JSON.stringify(stats, null, 2));
     return stats;
   } catch (error) {
     console.error('Erro ao buscar estatísticas:', error);

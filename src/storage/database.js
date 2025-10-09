@@ -312,106 +312,117 @@ export async function updateQuoteBusinessStatus(quoteCode, status, userId, data 
 // Estatísticas para o dashboard
 export async function getDashboardStats(userId = null, userRole = null) {
   try {
+    const startTime = Date.now();
     console.log('[getDashboardStats] Starting... userId:', userId, 'userRole:', userRole);
     const stats = {};
-
-    // Total de usuários (apenas admin)
-    if (userRole === 'admin') {
-      const [userRows] = await pool.execute('SELECT COUNT(*)::int as count FROM users WHERE active = true');
-      stats.totalUsers = parseInt(userRows[0]?.count) || 0;
-      console.log('[getDashboardStats] totalUsers:', stats.totalUsers);
-    }
 
     // Filtro baseado em role
     const userFilter = userRole === 'admin' ? '' : ` WHERE user_id = $1`;
     const userParam = userRole === 'admin' ? [] : [userId];
 
-    // Total de cotações
-    const [quoteRows] = await pool.execute(`SELECT COUNT(*)::int as count FROM quotes${userFilter}`, userParam);
-    stats.totalQuotes = parseInt(quoteRows[0]?.count) || 0;
-    console.log('[getDashboardStats] totalQuotes:', stats.totalQuotes);
-
-    // Cotações por status
-    const [statusRows] = await pool.execute(`
-      SELECT status, COUNT(*)::int as count
+    // Query única otimizada para pegar múltiplos counts de uma vez
+    const [aggregatedRows] = await pool.execute(`
+      SELECT
+        COUNT(*)::int as total_quotes,
+        COUNT(*) FILTER (WHERE status = 'Concluída')::int as completed_quotes,
+        COUNT(*) FILTER (WHERE status = 'Rascunho')::int as draft_quotes,
+        COUNT(*) FILTER (WHERE status = 'Concluída' AND COALESCE(business_status, 'ativa') = 'ativa')::int as ativa_count,
+        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'pedido_compra')::int as pedido_compra_count,
+        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'finalizada')::int as finalizada_count,
+        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'baixa')::int as baixa_count
       FROM quotes${userFilter}
-      GROUP BY status
     `, userParam);
-    stats.byStatus = statusRows.reduce((acc, row) => {
-      acc[row.status] = parseInt(row.count) || 0;
-      return acc;
-    }, {});
-    console.log('[getDashboardStats] byStatus:', stats.byStatus);
 
-    // Cotações por business_status
-    const [businessStatusRows] = await pool.execute(`
-      SELECT COALESCE(business_status, 'ativa') as business_status, COUNT(*)::int as count
-      FROM quotes
-      WHERE status = 'Concluída'${userRole === 'admin' ? '' : ' AND user_id = $1'}
-      GROUP BY business_status
-    `, userParam);
-    stats.byBusinessStatus = businessStatusRows.reduce((acc, row) => {
-      acc[row.business_status] = parseInt(row.count) || 0;
-      return acc;
-    }, {});
-    console.log('[getDashboardStats] byBusinessStatus:', stats.byBusinessStatus);
+    const agg = aggregatedRows[0];
+    stats.totalQuotes = parseInt(agg.total_quotes) || 0;
+    stats.totalDrafts = parseInt(agg.draft_quotes) || 0;
+    stats.byStatus = {
+      'Concluída': parseInt(agg.completed_quotes) || 0,
+      'Rascunho': parseInt(agg.draft_quotes) || 0
+    };
+    stats.byBusinessStatus = {
+      'ativa': parseInt(agg.ativa_count) || 0,
+      'pedido_compra': parseInt(agg.pedido_compra_count) || 0,
+      'finalizada': parseInt(agg.finalizada_count) || 0,
+      'baixa': parseInt(agg.baixa_count) || 0
+    };
+
+    console.log('[getDashboardStats] Aggregated stats:', stats);
+
+    // Total de usuários (apenas admin) - query simples
+    if (userRole === 'admin') {
+      const [userRows] = await pool.execute('SELECT COUNT(*)::int as count FROM users WHERE active = true');
+      stats.totalUsers = parseInt(userRows[0]?.count) || 0;
+    }
+
+    // Queries paralelas para fornecedores, clientes e usuários
+    const parallelQueries = [];
 
     // Cotações por fornecedor
-    const [supplierRows] = await pool.execute(`
-      SELECT supplier, COUNT(*)::int as count
-      FROM quotes
-      WHERE supplier IS NOT NULL AND supplier != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
-      GROUP BY supplier
-      ORDER BY count DESC
-      LIMIT 10
-    `, userParam);
+    parallelQueries.push(
+      pool.execute(`
+        SELECT supplier, COUNT(*)::int as count
+        FROM quotes
+        WHERE supplier IS NOT NULL AND supplier != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+        GROUP BY supplier
+        ORDER BY count DESC
+        LIMIT 10
+      `, userParam)
+    );
+
+    // Cotações por cliente
+    parallelQueries.push(
+      pool.execute(`
+        SELECT client, COUNT(*)::int as count
+        FROM quotes
+        WHERE client IS NOT NULL AND client != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+        GROUP BY client
+        ORDER BY count DESC
+        LIMIT 10
+      `, userParam)
+    );
+
+    // Cotações por usuário (apenas admin)
+    if (userRole === 'admin') {
+      parallelQueries.push(
+        pool.execute(`
+          SELECT u.username, u.full_name, COUNT(q.id)::int as count
+          FROM users u
+          LEFT JOIN quotes q ON u.id = q.user_id
+          WHERE u.active = true
+          GROUP BY u.id, u.username, u.full_name
+          ORDER BY count DESC
+        `)
+      );
+    }
+
+    // Executar todas as queries em paralelo
+    const results = await Promise.all(parallelQueries);
+
+    // Processar resultados
+    const [supplierRows] = results[0];
     stats.bySupplier = supplierRows.map(row => ({
       supplier: row.supplier,
       count: parseInt(row.count) || 0
     }));
-    console.log('[getDashboardStats] bySupplier:', stats.bySupplier);
 
-    // Cotações por cliente
-    const [clientRows] = await pool.execute(`
-      SELECT client, COUNT(*)::int as count
-      FROM quotes
-      WHERE client IS NOT NULL AND client != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
-      GROUP BY client
-      ORDER BY count DESC
-      LIMIT 10
-    `, userParam);
+    const [clientRows] = results[1];
     stats.byClient = clientRows.map(row => ({
       client: row.client,
       count: parseInt(row.count) || 0
     }));
-    console.log('[getDashboardStats] byClient:', stats.byClient);
 
-    // Cotações por usuário (apenas admin)
-    if (userRole === 'admin') {
-      const [userQuoteRows] = await pool.execute(`
-        SELECT u.username, u.full_name, COUNT(q.id)::int as count
-        FROM users u
-        LEFT JOIN quotes q ON u.id = q.user_id
-        WHERE u.active = true
-        GROUP BY u.id, u.username, u.full_name
-        ORDER BY count DESC
-      `);
+    if (userRole === 'admin' && results[2]) {
+      const [userQuoteRows] = results[2];
       stats.byUser = userQuoteRows.map(row => ({
         username: row.username,
         full_name: row.full_name,
         count: parseInt(row.count) || 0
       }));
-      console.log('[getDashboardStats] byUser:', stats.byUser);
     }
 
-    // Rascunhos
-    const [draftRows] = await pool.execute(`
-      SELECT COUNT(*)::int as count FROM quotes
-      WHERE status = 'Rascunho'${userRole === 'admin' ? '' : ' AND user_id = $1'}
-    `, userParam);
-    stats.totalDrafts = parseInt(draftRows[0]?.count) || 0;
-    console.log('[getDashboardStats] totalDrafts:', stats.totalDrafts);
-
+    const elapsed = Date.now() - startTime;
+    console.log(`[getDashboardStats] Completed in ${elapsed}ms`);
     console.log('[getDashboardStats] Returning stats:', JSON.stringify(stats, null, 2));
     return stats;
   } catch (error) {

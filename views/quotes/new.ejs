@@ -97,15 +97,42 @@
             <h4>Equipamento 1</h4>
             <button type="button" class="btn danger" onclick="removeEquipmentSection(0)" style="display: none;">Remover</button>
           </div>
-          <div class="grid">
-            <div class="field">
-              <label>Especificação Técnica</label>
-              <textarea class="tech_spec" rows="4" placeholder="Detalhe técnico do equipamento..."></textarea>
+          <!-- Especificações Técnicas em Tabela -->
+          <div class="field">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Especificações Técnicas</span>
+              <button type="button" class="btn" style="padding: 6px 12px; font-size: 0.875rem;" onclick="addSpecRow(0)">+ Adicionar Item</button>
+            </label>
+            <div style="overflow-x: auto;">
+              <table class="spec-table" data-section="0" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+                <thead>
+                  <tr style="background: #f3f4f6;">
+                    <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;">Parâmetro/Item</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;">Especificação/Descrição</th>
+                    <th style="padding: 10px; text-align: center; border: 1px solid #e5e7eb; font-weight: 600; width: 100px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody class="spec-table-body">
+                  <tr>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                      <input type="text" class="spec-param" placeholder="Ex: Faixa de Medição" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                      <input type="text" class="spec-value" placeholder="Ex: 0 a 100 mm" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                      <button type="button" class="btn danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="this.closest('tr').remove()">Remover</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div class="field">
-              <label>Princípio de Funcionamento</label>
-              <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento..."></textarea>
-            </div>
+          </div>
+
+          <!-- Princípio de Funcionamento -->
+          <div class="field">
+            <label>Princípio de Funcionamento</label>
+            <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento do equipamento..."></textarea>
           </div>
           <div class="field">
             <label>Imagem do Equipamento</label>
@@ -303,16 +330,45 @@
         <h4 style="margin: 0;">Equipamento ${equipmentSectionCounter + 1}</h4>
         <button type="button" class="btn danger" onclick="removeEquipmentSection(${equipmentSectionCounter})">Remover</button>
       </div>
-      <div class="grid">
-        <div class="field">
-          <label>Especificação Técnica</label>
-          <textarea class="tech_spec" rows="4" placeholder="Detalhe técnico do equipamento..."></textarea>
-        </div>
-        <div class="field">
-          <label>Princípio de Funcionamento</label>
-          <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento..."></textarea>
+
+      <!-- Especificações Técnicas em Tabela -->
+      <div class="field">
+        <label style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Especificações Técnicas</span>
+          <button type="button" class="btn" style="padding: 6px 12px; font-size: 0.875rem;" onclick="addSpecRow(${equipmentSectionCounter})">+ Adicionar Item</button>
+        </label>
+        <div style="overflow-x: auto;">
+          <table class="spec-table" data-section="${equipmentSectionCounter}" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;">Parâmetro/Item</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;">Especificação/Descrição</th>
+                <th style="padding: 10px; text-align: center; border: 1px solid #e5e7eb; font-weight: 600; width: 100px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="spec-table-body">
+              <tr>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                  <input type="text" class="spec-param" placeholder="Ex: Faixa de Medição" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                  <input type="text" class="spec-value" placeholder="Ex: 0 a 100 mm" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                  <button type="button" class="btn danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="this.closest('tr').remove()">Remover</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
+
+      <!-- Princípio de Funcionamento -->
+      <div class="field">
+        <label>Princípio de Funcionamento</label>
+        <textarea class="principle" rows="4" placeholder="Descreva o princípio de funcionamento do equipamento..."></textarea>
+      </div>
+
       <div class="field">
         <label>Imagem do Equipamento</label>
         <input type="file" name="equipment_image_${equipmentSectionCounter}" class="equipment_image" data-section="${equipmentSectionCounter}" accept="image/*" />
@@ -353,6 +409,55 @@
     });
   }
 
+  // Adicionar linha na tabela de especificações
+  function addSpecRow(sectionId) {
+    const table = document.querySelector(`[data-section="${sectionId}"] .spec-table-body`);
+    if (!table) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="padding: 8px; border: 1px solid #e5e7eb;">
+        <input type="text" class="spec-param" placeholder="Ex: Resolução" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+      </td>
+      <td style="padding: 8px; border: 1px solid #e5e7eb;">
+        <input type="text" class="spec-value" placeholder="Ex: 0.001 mm" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+      </td>
+      <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+        <button type="button" class="btn danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="this.closest('tr').remove()">Remover</button>
+      </td>
+    `;
+    table.appendChild(row);
+  }
+
+  // Formatar valor como moeda brasileira
+  function formatCurrency(input) {
+    let value = input.value;
+
+    // Remove tudo exceto números
+    value = value.replace(/\D/g, '');
+
+    // Se vazio, limpa o campo
+    if (value === '') {
+      input.value = '';
+      input.setAttribute('data-raw-value', '');
+      return;
+    }
+
+    // Converte para número e formata
+    const numericValue = parseInt(value);
+
+    // Armazena o valor numérico em atributo data
+    input.setAttribute('data-raw-value', (numericValue / 100).toFixed(2));
+
+    // Formata para exibição: 46000 -> 46.000,00
+    const formatted = (numericValue / 100).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    input.value = formatted;
+  }
+
   function addRow(sectionId, preset){
     try {
       console.log('addRow chamado para:', sectionId, preset);
@@ -379,7 +484,7 @@
         <input type="text" class="item_name" placeholder="Descrição" value="${p.name||''}" />
         <input type="number" class="item_qty" min="1" step="1" value="${p.qty||1}" />
         ${daysField}
-        <input type="number" class="item_unit" step="0.01" min="0" placeholder="Preço unitário" value="${p.unit||p.unit_price||p.price||''}" />
+        <input type="text" class="item_unit" placeholder="Preço unitário (ex: 46000)" value="${p.unit||p.unit_price||p.price||''}" oninput="formatCurrency(this)" />
         <select class="item_currency">
           <option value="BRL" ${p.currency==='BRL'?'selected':''}>Real (R$)</option>
           <option value="USD" ${p.currency==='USD'?'selected':''}>Dólar ($)</option>
@@ -460,13 +565,34 @@
     // Coletar dados das seções de equipamentos
     const equipmentSections = [];
     document.querySelectorAll('.equipment-section').forEach((section, index) => {
-      const techSpec = section.querySelector('.tech_spec')?.value || '';
+      // Coletar dados da tabela de especificações
+      const specRows = [];
+      section.querySelectorAll('.spec-table-body tr').forEach(row => {
+        const param = row.querySelector('.spec-param')?.value || '';
+        const value = row.querySelector('.spec-value')?.value || '';
+        if (param || value) {
+          specRows.push({ param, value });
+        }
+      });
+
+      // Converter tabela para texto formatado
+      let techSpec = '';
+      if (specRows.length > 0) {
+        specRows.forEach(spec => {
+          if (spec.param && spec.value) {
+            techSpec += `${spec.param}: ${spec.value}\n`;
+          }
+        });
+      }
+
       const principle = section.querySelector('.principle')?.value || '';
+
       if (techSpec || principle) {
         equipmentSections.push({
-          tech_spec: techSpec,
+          tech_spec: techSpec.trim(),
           principle: principle,
-          index: index
+          index: index,
+          spec_table: specRows
         });
       }
     });
@@ -503,7 +629,17 @@
       document.querySelectorAll('#'+sectionId+' .item_row').forEach(row => {
         const name = row.querySelector('.item_name').value;
         const qty = row.querySelector('.item_qty').value;
-        const unit = row.querySelector('.item_unit').value;
+        const unitInput = row.querySelector('.item_unit');
+
+        // Pegar valor numérico do atributo data-raw-value ou processar o valor formatado
+        let unit = unitInput.getAttribute('data-raw-value') || unitInput.value;
+
+        // Se não tiver data-raw-value, tentar processar o valor formatado
+        if (!unitInput.getAttribute('data-raw-value') && unit) {
+          // Remove formatação brasileira: 46.000,00 -> 46000.00
+          unit = unit.replace(/\./g, '').replace(',', '.');
+        }
+
         const currency = row.querySelector('.item_currency').value;
         const daysInput = row.querySelector('.item_days');
         const days = daysInput ? daysInput.value : null;

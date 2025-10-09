@@ -226,6 +226,7 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
       contact_phone: req.body.contact_phone || '',
       seller_name: req.body.seller_name || '',
       equipment_image: equipmentImagePath,
+      equipment_images: JSON.stringify(equipmentImages), // Array de todas as imagens
       // Condições de pagamento
       include_payment_conditions: req.body.include_payment_conditions === 'on',
       payment_intro: req.body.payment_intro || '',
@@ -319,6 +320,7 @@ router.post('/preview-html', upload.any(), async (req, res) => {
       contact_phone: req.body.contact_phone || '',
       seller_name: req.body.seller_name || '',
       equipment_image: equipmentImagePath,
+      equipment_images: JSON.stringify(equipmentImages), // Array de todas as imagens
       status: 'Pré-visualização',
       // Condições de pagamento
       include_payment_conditions: req.body.include_payment_conditions === 'on',
@@ -451,6 +453,7 @@ router.post('/save-draft', upload.any(), async (req, res) => {
       contact_phone: req.body.contact_phone || '',
       seller_name: req.body.seller_name || '',
       equipment_image: equipmentImagePath,
+      equipment_images: JSON.stringify(equipmentImages), // Array de todas as imagens
       user_id: req.session.userId, // Associar rascunho ao usuário logado
       // Condições de pagamento
       include_payment_conditions: req.body.include_payment_conditions === 'on',

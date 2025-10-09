@@ -321,15 +321,16 @@ export async function getDashboardStats(userId = null, userRole = null) {
     const userParam = userRole === 'admin' ? [] : [userId];
 
     // Query única otimizada para pegar múltiplos counts de uma vez
+    // Usando CASE em vez de FILTER para compatibilidade com MySQL
     const [aggregatedRows] = await pool.execute(`
       SELECT
-        COUNT(*)::int as total_quotes,
-        COUNT(*) FILTER (WHERE status = 'Concluída')::int as completed_quotes,
-        COUNT(*) FILTER (WHERE status = 'Rascunho')::int as draft_quotes,
-        COUNT(*) FILTER (WHERE status = 'Concluída' AND COALESCE(business_status, 'ativa') = 'ativa')::int as ativa_count,
-        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'pedido_compra')::int as pedido_compra_count,
-        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'finalizada')::int as finalizada_count,
-        COUNT(*) FILTER (WHERE status = 'Concluída' AND business_status = 'baixa')::int as baixa_count
+        COUNT(*) as total_quotes,
+        SUM(CASE WHEN status = 'Concluída' THEN 1 ELSE 0 END) as completed_quotes,
+        SUM(CASE WHEN status = 'Rascunho' THEN 1 ELSE 0 END) as draft_quotes,
+        SUM(CASE WHEN status = 'Concluída' AND COALESCE(business_status, 'ativa') = 'ativa' THEN 1 ELSE 0 END) as ativa_count,
+        SUM(CASE WHEN status = 'Concluída' AND business_status = 'pedido_compra' THEN 1 ELSE 0 END) as pedido_compra_count,
+        SUM(CASE WHEN status = 'Concluída' AND business_status = 'finalizada' THEN 1 ELSE 0 END) as finalizada_count,
+        SUM(CASE WHEN status = 'Concluída' AND business_status = 'baixa' THEN 1 ELSE 0 END) as baixa_count
       FROM quotes${userFilter}
     `, userParam);
 
@@ -351,7 +352,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
 
     // Total de usuários (apenas admin) - query simples
     if (userRole === 'admin') {
-      const [userRows] = await pool.execute('SELECT COUNT(*)::int as count FROM users WHERE active = true');
+      const [userRows] = await pool.execute('SELECT COUNT(*) as count FROM users WHERE active = true');
       stats.totalUsers = parseInt(userRows[0]?.count) || 0;
     }
 
@@ -361,7 +362,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
     // Cotações por fornecedor
     parallelQueries.push(
       pool.execute(`
-        SELECT supplier, COUNT(*)::int as count
+        SELECT supplier, COUNT(*) as count
         FROM quotes
         WHERE supplier IS NOT NULL AND supplier != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
         GROUP BY supplier
@@ -373,7 +374,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
     // Cotações por cliente
     parallelQueries.push(
       pool.execute(`
-        SELECT client, COUNT(*)::int as count
+        SELECT client, COUNT(*) as count
         FROM quotes
         WHERE client IS NOT NULL AND client != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
         GROUP BY client
@@ -386,7 +387,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
     if (userRole === 'admin') {
       parallelQueries.push(
         pool.execute(`
-          SELECT u.username, u.full_name, COUNT(q.id)::int as count
+          SELECT u.username, u.full_name, COUNT(q.id) as count
           FROM users u
           LEFT JOIN quotes q ON u.id = q.user_id
           WHERE u.active = true

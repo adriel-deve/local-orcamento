@@ -307,43 +307,29 @@
     <!-- Especificações Técnicas -->
     <% if (quote.tech_spec || quote.principle || quote.equipment_image || quote.equipment_images) { %>
     <div class="section">
-      <!-- Imagens dos Equipamentos -->
       <%
-        let imagesToShow = [];
-
-        // Se tiver equipment_images (array), usar ele
+        // Preparar array de imagens
+        let equipImages = {};
         if (quote.equipment_images) {
           try {
-            const imagesObj = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
-            imagesToShow = Object.values(imagesObj).filter(img => img);
+            equipImages = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
           } catch (e) {
             console.error('Erro ao parsear equipment_images:', e);
           }
         }
-
-        // Se não tiver imagens no array mas tiver equipment_image único, usar ele
-        if (imagesToShow.length === 0 && quote.equipment_image) {
-          imagesToShow = [quote.equipment_image];
+        // Fallback para imagem única
+        if (Object.keys(equipImages).length === 0 && quote.equipment_image) {
+          equipImages = {'0': quote.equipment_image};
         }
 
-        if (imagesToShow.length > 0) {
+        // Processar especificações e agrupar por equipamento
+        let currentEquipIndex = 0;
+        const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
       %>
-      <div style="margin-bottom: 20px;">
-        <h3 class="section-title">Imagens dos Equipamentos</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-          <% imagesToShow.forEach((imgUrl, index) => { %>
-          <div style="text-align: center;">
-            <p style="font-size: 10px; margin-bottom: 5px; font-weight: 600;">Equipamento <%= index + 1 %></p>
-            <img src="<%= imgUrl %>" alt="Equipamento <%= index + 1 %>" style="max-width: 300px; max-height: 250px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <p style="color: red; font-size: 10px; display: none;">Erro ao carregar imagem</p>
-          </div>
-          <% }); %>
-        </div>
-      </div>
-        <% } %>
 
       <% if (quote.tech_spec) { %>
       <h3 class="section-title">Especificações Técnicas</h3>
+
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
         <thead>
           <tr style="background: #f3f4f6;">
@@ -353,18 +339,28 @@
         </thead>
         <tbody>
           <%
-            // Processar tech_spec em formato "Parâmetro: Valor" para tabela
-            const techLines = quote.tech_spec.split('\n').filter(line => line.trim());
-            techLines.forEach(line => {
+            techLines.forEach((line, idx) => {
               // Verifica se é cabeçalho de equipamento
               if (line.includes('--- EQUIPAMENTO')) {
+                // Mostrar imagem do equipamento antes do cabeçalho
+                const equipNum = currentEquipIndex;
+                const equipImage = equipImages[equipNum];
           %>
+          <% if (equipImage) { %>
+          <tr>
+            <td colspan="2" style="padding: 15px; border: 1px solid #ddd; text-align: center; background: #fafafa;">
+              <p style="font-size: 10px; margin: 0 0 8px 0; font-weight: 600;">Imagem do Equipamento <%= equipNum + 1 %></p>
+              <img src="<%= equipImage %>" alt="Equipamento <%= equipNum + 1 %>" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none';">
+            </td>
+          </tr>
+          <% } %>
           <tr>
             <td colspan="2" style="padding: 8px; border: 1px solid #ddd; background: #e5e7eb; font-weight: 700; text-align: center;">
               <%= line.replace(/---/g, '').trim() %>
             </td>
           </tr>
           <%
+                currentEquipIndex++;
               } else if (line.includes(':')) {
                 // Linha com formato "Parâmetro: Valor"
                 const parts = line.split(':');

@@ -100,38 +100,22 @@
       <div class="equipment-info">
         <h3 class="equipment-name"><%= quote.machine_model || 'Nome do Equipamento' %></h3>
 
-        <!-- Espaço para imagens dos equipamentos -->
-        <div class="equipment-image-placeholder">
-          <%
-            let imagesToShow = [];
-            if (quote.equipment_images) {
-              try {
-                const imagesObj = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
-                imagesToShow = Object.values(imagesObj).filter(img => img);
-              } catch (e) {
-                console.error('Erro ao parsear equipment_images:', e);
-              }
+        <%
+          // Preparar array de imagens
+          let equipImages = {};
+          if (quote.equipment_images) {
+            try {
+              equipImages = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
+            } catch (e) {
+              console.error('Erro ao parsear equipment_images:', e);
             }
-            if (imagesToShow.length === 0 && quote.equipment_image) {
-              imagesToShow = [quote.equipment_image];
-            }
-            if (imagesToShow.length > 0) {
-          %>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
-            <% imagesToShow.forEach((imgUrl, index) => { %>
-            <div class="image-box">
-              <p style="text-align: center; font-weight: 600; margin-bottom: 10px;">Equipamento <%= index + 1 %></p>
-              <img src="<%= imgUrl %>" alt="Equipamento <%= index + 1 %>" style="max-width: 100%; max-height: 400px; object-fit: contain;">
-            </div>
-            <% }); %>
-          </div>
-          <% } else { %>
-          <div class="image-box">
-            <span>Imagem do Equipamento</span>
-            <p>Dimensões: 600x450px</p>
-          </div>
-          <% } %>
-        </div>
+          }
+          if (Object.keys(equipImages).length === 0 && quote.equipment_image) {
+            equipImages = {'0': quote.equipment_image};
+          }
+          let currentEquipIndex = 0;
+          const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
+        %>
 
         <!-- Especificações técnicas -->
         <% if (quote.tech_spec) { %>
@@ -146,20 +130,27 @@
             </thead>
             <tbody>
               <%
-                // Processar tech_spec em formato "Parâmetro: Valor" para tabela
-                const techLines = quote.tech_spec.split('\n').filter(line => line.trim());
                 techLines.forEach(line => {
-                  // Verifica se é cabeçalho de equipamento
                   if (line.includes('--- EQUIPAMENTO')) {
+                    const equipNum = currentEquipIndex;
+                    const equipImage = equipImages[equipNum];
               %>
+              <% if (equipImage) { %>
+              <tr>
+                <td colspan="2" style="padding: 20px; border: 1px solid #e5e7eb; text-align: center; background: #fafafa;">
+                  <p style="font-weight: 600; margin-bottom: 10px;">Imagem do Equipamento <%= equipNum + 1 %></p>
+                  <img src="<%= equipImage %>" alt="Equipamento <%= equipNum + 1 %>" style="max-width: 100%; max-height: 450px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px;">
+                </td>
+              </tr>
+              <% } %>
               <tr>
                 <td colspan="2" style="padding: 10px; border: 1px solid #e5e7eb; background: #e5e7eb; font-weight: 700; text-align: center; font-size: 1.1em;">
                   <%= line.replace(/---/g, '').trim() %>
                 </td>
               </tr>
               <%
+                    currentEquipIndex++;
                   } else if (line.includes(':')) {
-                    // Linha com formato "Parâmetro: Valor"
                     const parts = line.split(':');
                     const param = parts[0].trim();
                     const value = parts.slice(1).join(':').trim();

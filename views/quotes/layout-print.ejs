@@ -323,61 +323,66 @@
         }
 
         // Processar especificações e agrupar por equipamento
-        let currentEquipIndex = 0;
         const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
+
+        // Agrupar linhas por equipamento
+        let equipments = [];
+        let currentEquip = null;
+
+        techLines.forEach(line => {
+          if (line.includes('--- EQUIPAMENTO')) {
+            if (currentEquip) equipments.push(currentEquip);
+            currentEquip = {
+              title: line.replace(/---/g, '').trim(),
+              specs: []
+            };
+          } else if (currentEquip && line.includes(':')) {
+            const parts = line.split(':');
+            currentEquip.specs.push({
+              param: parts[0].trim(),
+              value: parts.slice(1).join(':').trim()
+            });
+          }
+        });
+        if (currentEquip) equipments.push(currentEquip);
       %>
 
       <% if (quote.tech_spec) { %>
       <h3 class="section-title">Especificações Técnicas</h3>
 
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
-        <thead>
-          <tr style="background: #f3f4f6;">
-            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 35%;">Parâmetro</th>
-            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600;">Especificação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%
-            techLines.forEach((line, idx) => {
-              // Verifica se é cabeçalho de equipamento
-              if (line.includes('--- EQUIPAMENTO')) {
-                // Mostrar imagem do equipamento antes do cabeçalho
-                const equipNum = currentEquipIndex;
-                const equipImage = equipImages[equipNum];
-          %>
-          <% if (equipImage) { %>
-          <tr>
-            <td colspan="2" style="padding: 15px; border: 1px solid #ddd; text-align: center; background: #fafafa;">
-              <p style="font-size: 10px; margin: 0 0 8px 0; font-weight: 600;">Imagem do Equipamento <%= equipNum + 1 %></p>
-              <img src="<%= equipImage %>" alt="Equipamento <%= equipNum + 1 %>" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none';">
-            </td>
-          </tr>
-          <% } %>
-          <tr>
-            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; background: #e5e7eb; font-weight: 700; text-align: center;">
-              <%= line.replace(/---/g, '').trim() %>
-            </td>
-          </tr>
-          <%
-                currentEquipIndex++;
-              } else if (line.includes(':')) {
-                // Linha com formato "Parâmetro: Valor"
-                const parts = line.split(':');
-                const param = parts[0].trim();
-                const value = parts.slice(1).join(':').trim();
-          %>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;"><%= param %></td>
-            <td style="padding: 8px; border: 1px solid #ddd;"><%= value %></td>
-          </tr>
-          <%
-              }
-            });
-          %>
-        </tbody>
-      </table>
+      <% equipments.forEach((equip, equipIdx) => { %>
+        <!-- Imagem do equipamento fora da tabela -->
+        <% if (equipImages[equipIdx]) { %>
+        <div style="text-align: center; margin-bottom: 15px;">
+          <p style="font-size: 10px; margin: 0 0 8px 0; font-weight: 600;">Imagem do Equipamento <%= equipIdx + 1 %></p>
+          <img src="<%= equipImages[equipIdx] %>" alt="Equipamento <%= equipIdx + 1 %>" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none';">
+        </div>
         <% } %>
+
+        <!-- Tabela do equipamento -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;">
+          <thead>
+            <tr style="background: #f3f4f6;">
+              <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 35%;">Parâmetro</th>
+              <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600;">Especificação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="2" style="padding: 8px; border: 1px solid #ddd; background: #e5e7eb; font-weight: 700; text-align: center;">
+                <%= equip.title %>
+              </td>
+            </tr>
+            <% equip.specs.forEach(spec => { %>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;"><%= spec.param %></td>
+              <td style="padding: 8px; border: 1px solid #ddd;"><%= spec.value %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% }); %>
+      <% } %>
 
       <% if (quote.principle) { %>
       <h3 class="section-title">Princípio de Funcionamento</h3>

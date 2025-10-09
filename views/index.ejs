@@ -824,7 +824,7 @@
 
       // Tabela de Clientes
       const clientsTable = document.getElementById('clientsTable').querySelector('tbody');
-      const clients = stats.byClient || [];
+      // Reutilizar variável clients já declarada anteriormente
       const maxClient = Math.max(...clients.map(c => c.count), 1);
 
       if (clients.length > 0) {

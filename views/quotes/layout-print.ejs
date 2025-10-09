@@ -325,6 +325,9 @@
         // Processar especificações e agrupar por equipamento
         const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
 
+        // Processar princípios de funcionamento (separados por "---")
+        const principleParts = quote.principle ? quote.principle.split('---').map(p => p.trim()).filter(p => p) : [];
+
         // Agrupar linhas por equipamento
         let equipments = [];
         let currentEquip = null;
@@ -351,7 +354,7 @@
       <h3 class="section-title">Especificações Técnicas</h3>
 
       <% equipments.forEach((equip, equipIdx) => { %>
-        <!-- Imagem do equipamento fora da tabela -->
+        <!-- Imagem do equipamento -->
         <% if (equipImages[equipIdx]) { %>
         <div style="text-align: center; margin-bottom: 15px;">
           <p style="font-size: 10px; margin: 0 0 8px 0; font-weight: 600;">Imagem do Equipamento <%= equipIdx + 1 %></p>
@@ -360,7 +363,7 @@
         <% } %>
 
         <!-- Tabela do equipamento -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
           <thead>
             <tr style="background: #f3f4f6;">
               <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 35%;">Parâmetro</th>
@@ -381,13 +384,16 @@
             <% }); %>
           </tbody>
         </table>
+
+        <!-- Princípio de Funcionamento deste equipamento -->
+        <% if (principleParts[equipIdx]) { %>
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 11px; font-weight: 700; margin-bottom: 8px;">Princípio de Funcionamento</h4>
+          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= principleParts[equipIdx] %></p>
+        </div>
+        <% } %>
       <% }); %>
       <% } %>
-
-      <% if (quote.principle) { %>
-      <h3 class="section-title">Princípio de Funcionamento</h3>
-      <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
-        <% } %>
     </div>
       <% } %>
 

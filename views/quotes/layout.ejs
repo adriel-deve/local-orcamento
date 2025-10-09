@@ -117,6 +117,9 @@
           // Processar especificações e agrupar por equipamento
           const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
 
+          // Processar princípios de funcionamento (separados por "---")
+          const principleParts = quote.principle ? quote.principle.split('---').map(p => p.trim()).filter(p => p) : [];
+
           // Agrupar linhas por equipamento
           let equipments = [];
           let currentEquip = null;
@@ -145,7 +148,7 @@
           <h4>Especificações Técnicas</h4>
 
           <% equipments.forEach((equip, equipIdx) => { %>
-            <!-- Imagem do equipamento fora da tabela -->
+            <!-- Imagem do equipamento -->
             <% if (equipImages[equipIdx]) { %>
             <div style="text-align: center; margin: 20px 0 15px 0;">
               <p style="font-weight: 600; margin-bottom: 10px;">Imagem do Equipamento <%= equipIdx + 1 %></p>
@@ -154,7 +157,7 @@
             <% } %>
 
             <!-- Tabela do equipamento -->
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
               <thead>
                 <tr style="background: #f3f4f6;">
                   <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600; width: 35%;">Parâmetro</th>
@@ -175,17 +178,17 @@
                 <% }); %>
               </tbody>
             </table>
-          <% }); %>
-        </div>
-        <% } %>
 
-        <!-- Princípio de funcionamento -->
-        <% if (quote.principle) { %>
-        <div class="principle-section">
-          <h4>Princípio de Funcionamento</h4>
-          <div class="principle-content">
-            <%= quote.principle %>
-          </div>
+            <!-- Princípio de Funcionamento deste equipamento -->
+            <% if (principleParts[equipIdx]) { %>
+            <div style="margin-bottom: 25px;">
+              <h5 style="font-weight: 700; margin-bottom: 10px;">Princípio de Funcionamento</h5>
+              <div class="principle-content">
+                <%= principleParts[equipIdx] %>
+              </div>
+            </div>
+            <% } %>
+          <% }); %>
         </div>
         <% } %>
 

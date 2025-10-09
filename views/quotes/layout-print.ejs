@@ -316,8 +316,44 @@
         <% } %>
 
       <% if (quote.tech_spec) { %>
-      <h3 class="section-title">Especificação Técnica</h3>
-      <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.tech_spec %></p>
+      <h3 class="section-title">Especificações Técnicas</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
+        <thead>
+          <tr style="background: #f3f4f6;">
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 35%;">Parâmetro</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600;">Especificação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+            // Processar tech_spec em formato "Parâmetro: Valor" para tabela
+            const techLines = quote.tech_spec.split('\n').filter(line => line.trim());
+            techLines.forEach(line => {
+              // Verifica se é cabeçalho de equipamento
+              if (line.includes('--- EQUIPAMENTO')) {
+          %>
+          <tr>
+            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; background: #e5e7eb; font-weight: 700; text-align: center;">
+              <%= line.replace(/---/g, '').trim() %>
+            </td>
+          </tr>
+          <%
+              } else if (line.includes(':')) {
+                // Linha com formato "Parâmetro: Valor"
+                const parts = line.split(':');
+                const param = parts[0].trim();
+                const value = parts.slice(1).join(':').trim();
+          %>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;"><%= param %></td>
+            <td style="padding: 8px; border: 1px solid #ddd;"><%= value %></td>
+          </tr>
+          <%
+              }
+            });
+          %>
+        </tbody>
+      </table>
         <% } %>
 
       <% if (quote.principle) { %>

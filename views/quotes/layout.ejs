@@ -116,9 +116,43 @@
         <% if (quote.tech_spec) { %>
         <div class="technical-section">
           <h4>Especificações Técnicas</h4>
-          <div class="tech-content">
-            <%= quote.tech_spec %>
-          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600; width: 35%;">Parâmetro</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;">Especificação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+                // Processar tech_spec em formato "Parâmetro: Valor" para tabela
+                const techLines = quote.tech_spec.split('\n').filter(line => line.trim());
+                techLines.forEach(line => {
+                  // Verifica se é cabeçalho de equipamento
+                  if (line.includes('--- EQUIPAMENTO')) {
+              %>
+              <tr>
+                <td colspan="2" style="padding: 10px; border: 1px solid #e5e7eb; background: #e5e7eb; font-weight: 700; text-align: center; font-size: 1.1em;">
+                  <%= line.replace(/---/g, '').trim() %>
+                </td>
+              </tr>
+              <%
+                  } else if (line.includes(':')) {
+                    // Linha com formato "Parâmetro: Valor"
+                    const parts = line.split(':');
+                    const param = parts[0].trim();
+                    const value = parts.slice(1).join(':').trim();
+              %>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600; background: #fafafa;"><%= param %></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><%= value %></td>
+              </tr>
+              <%
+                  }
+                });
+              %>
+            </tbody>
+          </table>
         </div>
         <% } %>
 

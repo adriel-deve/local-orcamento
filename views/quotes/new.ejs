@@ -109,7 +109,7 @@
           </div>
           <div class="field">
             <label>Imagem do Equipamento</label>
-            <input type="file" name="equipment_image" class="equipment_image" accept="image/*" />
+            <input type="file" name="equipment_image_0" class="equipment_image" data-section="0" accept="image/*" />
             <small style="color: #666; font-size: 12px;">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
           </div>
         </div>
@@ -315,7 +315,7 @@
       </div>
       <div class="field">
         <label>Imagem do Equipamento</label>
-        <input type="file" name="equipment_image" class="equipment_image" accept="image/*" />
+        <input type="file" name="equipment_image_${equipmentSectionCounter}" class="equipment_image" data-section="${equipmentSectionCounter}" accept="image/*" />
         <small style="color: #666; font-size: 12px;">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
       </div>
     `;

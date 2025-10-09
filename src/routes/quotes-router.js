@@ -175,14 +175,22 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
     const payload = JSON.parse(req.body.specs_json || '{}');
 
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    let equipmentImagePath = req.body.existing_equipment_image || req.body.equipment_image_url || null;
 
+    // Processar múltiplas imagens de equipamentos
+    const equipmentImages = {};
     if (req.files && req.files.length > 0) {
-      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
-      if (imageFile) {
-        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
-      }
+      req.files.forEach(file => {
+        // Pegar imagens com nome equipment_image_0, equipment_image_1, etc
+        const match = file.fieldname.match(/^equipment_image_(\d+)$/);
+        if (match) {
+          const sectionIndex = match[1];
+          equipmentImages[sectionIndex] = `${baseUrl}/uploads/${file.filename}`;
+        }
+      });
     }
+
+    // Por compatibilidade, usar a primeira imagem como equipmentImagePath principal
+    let equipmentImagePath = equipmentImages['0'] || req.body.existing_equipment_image || req.body.equipment_image_url || null;
 
     if (equipmentImagePath) {
       const trimmed = String(equipmentImagePath).trim();
@@ -276,16 +284,21 @@ router.post('/preview-html', upload.any(), async (req, res) => {
   try {
     const payload = JSON.parse(req.body.specs_json || '{}');
 
-    // Process uploaded image
-    let equipmentImagePath = null;
+    // Processar múltiplas imagens de equipamentos
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const equipmentImages = {};
     if (req.files && req.files.length > 0) {
-      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
-      if (imageFile) {
-        // Use absolute path for PDF generation
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
-      }
+      req.files.forEach(file => {
+        const match = file.fieldname.match(/^equipment_image_(\d+)$/);
+        if (match) {
+          const sectionIndex = match[1];
+          equipmentImages[sectionIndex] = `${baseUrl}/uploads/${file.filename}`;
+        }
+      });
     }
+
+    // Por compatibilidade, usar a primeira imagem como equipmentImagePath principal
+    let equipmentImagePath = equipmentImages['0'] || null;
 
     const quote = {
       quote_code: req.body.quote_code || 'PREVIEW',
@@ -386,15 +399,21 @@ router.post('/save-draft', upload.any(), async (req, res) => {
     console.log('Salvando rascunho no banco...');
     const payload = JSON.parse(req.body.specs_json || '{}');
 
-    // Process uploaded image
-    let equipmentImagePath = null;
+    // Processar múltiplas imagens de equipamentos
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const equipmentImages = {};
     if (req.files && req.files.length > 0) {
-      const imageFile = req.files.find(f => f.fieldname === 'equipment_image');
-      if (imageFile) {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        equipmentImagePath = `${baseUrl}/uploads/${imageFile.filename}`;
-      }
+      req.files.forEach(file => {
+        const match = file.fieldname.match(/^equipment_image_(\d+)$/);
+        if (match) {
+          const sectionIndex = match[1];
+          equipmentImages[sectionIndex] = `${baseUrl}/uploads/${file.filename}`;
+        }
+      });
     }
+
+    // Por compatibilidade, usar a primeira imagem como equipmentImagePath principal
+    let equipmentImagePath = equipmentImages['0'] || null;
 
     const quote = {
       quote_code: req.body.quote_code || `RASCUNHO-${Date.now()}`,

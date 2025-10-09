@@ -370,10 +370,18 @@ router.get('/new', async (_req, res) => {
 });
 
 // Página de Rascunhos
-router.get('/drafts', async (_req, res) => {
+router.get('/drafts', async (req, res) => {
   try {
-    const allQuotes = await getAllQuotes();
+    const userId = req.session?.userId;
+    const userRole = req.session?.userRole;
+
+    console.log('[DRAFTS] Loading drafts for userId:', userId, 'role:', userRole);
+
+    const allQuotes = await getAllQuotes(userId, userRole);
     const drafts = allQuotes.filter(quote => quote.status === 'Rascunho');
+
+    console.log('[DRAFTS] Found', drafts.length, 'drafts');
+
     res.render('quotes/drafts', { quotes: drafts });
   } catch (error) {
     console.error('Erro ao buscar rascunhos:', error);
@@ -382,10 +390,18 @@ router.get('/drafts', async (_req, res) => {
 });
 
 // Página de Cotações Concluídas
-router.get('/completed', async (_req, res) => {
+router.get('/completed', async (req, res) => {
   try {
-    const allQuotes = await getAllQuotes();
+    const userId = req.session?.userId;
+    const userRole = req.session?.userRole;
+
+    console.log('[COMPLETED] Loading completed quotes for userId:', userId, 'role:', userRole);
+
+    const allQuotes = await getAllQuotes(userId, userRole);
     const completed = allQuotes.filter(quote => quote.status === 'Concluída');
+
+    console.log('[COMPLETED] Found', completed.length, 'completed quotes');
+
     res.render('quotes/completed', { quotes: completed });
   } catch (error) {
     console.error('Erro ao buscar cotações concluídas:', error);

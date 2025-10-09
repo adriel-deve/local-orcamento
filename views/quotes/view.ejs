@@ -73,9 +73,9 @@
   <div class="actions">
     <a class="btn" href="/quotes/new">Nova cotação</a>
     <button class="btn" onclick="window.print()">Imprimir / PDF</button>
-    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout">Visualizar Layout</a>
-    <a class="btn" href="/quotes/<%= quote.quote_code %>/xlsx">Baixar Excel</a>
-    <a class="btn" href="/quotes/<%= quote.quote_code %>/pdf">Baixar PDF</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout" target="_blank">Visualizar Layout</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/xlsx" target="_blank">Baixar Excel</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/pdf" target="_blank">Baixar PDF</a>
   </div>
 </section>
 <%- include('../partials/bottom') %>

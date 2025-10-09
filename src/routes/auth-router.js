@@ -49,8 +49,8 @@ router.post('/login', async (req, res) => {
         console.error('[AUTH] Error saving session:', err);
         return res.render('login', { error: 'Erro ao salvar sessão. Tente novamente.' });
       }
-      console.log('[AUTH] Session saved successfully, redirecting to /quotes/new');
-      res.redirect('/quotes/new');
+      console.log('[AUTH] Session saved successfully, redirecting to dashboard');
+      res.redirect('/');
     });
   } catch (error) {
     console.error('[AUTH] Login error:', error);

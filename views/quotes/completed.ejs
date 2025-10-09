@@ -299,8 +299,8 @@
         </td>
         <td>
           <div class="action-buttons">
-            <a href="/quotes/<%= quote.quote_code %>/layout" class="btn-small btn-view">Visualizar</a>
-            <a href="/quotes/<%= quote.quote_code %>/pdf" class="btn-small btn-pdf">PDF</a>
+            <a href="/quotes/<%= quote.quote_code %>/layout" target="_blank" class="btn-small btn-view">Visualizar</a>
+            <a href="/quotes/<%= quote.quote_code %>/pdf" target="_blank" class="btn-small btn-pdf">PDF</a>
             <button onclick="openStatusModal('<%= quote.quote_code %>', '<%= quote.business_status || 'ativa' %>')" class="btn-small btn-status">Status</button>
             <% if (currentUser && currentUser.role === 'admin') { %>
               <button onclick="deleteQuote('<%= quote.quote_code %>')" class="btn-small btn-delete">Excluir</button>

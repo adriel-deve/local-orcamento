@@ -386,11 +386,16 @@
           </tbody>
         </table>
 
-        <!-- Princípio de Funcionamento -->
-        <% if (equipIdx === 0 && quote.principle) { %>
+        <!-- Princípio de Funcionamento deste equipamento -->
+        <%
+          // Dividir princípio em partes (separadas por "---")
+          const principleSections = quote.principle ? quote.principle.split('---').map(p => p.trim()).filter(p => p && !p.includes('EQUIPAMENTO')) : [];
+
+          if (principleSections[equipIdx]) {
+        %>
         <div style="margin-bottom: 20px;">
           <h4 style="font-size: 11px; font-weight: 700; margin-bottom: 8px;">Princípio de Funcionamento</h4>
-          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
+          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= principleSections[equipIdx] %></p>
         </div>
         <% } %>
       <% }); %>

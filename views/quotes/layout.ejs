@@ -181,11 +181,11 @@
             </table>
 
             <!-- Princípio de Funcionamento deste equipamento -->
-            <% if (principleParts[equipIdx]) { %>
+            <% if (quote.principle) { %>
             <div style="margin-bottom: 25px;">
               <h5 style="font-weight: 700; margin-bottom: 10px;">Princípio de Funcionamento</h5>
               <div class="principle-content">
-                <%= principleParts[equipIdx] %>
+                <%= principleParts[equipIdx] || quote.principle %>
               </div>
             </div>
             <% } %>

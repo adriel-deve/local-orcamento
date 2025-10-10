@@ -102,17 +102,23 @@
 
         <%
           // Preparar array de imagens
-          let equipImages = {};
+          let equipImagesObj = {};
           if (quote.equipment_images) {
             try {
-              equipImages = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
+              equipImagesObj = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
             } catch (e) {
               console.error('Erro ao parsear equipment_images:', e);
             }
           }
-          if (Object.keys(equipImages).length === 0 && quote.equipment_image) {
-            equipImages = {'0': quote.equipment_image};
+          if (Object.keys(equipImagesObj).length === 0 && quote.equipment_image) {
+            equipImagesObj = {'0': quote.equipment_image};
           }
+
+          // Converter objeto em array ordenado por chave numérica
+          const equipImages = [];
+          Object.keys(equipImagesObj).sort((a, b) => parseInt(a) - parseInt(b)).forEach(key => {
+            equipImages[parseInt(key)] = equipImagesObj[key];
+          });
 
           // Processar especificações e agrupar por equipamento
           const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];

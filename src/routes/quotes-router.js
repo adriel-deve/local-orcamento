@@ -6,6 +6,7 @@ import os from 'os';
 import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
 import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote, updateQuoteBusinessStatus, getDashboardStats } from '../storage/database.js';
+import { uploadToCloudinary } from '../config/cloudinary.js';
 
 const router = Router();
 
@@ -180,15 +181,32 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
     const equipmentImages = {};
     if (req.files && req.files.length > 0) {
       console.log('📸 Files recebidos:', req.files.map(f => ({ fieldname: f.fieldname, filename: f.filename })));
-      req.files.forEach(file => {
-        // Pegar imagens com nome equipment_image_0, equipment_image_1, etc
-        const match = file.fieldname.match(/^equipment_image_(\d+)$/);
-        if (match) {
-          const sectionIndex = match[1];
-          equipmentImages[sectionIndex] = `${baseUrl}/uploads/${file.filename}`;
-          console.log(`✅ Imagem ${sectionIndex} processada:`, equipmentImages[sectionIndex]);
-        }
-      });
+
+      // Fazer upload de todas as imagens para o Cloudinary em paralelo
+      const uploadPromises = req.files
+        .filter(file => file.fieldname.match(/^equipment_image_(\d+)$/))
+        .map(async (file) => {
+          const match = file.fieldname.match(/^equipment_image_(\d+)$/);
+          if (match) {
+            const sectionIndex = match[1];
+            try {
+              // Ler o arquivo
+              const fileBuffer = fs.readFileSync(file.path);
+              // Fazer upload para Cloudinary
+              const cloudinaryUrl = await uploadToCloudinary(fileBuffer, 'equipment-images');
+              // Deletar arquivo temporário
+              fs.unlinkSync(file.path);
+
+              equipmentImages[sectionIndex] = cloudinaryUrl;
+              console.log(`✅ Imagem ${sectionIndex} enviada para Cloudinary:`, cloudinaryUrl);
+            } catch (error) {
+              console.error(`❌ Erro ao fazer upload da imagem ${sectionIndex}:`, error);
+            }
+          }
+        });
+
+      // Aguardar todos os uploads
+      await Promise.all(uploadPromises);
     }
     console.log('📦 equipmentImages final:', equipmentImages);
 

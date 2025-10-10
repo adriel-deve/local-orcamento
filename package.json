@@ -13,9 +13,13 @@
         "claude:help": "cmd /c npx -y @anthropic-ai/claude-code --help"
     },
     "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cloudinary": "^2.7.0",
+        "connect-pg-simple": "^10.0.0",
         "dotenv": "^16.4.5",
         "ejs": "^3.1.10",
         "express": "^4.19.2",
+        "express-session": "^1.18.1",
         "form-data": "^4.0.4",
         "html2canvas": "^1.4.1",
         "jspdf": "^2.5.1",
@@ -25,9 +29,6 @@
         "pdfkit": "^0.15.0",
         "pg": "^8.16.3",
         "uuid": "^10.0.0",
-        "xlsx": "^0.18.5",
-        "bcrypt": "^5.1.1",
-        "express-session": "^1.18.1",
-        "connect-pg-simple": "^10.0.0"
+        "xlsx": "^0.18.5"
     }
 }

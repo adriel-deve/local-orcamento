@@ -619,6 +619,12 @@ router.get('/:code/layout', async (req, res) => {
   const code = req.params.code;
   const data = await getQuoteByCode(code);
   if (!data) return res.status(404).send('Cotação não encontrada');
+
+  console.log('🔍 Quote loaded from DB:', {
+    equipment_image: data.quote.equipment_image,
+    equipment_images: data.quote.equipment_images
+  });
+
   const categorized = categorizeSpecs(data.specs);
   const sections = Object.values(categorized).map(section => ({
     ...section,

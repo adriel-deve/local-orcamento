@@ -371,11 +371,6 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td colspan="2" style="padding: 8px; border: 1px solid #ddd; background: #e5e7eb; font-weight: 700; text-align: center;">
-                <%= equip.title %>
-              </td>
-            </tr>
             <% equip.specs.forEach(spec => { %>
             <tr>
               <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;"><%= spec.param %></td>
@@ -386,10 +381,10 @@
         </table>
 
         <!-- Princípio de Funcionamento deste equipamento -->
-        <% if (principleParts[equipIdx]) { %>
+        <% if (quote.principle) { %>
         <div style="margin-bottom: 20px;">
           <h4 style="font-size: 11px; font-weight: 700; margin-bottom: 8px;">Princípio de Funcionamento</h4>
-          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= principleParts[equipIdx] %></p>
+          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
         </div>
         <% } %>
       <% }); %>

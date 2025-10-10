@@ -179,15 +179,18 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
     // Processar múltiplas imagens de equipamentos
     const equipmentImages = {};
     if (req.files && req.files.length > 0) {
+      console.log('📸 Files recebidos:', req.files.map(f => ({ fieldname: f.fieldname, filename: f.filename })));
       req.files.forEach(file => {
         // Pegar imagens com nome equipment_image_0, equipment_image_1, etc
         const match = file.fieldname.match(/^equipment_image_(\d+)$/);
         if (match) {
           const sectionIndex = match[1];
           equipmentImages[sectionIndex] = `${baseUrl}/uploads/${file.filename}`;
+          console.log(`✅ Imagem ${sectionIndex} processada:`, equipmentImages[sectionIndex]);
         }
       });
     }
+    console.log('📦 equipmentImages final:', equipmentImages);
 
     // Por compatibilidade, usar a primeira imagem como equipmentImagePath principal
     let equipmentImagePath = equipmentImages['0'] || req.body.existing_equipment_image || req.body.equipment_image_url || null;

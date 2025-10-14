@@ -6,7 +6,10 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(npm start)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(vercel logs:*)"
     ],
     "deny": [],
     "ask": []

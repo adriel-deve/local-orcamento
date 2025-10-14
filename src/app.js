@@ -136,24 +136,8 @@ fs.mkdirSync(outputPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 app.use('/output', express.static(outputPath));
 
-// Session configuration - create native PG pool for session store
-const { Pool: PgPool } = pg;
-const sessionPool = new PgPool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 5
-});
-
-const PgSession = connectPgSimple(session);
-
-app.use(session({
-  store: new PgSession({
-    pool: sessionPool, // Use native PG pool for session store
-    tableName: 'session',
-    createTableIfMissing: false
-  }),
+// Session configuration
+let sessionConfig = {
   secret: process.env.SESSION_SECRET || 'pharmatec-orcamentos-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
@@ -162,9 +146,35 @@ app.use(session({
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     sameSite: 'lax'
-  },
-  proxy: true // Trust the reverse proxy (Vercel)
-}));
+  }
+};
+
+// Use PostgreSQL session store only if DATABASE_URL is provided (production/Vercel)
+if (process.env.DATABASE_URL) {
+  const { Pool: PgPool } = pg;
+  const sessionPool = new PgPool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    max: 5
+  });
+
+  const PgSession = connectPgSimple(session);
+
+  sessionConfig.store = new PgSession({
+    pool: sessionPool,
+    tableName: 'session',
+    createTableIfMissing: false
+  });
+  sessionConfig.proxy = true; // Trust the reverse proxy (Vercel)
+
+  console.log('Using PostgreSQL session store');
+} else {
+  console.log('Using memory session store (development only)');
+}
+
+app.use(session(sessionConfig));
 
 // Set current user in locals for all views
 app.use(setUserLocals);

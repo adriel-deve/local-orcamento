@@ -103,6 +103,17 @@
         border-color: rgba(220, 38, 38, 0.5);
       }
 
+      /* Quando sidebar está fechado, mudar cor do botão */
+      .sidebar.collapsed ~ .hamburger-btn {
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar.collapsed ~ .hamburger-btn:hover {
+        background: rgba(220, 38, 38, 0.1);
+        border-color: rgba(220, 38, 38, 0.3);
+      }
+
       .hamburger-icon {
         display: flex;
         flex-direction: column;
@@ -117,6 +128,11 @@
         background: white;
         border-radius: 2px;
         transition: all 0.3s ease;
+      }
+
+      /* Quando sidebar está fechado, linhas ficam pretas */
+      .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span {
+        background: #1f2937;
       }
 
       .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span:nth-child(1) {

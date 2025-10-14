@@ -208,24 +208,9 @@ export async function getQuoteByCode(code) {
 
 export async function getAllQuotes(userId = null, userRole = null) {
   try {
-    let query = 'SELECT quote_code, company, client, supplier, date, status, business_status, purchase_order, created_at FROM quotes';
+    // Todos os usuários veem todas as cotações (sem filtro por role)
+    const query = 'SELECT quote_code, company, client, supplier, date, status, business_status, purchase_order, created_at FROM quotes ORDER BY created_at DESC';
     const params = [];
-
-    // Filtrar baseado no usuário e role
-    if (userId && userRole) {
-      if (userRole === 'admin') {
-        // Admin vê todas as cotações
-        query += ' ORDER BY created_at DESC';
-      } else {
-        // Usuário comum vê apenas suas cotações em rascunho + todas as concluídas
-        query += ' WHERE (user_id = $1 AND status = $2) OR status = $3 ORDER BY created_at DESC';
-        params.push(userId, 'Rascunho', 'Concluída');
-      }
-    } else {
-      // Se não houver usuário, mostrar apenas concluídas
-      query += ' WHERE status = $1 ORDER BY created_at DESC';
-      params.push('Concluída');
-    }
 
     const [rows] = await pool.execute(query, params);
     return rows || [];

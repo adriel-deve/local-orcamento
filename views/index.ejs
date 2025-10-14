@@ -319,7 +319,6 @@
     </div>
   </div>
 
-  <% if (currentUser && currentUser.role === 'admin') { %>
   <div class="stat-card blue">
     <div class="stat-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -329,7 +328,6 @@
       <p>Usuários Ativos</p>
     </div>
   </div>
-  <% } %>
 </div>
 
 <!-- Business Status Cards -->
@@ -492,7 +490,6 @@
   </table>
 </div>
 
-<% if (currentUser && currentUser.role === 'admin') { %>
 <!-- Quotes by User -->
 <div class="table-card">
   <div class="table-card-header">
@@ -514,7 +511,6 @@
     </tbody>
   </table>
 </div>
-<% } %>
 
 <script>
   async function loadDashboard() {
@@ -570,10 +566,7 @@
       document.getElementById('totalQuotes').textContent = stats.totalQuotes || 0;
       document.getElementById('completedQuotes').textContent = (stats.byStatus?.['Concluída'] || 0);
       document.getElementById('draftQuotes').textContent = stats.totalDrafts || 0;
-
-      <% if (currentUser && currentUser.role === 'admin') { %>
       document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-      <% } %>
 
       // Atualizar cards de business status
       const businessStatusData = stats.byBusinessStatus || {};
@@ -843,7 +836,6 @@
         clientsTable.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum cliente encontrado</td></tr>';
       }
 
-      <% if (currentUser && currentUser.role === 'admin') { %>
       // Tabela de Usuários
       const usersTable = document.getElementById('usersTable').querySelector('tbody');
       const users = stats.byUser || [];
@@ -864,7 +856,6 @@
       } else {
         usersTable.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum usuário encontrado</td></tr>';
       }
-      <% } %>
 
       // Remover indicador de loading
       const loadingDiv = document.getElementById('dashboard-loading');

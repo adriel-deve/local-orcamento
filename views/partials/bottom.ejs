@@ -9,6 +9,7 @@
       function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed');
 
         // Salvar estado no localStorage
         if (sidebar.classList.contains('collapsed')) {
@@ -25,6 +26,7 @@
 
         if (isCollapsed) {
           sidebar.classList.add('collapsed');
+          document.body.classList.add('sidebar-collapsed');
         }
       });
     </script>

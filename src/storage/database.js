@@ -301,13 +301,7 @@ export async function getDashboardStats(userId = null, userRole = null) {
     console.log('[getDashboardStats] Starting... userId:', userId, 'userRole:', userRole);
     const stats = {};
 
-    // Filtro baseado em role
-    const userFilter = userRole === 'admin' ? '' : ` WHERE user_id = $1`;
-    const userParam = userRole === 'admin' ? [] : [userId];
-
-    // Query única otimizada para pegar múltiplos counts de uma vez
-    // Usando CASE em vez de FILTER para compatibilidade com MySQL
-    // COALESCE garante que SUM retorne 0 em vez de NULL quando não há registros
+    // Todos os usuários veem estatísticas de todas as cotações
     const [aggregatedRows] = await pool.execute(`
       SELECT
         COUNT(*) as total_quotes,
@@ -317,8 +311,8 @@ export async function getDashboardStats(userId = null, userRole = null) {
         COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'pedido_compra' THEN 1 ELSE 0 END), 0) as pedido_compra_count,
         COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'finalizada' THEN 1 ELSE 0 END), 0) as finalizada_count,
         COALESCE(SUM(CASE WHEN status = 'Concluída' AND business_status = 'baixa' THEN 1 ELSE 0 END), 0) as baixa_count
-      FROM quotes${userFilter}
-    `, userParam);
+      FROM quotes
+    `, []);
 
     console.log('[getDashboardStats] Raw aggregated data:', aggregatedRows[0]);
 
@@ -353,43 +347,41 @@ export async function getDashboardStats(userId = null, userRole = null) {
     // Queries paralelas para fornecedores, clientes e usuários
     const parallelQueries = [];
 
-    // Cotações por fornecedor
+    // Cotações por fornecedor - todos os usuários veem todos
     parallelQueries.push(
       pool.execute(`
         SELECT supplier, COUNT(*) as count
         FROM quotes
-        WHERE supplier IS NOT NULL AND supplier != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+        WHERE supplier IS NOT NULL AND supplier != ''
         GROUP BY supplier
         ORDER BY count DESC
         LIMIT 10
-      `, userParam)
+      `, [])
     );
 
-    // Cotações por cliente
+    // Cotações por cliente - todos os usuários veem todos
     parallelQueries.push(
       pool.execute(`
         SELECT client, COUNT(*) as count
         FROM quotes
-        WHERE client IS NOT NULL AND client != ''${userRole === 'admin' ? '' : ' AND user_id = $1'}
+        WHERE client IS NOT NULL AND client != ''
         GROUP BY client
         ORDER BY count DESC
         LIMIT 10
-      `, userParam)
+      `, [])
     );
 
-    // Cotações por usuário (apenas admin)
-    if (userRole === 'admin') {
-      parallelQueries.push(
-        pool.execute(`
-          SELECT u.username, u.full_name, COUNT(q.id) as count
-          FROM users u
-          LEFT JOIN quotes q ON u.id = q.user_id
-          WHERE u.active = true
-          GROUP BY u.id, u.username, u.full_name
-          ORDER BY count DESC
-        `)
-      );
-    }
+    // Cotações por usuário - todos os usuários veem
+    parallelQueries.push(
+      pool.execute(`
+        SELECT u.username, u.full_name, COUNT(q.id) as count
+        FROM users u
+        LEFT JOIN quotes q ON u.id = q.user_id
+        WHERE u.active = true
+        GROUP BY u.id, u.username, u.full_name
+        ORDER BY count DESC
+      `)
+    );
 
     // Executar todas as queries em paralelo
     console.log('[getDashboardStats] Executing parallel queries...');
@@ -411,15 +403,14 @@ export async function getDashboardStats(userId = null, userRole = null) {
       count: parseInt(row.count) || 0
     }));
 
-    if (userRole === 'admin' && results[2]) {
-      const [userQuoteRows] = results[2];
-      console.log('[getDashboardStats] User rows count:', userQuoteRows?.length || 0);
-      stats.byUser = userQuoteRows.map(row => ({
-        username: row.username,
-        full_name: row.full_name,
-        count: parseInt(row.count) || 0
-      }));
-    }
+    // Cotações por usuário - todos os usuários veem
+    const [userQuoteRows] = results[2];
+    console.log('[getDashboardStats] User rows count:', userQuoteRows?.length || 0);
+    stats.byUser = userQuoteRows.map(row => ({
+      username: row.username,
+      full_name: row.full_name,
+      count: parseInt(row.count) || 0
+    }));
 
     const elapsed = Date.now() - startTime;
     console.log(`[getDashboardStats] ✅ Completed in ${elapsed}ms`);

@@ -103,17 +103,6 @@
         border-color: rgba(220, 38, 38, 0.5);
       }
 
-      /* Quando sidebar está fechado, mudar cor do botão */
-      .sidebar.collapsed ~ .hamburger-btn {
-        background: rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .sidebar.collapsed ~ .hamburger-btn:hover {
-        background: rgba(220, 38, 38, 0.1);
-        border-color: rgba(220, 38, 38, 0.3);
-      }
-
       .hamburger-icon {
         display: flex;
         flex-direction: column;
@@ -130,20 +119,32 @@
         transition: all 0.3s ease;
       }
 
+      /* Quando sidebar está fechado, mudar cor do botão */
+      body.sidebar-collapsed .hamburger-btn {
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      body.sidebar-collapsed .hamburger-btn:hover {
+        background: rgba(220, 38, 38, 0.1);
+        border-color: rgba(220, 38, 38, 0.3);
+      }
+
       /* Quando sidebar está fechado, linhas ficam pretas */
-      .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span {
+      body.sidebar-collapsed .hamburger-icon span {
         background: #1f2937;
       }
 
-      .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span:nth-child(1) {
+      /* Animação do X quando fechado */
+      body.sidebar-collapsed .hamburger-icon span:nth-child(1) {
         transform: translateY(7px) rotate(45deg);
       }
 
-      .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span:nth-child(2) {
+      body.sidebar-collapsed .hamburger-icon span:nth-child(2) {
         opacity: 0;
       }
 
-      .sidebar.collapsed ~ .hamburger-btn .hamburger-icon span:nth-child(3) {
+      body.sidebar-collapsed .hamburger-icon span:nth-child(3) {
         transform: translateY(-7px) rotate(-45deg);
       }
 

@@ -59,11 +59,11 @@
       </div>
       <div class="field">
         <label>Empresa Vendedora</label>
-        <input id="company" name="company" type="text" placeholder="Nome da empresa vendedora" required />
+        <input id="company" name="company" type="text" placeholder="Nome da empresa vendedora" value="<%= defaultSettings.default_company || '' %>" required />
       </div>
       <div class="field">
         <label>Representante Comercial</label>
-        <input id="representative" name="representative" type="text" placeholder="Nome do representante" required />
+        <input id="representative" name="representative" type="text" placeholder="Nome do representante" value="<%= defaultSettings.default_representative || '' %>" required />
       </div>
       <div class="field">
         <label>Modelo da Máquina</label>
@@ -77,12 +77,12 @@
     <div class="grid">
       <div class="field">
         <label>Validade da Proposta</label>
-        <input id="validity" name="validity" type="number" min="1" max="365" value="15" />
+        <input id="validity" name="validity" type="number" min="1" max="365" value="<%= defaultSettings.default_validity_days || '15' %>" />
         <small>Período em dias para validade da cotação</small>
       </div>
       <div class="field">
         <label>Prazo de Entrega</label>
-        <input id="delivery" name="delivery" type="text" placeholder="Ex: 30 dias úteis após aprovação" />
+        <input id="delivery" name="delivery" type="text" placeholder="Ex: 30 dias úteis após aprovação" value="<%= defaultSettings.default_delivery_time || '' %>" />
         <small>Tempo estimado para entrega dos equipamentos</small>
       </div>
     </div>
@@ -268,37 +268,32 @@
 
         <div class="field">
           <label>Introdução das Condições</label>
-          <textarea id="payment_intro" name="payment_intro" rows="2" placeholder="Texto introdutório das condições de pagamento...">As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:</textarea>
+          <textarea id="payment_intro" name="payment_intro" rows="2" placeholder="Texto introdutório das condições de pagamento..."><%= defaultSettings.default_payment_intro || 'As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:' %></textarea>
         </div>
 
         <div class="field">
           <label>Montante em Dólares - Condições</label>
-          <textarea id="payment_usd_conditions" name="payment_usd_conditions" rows="3" placeholder="Condições para valores em dólar...">01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.</textarea>
+          <textarea id="payment_usd_conditions" name="payment_usd_conditions" rows="3" placeholder="Condições para valores em dólar..."><%= defaultSettings.default_payment_usd_conditions || '01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.' %></textarea>
         </div>
 
         <div class="field">
           <label>Introdução Montante em Reais</label>
-          <textarea id="payment_brl_intro" name="payment_brl_intro" rows="2" placeholder="Texto introdutório para valores em reais...">Montante em reais brasileiros de serviços prestados de acordo com a opção:</textarea>
+          <textarea id="payment_brl_intro" name="payment_brl_intro" rows="2" placeholder="Texto introdutório para valores em reais..."><%= defaultSettings.default_payment_brl_intro || 'Montante em reais brasileiros de serviços prestados de acordo com a opção:' %></textarea>
         </div>
 
         <div class="field">
           <label>Condições para Modalidade com SAT</label>
-          <textarea id="payment_brl_with_sat" name="payment_brl_with_sat" rows="6" placeholder="Condições de pagamento para modalidade com SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03 (três) parcelas pagas através de depósitos ou boletos:
-1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
-2. Segunda parcela no valor de 30% do montante em reais, para ser paga na chegada do pedido na empresa ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;
-3. Terceira parcela no valor de 60% do montante em reais, para ser paga 30 dias após aprovação do SAT ou 90 dias corridos após o aceite da invoice, o que ocorrer primeiro;</textarea>
+          <textarea id="payment_brl_with_sat" name="payment_brl_with_sat" rows="6" placeholder="Condições de pagamento para modalidade com SAT..."><%= defaultSettings.default_payment_brl_with_sat || 'Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03 (três) parcelas pagas através de depósitos ou boletos:\n1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;\n2. Segunda parcela no valor de 30% do montante em reais, para ser paga na chegada do pedido na empresa ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;\n3. Terceira parcela no valor de 60% do montante em reais, para ser paga 30 dias após aprovação do SAT ou 90 dias corridos após o aceite da invoice, o que ocorrer primeiro;' %></textarea>
         </div>
 
         <div class="field">
           <label>Condições para Modalidade sem SAT</label>
-          <textarea id="payment_brl_without_sat" name="payment_brl_without_sat" rows="4" placeholder="Condições de pagamento para modalidade sem SAT...">Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 02 (duas) parcelas pagas através de depósitos ou boletos:
-1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;
-2. Segunda parcela no valor de 90% do montante em reais, para ser paga na chegada do pedido no porto aduaneiro;</textarea>
+          <textarea id="payment_brl_without_sat" name="payment_brl_without_sat" rows="4" placeholder="Condições de pagamento para modalidade sem SAT..."><%= defaultSettings.default_payment_brl_without_sat || 'Referente apenas†† ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 02 (duas) parcelas pagas através de depósitos ou boletos:\n1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;\n2. Segunda parcela no valor de 90% do montante em reais, para ser paga na chegada do pedido no porto aduaneiro;' %></textarea>
         </div>
 
         <div class="field">
           <label>Observações Adicionais</label>
-          <textarea id="payment_additional_notes" name="payment_additional_notes" rows="8" placeholder="Observações adicionais sobre condições de pagamento...">Não fazem parte dos serviços prestados pelo Grupo Zanatech os itens anteriores: 1. Honorários de despachantes e manuseio; 2. Despesas de Importação; 3. Transporte até a porta da empresa. Os pagamentos e condições de tais itens são negociados diretamente entre a empresa contratante e a prestadora do serviço em questão. As empresas parceiras recomendadas pelo Grupo Zanatech podem oferecer condições e descontos especiais nas condições pré-estabelecidas. Para o start-up, o EQUIPAMENTO deve estar em ÁREA QUALIFICADA, com fácil acesso às UTILIDADES (ar comprimido, alimentação elétrica) necessárias, caso contrário poderá haver atrasos e custos adicionais.</textarea>
+          <textarea id="payment_additional_notes" name="payment_additional_notes" rows="8" placeholder="Observações adicionais sobre condições de pagamento..."><%= defaultSettings.default_payment_additional_notes || 'Não fazem parte dos serviços prestados pelo Grupo Zanatech os itens anteriores: 1. Honorários de despachantes e manuseio; 2. Despesas de Importação; 3. Transporte até a porta da empresa. Os pagamentos e condições de tais itens são negociados diretamente entre a empresa contratante e a prestadora do serviço em questão. As empresas parceiras recomendadas pelo Grupo Zanatech podem oferecer condições e descontos especiais nas condições pré-estabelecidas. Para o start-up, o EQUIPAMENTO deve estar em ÁREA QUALIFICADA, com fácil acesso às UTILIDADES (ar comprimido, alimentação elétrica) necessárias, caso contrário poderá haver atrasos e custos adicionais.' %></textarea>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { generatePdfFromData } from '../services/pdfgen.js';
 import { generateXlsxFromData } from '../services/xlsxgen.js';
 import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote, updateQuoteBusinessStatus, getDashboardStats } from '../storage/database.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
+import { getSettingsAsObject } from '../services/settings-service.js';
 
 const router = Router();
 
@@ -388,8 +389,15 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
   });
 });
 router.get('/new', async (_req, res) => {
-// initDatabase() removed - handled at app startup
-  res.render('quotes/new');
+  try {
+    // Carregar configurações padrão
+    const defaultSettings = await getSettingsAsObject();
+    res.render('quotes/new', { defaultSettings });
+  } catch (error) {
+    console.error('Erro ao carregar configurações padrão:', error);
+    // Se falhar, renderizar sem valores padrão
+    res.render('quotes/new', { defaultSettings: {} });
+  }
 });
 
 // Página de Rascunhos

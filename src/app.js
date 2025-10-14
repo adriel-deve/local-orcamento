@@ -11,6 +11,7 @@ import pg from 'pg';
 import quotesRouter from './routes/quotes-router.js';
 import authRouter from './routes/auth-router.js';
 import usersRouter from './routes/users-router.js';
+import settingsRouter from './routes/settings-router.js';
 import { setUserLocals, requireAuth } from './middleware/auth.js';
 import { proxyConfig, proxyDetectionMiddleware } from '../proxy-config.js';
 import { initDatabase } from './storage/database.js';
@@ -251,6 +252,7 @@ app.use('/users', usersRouter);
 
 // Protected routes
 app.use('/quotes', requireAuth, quotesRouter);
+app.use('/settings', requireAuth, settingsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

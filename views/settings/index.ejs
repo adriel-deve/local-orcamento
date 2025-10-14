@@ -1,0 +1,301 @@
+<%- include('../partials/top', { title: 'Configurações do Formulário' }) %>
+
+<style>
+  .settings-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .settings-header svg {
+    width: 40px;
+    height: 40px;
+    stroke: #dc2626;
+  }
+
+  .settings-header h1 {
+    margin: 0;
+    color: #1f2937;
+  }
+
+  .success-banner {
+    background: #d1fae5;
+    border: 2px solid #059669;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+  }
+
+  .success-banner svg {
+    width: 24px;
+    height: 24px;
+    stroke: #059669;
+    flex-shrink: 0;
+  }
+
+  .success-banner p {
+    margin: 0;
+    color: #065f46;
+    font-weight: 600;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .settings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .settings-section h2 {
+    margin: 0 0 24px 0;
+    color: #1f2937;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .settings-section h2 svg {
+    width: 28px;
+    height: 28px;
+    stroke: #dc2626;
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-field label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-field label svg {
+    width: 16px;
+    height: 16px;
+    stroke: #6b7280;
+  }
+
+  .form-field .description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: -4px;
+  }
+
+  .form-field input[type="text"],
+  .form-field input[type="number"],
+  .form-field textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  }
+
+  .form-field textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+    margin-top: 32px;
+  }
+
+  .btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .btn-primary {
+    background: #dc2626;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+  }
+
+  .info-box {
+    background: #dbeafe;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+
+  .info-box p {
+    margin: 0;
+    color: #1e40af;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+</style>
+
+<div class="settings-header">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M12 1v6m0 6v6m-7.07-7.07l4.24 4.24m4.24-4.24l4.24 4.24M1 12h6m6 0h6m-13.07 7.07l4.24-4.24m4.24 4.24l4.24-4.24"></path>
+  </svg>
+  <h1>Configurações do Formulário</h1>
+</div>
+
+<% if (success) { %>
+<div class="success-banner">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+  </svg>
+  <p>✓ Configurações salvas com sucesso! Os valores padrão serão aplicados em novas cotações.</p>
+</div>
+<% } %>
+
+<div class="info-box">
+  <p>
+    <strong>ℹ️ Informação:</strong> Os valores configurados aqui serão automaticamente preenchidos no formulário de nova cotação.
+    Isso ajuda a economizar tempo ao criar cotações com informações que se repetem frequentemente.
+  </p>
+</div>
+
+<form method="POST" action="/settings/save">
+  <!-- Configurações de Cotação -->
+  <div class="settings-section">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      Informações da Cotação
+    </h2>
+
+    <div class="form-grid">
+      <% settings.quote.forEach(function(setting) { %>
+      <div class="form-field">
+        <label>
+          <%= setting.description %>
+        </label>
+        <% if (setting.key.includes('services') || setting.key.includes('delivery')) { %>
+          <textarea name="<%= setting.key %>"><%= setting.value || '' %></textarea>
+        <% } else if (setting.key.includes('validity_days')) { %>
+          <input type="number" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="Ex: 15">
+        <% } else { %>
+          <input type="text" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="Digite o valor padrão...">
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Configurações de Pagamento -->
+  <div class="settings-section">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+        <line x1="1" y1="10" x2="23" y2="10"></line>
+      </svg>
+      Condições de Pagamento
+    </h2>
+
+    <div class="form-grid">
+      <% settings.payment.forEach(function(setting) { %>
+      <div class="form-field">
+        <label>
+          <%= setting.description %>
+        </label>
+        <textarea name="<%= setting.key %>"><%= setting.value || '' %></textarea>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="/" class="btn btn-secondary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Voltar
+    </a>
+    <button type="submit" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+      </svg>
+      Salvar Configurações
+    </button>
+  </div>
+</form>
+
+<%- include('../partials/bottom') %>

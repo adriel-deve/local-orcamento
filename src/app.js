@@ -55,17 +55,21 @@ app.use((req, res, next) => {
 
   console.log(`[${timestamp}] ${proxyStatus} ${req.method} ${req.originalUrl || req.url} - IP: ${ip} - UA: ${userAgent.substring(0, 50)}`);
 
-  // Add request timeout
+  // Add request timeout - longer for auth routes
+  const isAuthRoute = req.url.includes('/login') || req.url.includes('/logout');
+  const timeoutDuration = isAuthRoute ? 60000 : proxyConfig.timeout.request; // 60s para auth, 30s para resto
+
   const timeout = setTimeout(() => {
     if (!res.headersSent) {
-      console.error(`[${timestamp}] REQUEST TIMEOUT - ${req.method} ${req.url}`);
+      console.error(`[${timestamp}] REQUEST TIMEOUT - ${req.method} ${req.url} (waited ${timeoutDuration}ms)`);
       res.status(408).json({ error: 'Request timeout' });
     }
-  }, proxyConfig.timeout.request);
+  }, timeoutDuration);
 
   res.on('finish', () => {
     clearTimeout(timeout);
-    console.log(`[${new Date().toISOString()}] ${proxyStatus} ${req.method} ${req.url} - ${res.statusCode} - Completed`);
+    const duration = Date.now() - new Date(timestamp).getTime();
+    console.log(`[${new Date().toISOString()}] ${proxyStatus} ${req.method} ${req.url} - ${res.statusCode} - Completed in ${duration}ms`);
   });
 
   res.on('close', () => {

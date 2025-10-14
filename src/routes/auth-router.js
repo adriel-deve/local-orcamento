@@ -11,6 +11,7 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
 
 // Login POST
 router.post('/login', async (req, res) => {
+  const startTime = Date.now();
   const { username, password } = req.body;
 
   console.log('[AUTH] Login attempt for username:', username);
@@ -21,8 +22,10 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    console.log('[AUTH] Attempting to authenticate user');
+    console.log('[AUTH] Attempting to authenticate user...');
+    const authStart = Date.now();
     const user = await authenticateUser(username, password);
+    console.log(`[AUTH] Authentication completed in ${Date.now() - authStart}ms`);
 
     if (!user) {
       console.log('[AUTH] Authentication failed - invalid credentials');
@@ -32,6 +35,7 @@ router.post('/login', async (req, res) => {
     console.log('[AUTH] Authentication successful for user:', user.username);
 
     // Set session
+    console.log('[AUTH] Setting session values...');
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.fullName = user.full_name;
@@ -44,16 +48,23 @@ router.post('/login', async (req, res) => {
     });
 
     // Save session explicitly before redirect
+    console.log('[AUTH] Saving session...');
+    const saveStart = Date.now();
     req.session.save((err) => {
+      console.log(`[AUTH] Session save callback executed in ${Date.now() - saveStart}ms`);
+
       if (err) {
         console.error('[AUTH] Error saving session:', err);
         return res.render('login', { error: 'Erro ao salvar sessão. Tente novamente.' });
       }
-      console.log('[AUTH] Session saved successfully, redirecting to dashboard');
+
+      const totalTime = Date.now() - startTime;
+      console.log(`[AUTH] Session saved successfully in ${totalTime}ms total, redirecting to dashboard`);
       res.redirect('/');
     });
   } catch (error) {
     console.error('[AUTH] Login error:', error);
+    console.error('[AUTH] Error stack:', error.stack);
     res.render('login', { error: 'Erro ao fazer login. Tente novamente.' });
   }
 });

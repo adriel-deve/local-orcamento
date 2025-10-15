@@ -8,6 +8,7 @@ import { generateXlsxFromData } from '../services/xlsxgen.js';
 import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQuote, updateQuoteBusinessStatus, getDashboardStats } from '../storage/database.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import { getSettingsAsObject } from '../services/settings-service.js';
+import { generateQuoteNumber } from '../services/quote-number-service.js';
 
 const router = Router();
 
@@ -268,12 +269,19 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
       if (items && items.length > 0) {
         specs.push({
           description,
-          items: items.map(item => ({
-            name: item.name,
-            price: parseFloat(item.unit) || 0,
-            qty: parseInt(item.qty) || 1,
-            currency: item.currency || 'BRL'
-          }))
+          items: items.map(item => {
+            const processedItem = {
+              name: item.name,
+              price: parseFloat(item.unit) || 0,
+              qty: parseInt(item.qty) || 1,
+              currency: item.currency || 'BRL'
+            };
+            // Adicionar days se existir
+            if (item.days) {
+              processedItem.days = parseInt(item.days);
+            }
+            return processedItem;
+          })
         });
       }
     }
@@ -390,13 +398,21 @@ router.post('/generate-pdf', upload.any(), async (req, res) => {
 });
 router.get('/new', async (_req, res) => {
   try {
-    // Carregar configurações padrão
+    // Carregar configurações padrão e gerar número de proposta
     const defaultSettings = await getSettingsAsObject();
-    res.render('quotes/new', { defaultSettings });
+    const quoteNumber = await generateQuoteNumber();
+
+    res.render('quotes/new', {
+      defaultSettings,
+      generatedQuoteNumber: quoteNumber
+    });
   } catch (error) {
     console.error('Erro ao carregar configurações padrão:', error);
     // Se falhar, renderizar sem valores padrão
-    res.render('quotes/new', { defaultSettings: {} });
+    res.render('quotes/new', {
+      defaultSettings: {},
+      generatedQuoteNumber: ''
+    });
   }
 });
 
@@ -503,12 +519,19 @@ router.post('/save-draft', upload.any(), async (req, res) => {
       if (items && items.length > 0) {
         specs.push({
           description,
-          items: items.map(item => ({
-            name: item.name,
-            price: parseFloat(item.unit) || 0,
-            qty: parseInt(item.qty) || 1,
-            currency: item.currency || 'BRL'
-          }))
+          items: items.map(item => {
+            const processedItem = {
+              name: item.name,
+              price: parseFloat(item.unit) || 0,
+              qty: parseInt(item.qty) || 1,
+              currency: item.currency || 'BRL'
+            };
+            // Adicionar days se existir
+            if (item.days) {
+              processedItem.days = parseInt(item.days);
+            }
+            return processedItem;
+          })
         });
       }
     }

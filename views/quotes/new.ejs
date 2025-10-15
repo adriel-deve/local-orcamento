@@ -25,7 +25,7 @@
     <div class="grid">
       <div class="field">
         <label>Número da Cotação</label>
-        <input id="quote_code" name="quote_code" type="text" placeholder="COT-2025-0001" required />
+        <input id="quote_code" name="quote_code" type="text" placeholder="COT-2025-0001" value="<%= generatedQuoteNumber || '' %>" required />
         <small>Código único identificador da cotação</small>
       </div>
       <div class="field">
@@ -156,17 +156,17 @@
     <div class="grid">
       <div class="field">
         <label>Nome do Vendedor</label>
-        <input id="seller_name" name="seller_name" type="text" placeholder="Nome completo do vendedor responsável" />
+        <input id="seller_name" name="seller_name" type="text" placeholder="Nome completo do vendedor responsável" value="<%= defaultSettings.default_seller_name || '' %>" />
         <small>Vendedor responsável pela proposta</small>
       </div>
       <div class="field">
         <label>Email para Contato</label>
-        <input id="contact_email" name="contact_email" type="email" placeholder="vendedor@pharmatec.com.br" />
+        <input id="contact_email" name="contact_email" type="email" placeholder="vendedor@pharmatec.com.br" value="<%= defaultSettings.default_contact_email || '' %>" />
         <small>Email principal para comunicação</small>
       </div>
       <div class="field">
         <label>Telefone para Contato</label>
-        <input id="contact_phone" name="contact_phone" type="text" placeholder="(11) 99999-9999" />
+        <input id="contact_phone" name="contact_phone" type="text" placeholder="(11) 99999-9999" value="<%= defaultSettings.default_contact_phone || '' %>" />
         <small>Telefone comercial para contato direto</small>
       </div>
     </div>
@@ -493,18 +493,47 @@
     }
   }
 
+  // Service defaults from settings
+  const serviceDefaults = {
+    SAT: {
+      price: '<%= defaultSettings.service_sat_price || "" %>',
+      days: '<%= defaultSettings.service_sat_days || "" %>'
+    },
+    FAT: {
+      price: '<%= defaultSettings.service_fat_price || "" %>',
+      days: '<%= defaultSettings.service_fat_days || "" %>'
+    },
+    Startup: {
+      price: '<%= defaultSettings.service_startup_price || "" %>',
+      days: '<%= defaultSettings.service_startup_days || "" %>'
+    },
+    Acompanhamento: {
+      price: '<%= defaultSettings.service_acompanhamento_price || "" %>',
+      days: '<%= defaultSettings.service_acompanhamento_days || "" %>'
+    },
+    Manutenção: {
+      price: '<%= defaultSettings.service_manutencao_price || "" %>',
+      days: '<%= defaultSettings.service_manutencao_days || "" %>'
+    }
+  };
+
   // Nova função mais robusta para checkboxes
   function handleServiceToggle(checkbox, sectionId) {
     try {
       console.log('handleServiceToggle:', checkbox.value, 'checked:', checkbox.checked, 'sectionId:', sectionId);
 
       if (checkbox.checked) {
-        // Adiciona item
+        // Get default values for this service
+        const serviceName = checkbox.value;
+        const defaults = serviceDefaults[serviceName] || { price: '', days: '' };
+
+        // Adiciona item with defaults
         addRow(sectionId, {
-          name: checkbox.value,
+          name: serviceName,
           qty: 1,
-          unit: '',
-          currency: 'BRL'
+          unit: defaults.price,
+          currency: 'BRL',
+          days: defaults.days
         });
       } else {
         // Remove item
@@ -1110,6 +1139,28 @@
 
   // Carregar lista de cotações ao iniciar a página
   loadExistingQuotesList();
+
+  // Auto-check default service items
+  const defaultServiceItems = '<%= defaultSettings.default_service_items || "" %>';
+  if (defaultServiceItems) {
+    const services = defaultServiceItems.split(',').map(s => s.trim()).filter(s => s);
+    console.log('Auto-checking default services:', services);
+
+    // Check checkboxes for both Modalidade A and B
+    ['sec_operacionais_a', 'sec_operacionais_b'].forEach(sectionId => {
+      services.forEach(serviceName => {
+        // Find the checkbox with this value
+        const checkboxes = document.querySelectorAll(`#${sectionId} .checkboxes input[type="checkbox"]`);
+        checkboxes.forEach(cb => {
+          if (cb.value === serviceName) {
+            cb.checked = true;
+            // Trigger the service toggle to add the item with default values
+            handleServiceToggle(cb, sectionId);
+          }
+        });
+      });
+    });
+  }
 
   // Linhas iniciais
   addRow('sec_equip_a');

@@ -26,7 +26,9 @@ router.get('/', requireAdmin, async (req, res) => {
     // Agrupar por categoria
     const settingsByCategory = {
       quote: [],
-      payment: []
+      payment: [],
+      contact: [],
+      services: []
     };
 
     settings.forEach(setting => {

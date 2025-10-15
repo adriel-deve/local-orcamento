@@ -240,7 +240,41 @@
     </h2>
 
     <div class="form-grid">
-      <% settings.quote.forEach(function(setting) { %>
+      <%
+      const quoteNumberType = settings.quote.find(s => s.key === 'quote_number_type');
+      const quoteNumberPrefix = settings.quote.find(s => s.key === 'quote_number_prefix');
+      %>
+
+      <!-- Numeração de Propostas -->
+      <div class="form-field" style="grid-column: span 2; background: #fef3c7; padding: 16px; border-radius: 8px; border: 2px solid #f59e0b;">
+        <h4 style="margin: 0 0 12px 0; color: #d97706; font-size: 0.875rem; text-transform: uppercase; font-weight: 700;">⚙️ Sistema de Numeração de Propostas</h4>
+        <div style="display: grid; gap: 12px;">
+          <div>
+            <label style="font-size: 0.875rem; margin-bottom: 8px; display: block;">Tipo de Numeração</label>
+            <select name="quote_number_type" style="width: 100%; padding: 10px; border: 2px solid #f59e0b; border-radius: 6px; font-size: 0.875rem;">
+              <option value="date" <%= (quoteNumberType && quoteNumberType.value === 'date') ? 'selected' : '' %>>
+                Por Data (Ex: 101425 = 10/14/25, sequência: 1014251, 1014252...)
+              </option>
+              <option value="sequential" <%= (quoteNumberType && quoteNumberType.value === 'sequential') ? 'selected' : '' %>>
+                Sequencial (Ex: 000001, 000002, 000003...)
+              </option>
+            </select>
+            <small style="color: #92400e; font-size: 0.75rem; display: block; margin-top: 4px;">
+              <strong>Data:</strong> Gera número baseado na data atual + contador diário<br>
+              <strong>Sequencial:</strong> Gera números em ordem crescente contínua
+            </small>
+          </div>
+          <div>
+            <label style="font-size: 0.875rem; margin-bottom: 8px; display: block;">Prefixo (Opcional)</label>
+            <input type="text" name="quote_number_prefix" value="<%= (quoteNumberPrefix && quoteNumberPrefix.value) || '' %>" placeholder="Ex: PROP-, COT-" style="width: 100%; padding: 10px; border: 2px solid #f59e0b; border-radius: 6px; font-size: 0.875rem;">
+            <small style="color: #92400e; font-size: 0.75rem; display: block; margin-top: 4px;">
+              Texto que aparecerá antes do número (deixe vazio para sem prefixo)
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <% settings.quote.filter(s => !['quote_number_type', 'quote_number_prefix', 'quote_number_counter'].includes(s.key)).forEach(function(setting) { %>
       <div class="form-field">
         <label>
           <%= setting.description %>
@@ -254,6 +288,80 @@
         <% } %>
       </div>
       <% }) %>
+    </div>
+  </div>
+
+  <!-- Configurações de Contato -->
+  <div class="settings-section">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+      </svg>
+      Informações de Contato
+    </h2>
+
+    <div class="form-grid">
+      <% settings.contact.forEach(function(setting) { %>
+      <div class="form-field">
+        <label>
+          <%= setting.description %>
+        </label>
+        <% if (setting.key.includes('email')) { %>
+          <input type="email" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="exemplo@empresa.com">
+        <% } else if (setting.key.includes('phone')) { %>
+          <input type="tel" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="(00) 00000-0000">
+        <% } else { %>
+          <input type="text" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="Digite o valor padrão...">
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Configurações de Serviços -->
+  <div class="settings-section">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+      </svg>
+      Preços e Dias Padrão de Serviços
+    </h2>
+
+    <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <%
+      const serviceNames = ['SAT', 'FAT', 'Startup', 'Acompanhamento', 'Manutenção'];
+      serviceNames.forEach(function(serviceName) {
+        const serviceKey = serviceName.toLowerCase();
+        const priceKey = 'service_' + serviceKey + '_price';
+        const daysKey = 'service_' + serviceKey + '_days';
+
+        const priceSetting = settings.services.find(s => s.key === priceKey);
+        const daysSetting = settings.services.find(s => s.key === daysKey);
+      %>
+      <div class="form-field" style="grid-column: span 3; background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+        <h4 style="margin: 0 0 12px 0; color: #dc2626; font-size: 0.875rem; text-transform: uppercase; font-weight: 700;"><%= serviceName %></h4>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.75rem; margin-bottom: 4px;">Preço Padrão (R$)</label>
+            <input type="number" step="0.01" name="<%= priceKey %>" value="<%= (priceSetting && priceSetting.value) || '' %>" placeholder="0.00">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; margin-bottom: 4px;">Dias</label>
+            <input type="number" name="<%= daysKey %>" value="<%= (daysSetting && daysSetting.value) || '' %>" placeholder="0">
+          </div>
+        </div>
+      </div>
+      <% }); %>
+
+      <!-- Itens de serviços padrão -->
+      <% const defaultItemsSetting = settings.services.find(s => s.key === 'default_service_items'); %>
+      <div class="form-field" style="grid-column: span 3;">
+        <label>
+          Itens de Serviços Padrão (separados por vírgula)
+        </label>
+        <input type="text" name="default_service_items" value="<%= (defaultItemsSetting && defaultItemsSetting.value) || '' %>" placeholder="Ex: SAT,FAT,Startup">
+        <small style="color: #6b7280; font-size: 0.75rem;">Estes itens aparecerão marcados por padrão nos checkboxes de serviços</small>
+      </div>
     </div>
   </div>
 

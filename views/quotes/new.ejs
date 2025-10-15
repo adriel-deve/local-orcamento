@@ -985,6 +985,115 @@
     });
   }
 
+  function loadTechnicalSpecifications(quote) {
+    // Carregar especificações técnicas na tabela
+    const techSpec = quote.tech_spec || '';
+    const principle = quote.principle || '';
+
+    if (techSpec) {
+      // Parsear as especificações (formato: "Parâmetro: Valor\n")
+      const specLines = techSpec.split('\n').filter(line => line.trim());
+      const firstSection = document.querySelector('.equipment-section[data-section-id="0"]');
+
+      if (firstSection) {
+        const tableBody = firstSection.querySelector('.spec-table-body');
+        if (tableBody) {
+          // Limpar linhas existentes
+          tableBody.innerHTML = '';
+
+          // Adicionar cada linha de especificação
+          specLines.forEach(line => {
+            const parts = line.split(':');
+            if (parts.length >= 2) {
+              const param = parts[0].trim();
+              const value = parts.slice(1).join(':').trim();
+
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                  <input type="text" class="spec-param" placeholder="Ex: Faixa de Medição" value="${param}" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                  <input type="text" class="spec-value" placeholder="Ex: 0 a 100 mm" value="${value}" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                  <button type="button" class="btn danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="this.closest('tr').remove()">Remover</button>
+                </td>
+              `;
+              tableBody.appendChild(row);
+            }
+          });
+
+          // Se não houver linhas, adicionar uma vazia
+          if (tableBody.children.length === 0) {
+            addSpecRow(0);
+          }
+        }
+      }
+    }
+
+    // Carregar princípio de funcionamento
+    if (principle) {
+      const firstSection = document.querySelector('.equipment-section[data-section-id="0"]');
+      if (firstSection) {
+        const principleTextarea = firstSection.querySelector('.principle');
+        if (principleTextarea) {
+          principleTextarea.value = principle;
+        }
+      }
+    }
+  }
+
+  function loadEquipmentImages(quote) {
+    // Carregar imagem principal ou múltiplas imagens
+    let images = {};
+
+    // Tentar carregar equipment_images (múltiplas imagens)
+    if (quote.equipment_images) {
+      try {
+        images = typeof quote.equipment_images === 'string'
+          ? JSON.parse(quote.equipment_images)
+          : quote.equipment_images;
+      } catch (e) {
+        console.warn('Erro ao parsear equipment_images:', e);
+      }
+    }
+
+    // Fallback para equipment_image (imagem única)
+    if (Object.keys(images).length === 0 && quote.equipment_image) {
+      images['0'] = quote.equipment_image;
+    }
+
+    // Adicionar preview de imagens para cada seção
+    Object.entries(images).forEach(([sectionIndex, imageUrl]) => {
+      if (imageUrl) {
+        const section = document.querySelector(`.equipment-section[data-section-id="${sectionIndex}"]`);
+        if (section) {
+          // Encontrar o campo de imagem
+          const imageInput = section.querySelector('.equipment_image');
+          if (imageInput) {
+            // Adicionar preview da imagem existente
+            let preview = imageInput.parentElement.querySelector('.image-preview');
+            if (!preview) {
+              preview = document.createElement('div');
+              preview.className = 'image-preview';
+              preview.style.cssText = 'margin-top: 10px;';
+              imageInput.parentElement.appendChild(preview);
+            }
+
+            preview.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${imageUrl}" style="max-width: 200px; max-height: 150px; border: 1px solid #ddd; border-radius: 4px;" alt="Imagem do equipamento" />
+                <input type="hidden" name="existing_equipment_image_${sectionIndex}" value="${imageUrl}" />
+                <small style="color: #666;">Imagem atual (selecione um novo arquivo para substituir)</small>
+              </div>
+            `;
+          }
+        }
+      }
+    });
+  }
+
   function populateSpecs(specs) {
     (specs || []).forEach(spec => {
       const desc = (spec.description || '').toUpperCase();
@@ -1033,8 +1142,13 @@
     setFieldValue('contact_email', quote.contact_email || '');
     setFieldValue('contact_phone', quote.contact_phone || '');
     setFieldValue('seller_name', quote.seller_name || '');
-    setFieldValue('tech_spec', quote.tech_spec || '');
-    setFieldValue('principle', quote.principle || '');
+
+    // Carregar especificações técnicas e princípio de funcionamento
+    loadTechnicalSpecifications(quote);
+
+    // Carregar imagens do equipamento
+    loadEquipmentImages(quote);
+
     const paymentCheckbox = document.getElementById('include_payment_conditions');
     if (paymentCheckbox) {
       paymentCheckbox.checked = Boolean(quote.include_payment_conditions);

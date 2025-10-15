@@ -181,6 +181,17 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
 
     // Processar múltiplas imagens de equipamentos
     const equipmentImages = {};
+
+    // Primeiro, carregar imagens existentes
+    Object.keys(req.body).forEach(key => {
+      const match = key.match(/^existing_equipment_image_(\d+)$/);
+      if (match && req.body[key]) {
+        const sectionIndex = match[1];
+        equipmentImages[sectionIndex] = req.body[key];
+      }
+    });
+
+    // Depois, processar novos uploads (sobrescrevem as existentes)
     if (req.files && req.files.length > 0) {
       console.log('📸 Files recebidos:', req.files.map(f => ({ fieldname: f.fieldname, filename: f.filename })));
 
@@ -318,6 +329,17 @@ router.post('/preview-html', upload.any(), async (req, res) => {
     // Processar múltiplas imagens de equipamentos
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const equipmentImages = {};
+
+    // Primeiro, carregar imagens existentes
+    Object.keys(req.body).forEach(key => {
+      const match = key.match(/^existing_equipment_image_(\d+)$/);
+      if (match && req.body[key]) {
+        const sectionIndex = match[1];
+        equipmentImages[sectionIndex] = req.body[key];
+      }
+    });
+
+    // Depois, processar novos uploads (sobrescrevem as existentes)
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
         const match = file.fieldname.match(/^equipment_image_(\d+)$/);
@@ -465,6 +487,17 @@ router.post('/save-draft', upload.any(), async (req, res) => {
     // Processar múltiplas imagens de equipamentos
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const equipmentImages = {};
+
+    // Primeiro, carregar imagens existentes
+    Object.keys(req.body).forEach(key => {
+      const match = key.match(/^existing_equipment_image_(\d+)$/);
+      if (match && req.body[key]) {
+        const sectionIndex = match[1];
+        equipmentImages[sectionIndex] = req.body[key];
+      }
+    });
+
+    // Depois, processar novos uploads (sobrescrevem as existentes)
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
         const match = file.fieldname.match(/^equipment_image_(\d+)$/);

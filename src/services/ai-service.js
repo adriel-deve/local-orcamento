@@ -1,5 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs = require('fs');
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
  * Serviço de IA para processamento de documentos e cotações
@@ -208,4 +207,4 @@ IMPORTANTE:
 
 // Exportar instância única (singleton)
 const aiService = new AIService();
-module.exports = aiService;
+export default aiService;

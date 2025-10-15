@@ -1,6 +1,7 @@
 <%- include('../partials/top') %>
 
-<!-- Seção para extrair dados com IA -->
+<!-- Seção para extrair dados com IA (apenas em produção) -->
+<% if (process.env.NODE_ENV === 'production') { %>
 <section class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
   <h3 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
     ✨ Extração Automática com IA
@@ -16,6 +17,7 @@
   </p>
   <div id="ai_extraction_status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;"></div>
 </section>
+<% } %>
 
 <!-- Seção para carregar cotação existente -->
 <section class="card" style="background: var(--gray-50); border: 2px dashed var(--gray-300);">

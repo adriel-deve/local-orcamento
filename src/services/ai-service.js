@@ -6,6 +6,15 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  */
 class AIService {
   constructor() {
+    // Verificar se está em produção
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (!isProduction) {
+      console.log('ℹ️  IA desabilitada em ambiente local. Funciona apenas em produção.');
+      this.enabled = false;
+      return;
+    }
+
     this.apiKey = process.env.GEMINI_API_KEY;
     if (!this.apiKey) {
       console.warn('⚠️  GEMINI_API_KEY não configurada. Funcionalidades de IA desabilitadas.');
@@ -13,6 +22,7 @@ class AIService {
     } else {
       this.genAI = new GoogleGenerativeAI(this.apiKey);
       this.enabled = true;
+      console.log('✅ IA habilitada em produção com Google Gemini API');
     }
   }
 

@@ -302,8 +302,11 @@
       <button type="button" class="btn secondary" onclick="saveDraft(event)">
         💾 Salvar Rascunho
       </button>
+      <button type="button" class="btn" onclick="previewOnly()" style="background: #3b82f6; color: white;">
+        👁️ Pré-visualizar Layout
+      </button>
       <button type="button" class="btn primary" onclick="previewHtml()">
-        Concluir Cotação
+        ✅ Concluir Cotação
       </button>
     </div>
   </form>
@@ -700,6 +703,23 @@
     document.getElementById('action_field').value = action;
     if (collectPayload() === false) return;
     document.getElementById('quoteForm').submit();
+  }
+
+  function previewOnly(){
+    if (collectPayload() === false) return;
+    const form = document.getElementById('quoteForm');
+    const prevAction = form.action;
+    const prevTarget = form.target;
+    const prevMethod = form.method;
+
+    // Não adicionar status de concluída - apenas pré-visualizar
+    form.action = '/quotes/preview-html';
+    form.method = 'post';
+    form.target = '_blank';
+    form.submit();
+    form.action = prevAction;
+    form.method = prevMethod;
+    form.target = prevTarget;
   }
 
   function previewHtml(){

@@ -225,8 +225,11 @@ app.get('/health', async (req, res) => {
 });
 
 app.get('/ai-status', async (req, res) => {
+  console.log('[AI-STATUS] Route hit!');
   try {
+    console.log('[AI-STATUS] Importing AI service...');
     const aiService = await import('./services/ai-service.js').then(m => m.default);
+    console.log('[AI-STATUS] AI service imported, checking status...');
 
     const status = {
       environment: process.env.NODE_ENV || 'development',
@@ -238,6 +241,8 @@ app.get('/ai-status', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
+    console.log('[AI-STATUS] Status:', status);
+
     res.json({
       success: true,
       status: status,
@@ -246,9 +251,11 @@ app.get('/ai-status', async (req, res) => {
         : '⚠️ AI não está habilitada. Verifique NODE_ENV e GEMINI_API_KEY'
     });
   } catch (error) {
+    console.error('[AI-STATUS] Error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     });
   }
 });

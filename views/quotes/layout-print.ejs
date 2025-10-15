@@ -392,37 +392,37 @@
         if (currentEquip) equipments.push(currentEquip);
       %>
 
-      <h3 class="section-title" style="color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 8px; margin-bottom: 20px;">Especificações Técnicas</h3>
+      <% if (quote.tech_spec) { %>
+      <h3 class="section-title">Especificações Técnicas</h3>
 
       <% equipments.forEach((equip, equipIdx) => { %>
-        <!-- Imagem do equipamento (centralizada acima da tabela) -->
+        <!-- Imagem do equipamento -->
         <% if (equipImages[equipIdx]) { %>
-        <div style="text-align: center; margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 8px;">
-          <p style="font-size: 11px; margin: 0 0 12px 0; font-weight: 700; color: #374151;">Imagem do Equipamento <%= equipIdx + 1 %></p>
-          <img src="<%= equipImages[equipIdx] %>" alt="Equipamento <%= equipIdx + 1 %>" style="max-width: 450px; max-height: 350px; border: 2px solid #e5e7eb; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onerror="this.style.display='none';">
+        <div style="text-align: center; margin-bottom: 15px;">
+          <p style="font-size: 10px; margin: 0 0 8px 0; font-weight: 600;">Imagem do Equipamento <%= equipIdx + 1 %></p>
+          <img src="<%= equipImages[equipIdx] %>" alt="Equipamento <%= equipIdx + 1 %>" style="max-width: 400px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; object-fit: contain;" onerror="this.style.display='none';">
         </div>
         <% } %>
 
         <!-- Tabela do equipamento -->
-        <% if (quote.tech_spec) { %>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9px; table-layout: fixed; border: 2px solid #dc2626;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9px; table-layout: fixed;">
           <thead>
-            <tr style="background: linear-gradient(to bottom, #fee2e2, #fecaca);">
-              <th style="padding: 8px; text-align: left; border: 1px solid #dc2626; font-weight: 700; width: 30%; word-wrap: break-word; color: #991b1b;">Parâmetro</th>
-              <th style="padding: 8px; text-align: left; border: 1px solid #dc2626; font-weight: 700; word-wrap: break-word; color: #991b1b;">Especificação</th>
+            <tr style="background: #f3f4f6;">
+              <th style="padding: 4px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 30%; word-wrap: break-word;">Parâmetro</th>
+              <th style="padding: 4px; text-align: left; border: 1px solid #ddd; font-weight: 600; word-wrap: break-word;">Especificação</th>
             </tr>
           </thead>
           <tbody>
-            <% equip.specs.forEach((spec, idx) => { %>
-            <tr style="background: <%= idx % 2 === 0 ? '#ffffff' : '#fef2f2' %>;">
-              <td style="padding: 6px 8px; border: 1px solid #e5e7eb; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; color: #374151;"><%= spec.param %></td>
-              <td style="padding: 6px 8px; border: 1px solid #e5e7eb; word-wrap: break-word; overflow-wrap: break-word; color: #4b5563;"><%= spec.value %></td>
+            <% equip.specs.forEach(spec => { %>
+            <tr>
+              <td style="padding: 4px; border: 1px solid #ddd; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word;"><%= spec.param %></td>
+              <td style="padding: 4px; border: 1px solid #ddd; word-wrap: break-word; overflow-wrap: break-word;"><%= spec.value %></td>
             </tr>
             <% }); %>
           </tbody>
         </table>
-        <% } %>
       <% }); %>
+      <% } %>
     </div>
     <% } %>
   </div>

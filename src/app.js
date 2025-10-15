@@ -200,31 +200,9 @@ app.use(express.urlencoded({
   limit: '5mb'
 }));
 
-// Routes
-app.get('/', async (req, res) => {
-  if (!req.session || !req.session.userId) {
-    return res.redirect('/login');
-  }
-
-  // Renderizar dashboard
-  try {
-    res.render('index', {
-      currentUser: {
-        id: req.session.userId,
-        username: req.session.username,
-        fullName: req.session.fullName,
-        role: req.session.userRole
-      }
-    });
-  } catch (error) {
-    console.error('Erro ao renderizar dashboard:', error);
-    res.redirect('/quotes/new');
-  }
-});
-
+// Public endpoints (ANTES de qualquer autenticação)
 app.get('/health', async (req, res) => {
   try {
-    // Testar conexão com o banco
     await pool.execute('SELECT 1');
     res.status(200).json({
       status: 'ok',
@@ -246,7 +224,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Public AI status endpoint (não requer autenticação)
 app.get('/ai-status', async (req, res) => {
   try {
     const aiService = await import('./services/ai-service.js').then(m => m.default);
@@ -273,6 +250,28 @@ app.get('/ai-status', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// Routes
+app.get('/', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.redirect('/login');
+  }
+
+  // Renderizar dashboard
+  try {
+    res.render('index', {
+      currentUser: {
+        id: req.session.userId,
+        username: req.session.username,
+        fullName: req.session.fullName,
+        role: req.session.userRole
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao renderizar dashboard:', error);
+    res.redirect('/quotes/new');
   }
 });
 

@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 /**
  * Serviço de IA para processamento de documentos e cotações
  * Usa Google Gemini API (gratuito até 1 milhão de tokens/mês)
@@ -20,10 +18,18 @@ class AIService {
       console.warn('⚠️  GEMINI_API_KEY não configurada. Funcionalidades de IA desabilitadas.');
       this.enabled = false;
     } else {
-      this.genAI = new GoogleGenerativeAI(this.apiKey);
       this.enabled = true;
+      this.genAI = null; // Será inicializado quando necessário
       console.log('✅ IA habilitada em produção com Google Gemini API');
     }
+  }
+
+  async _initializeAI() {
+    if (!this.genAI && this.enabled) {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      this.genAI = new GoogleGenerativeAI(this.apiKey);
+    }
+    return this.genAI;
   }
 
   /**
@@ -45,7 +51,8 @@ class AIService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const genAI = await this._initializeAI();
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const prompt = `
 Você é um assistente especializado em extrair informações de cotações/orçamentos comerciais.
@@ -138,7 +145,8 @@ Retorne APENAS o JSON, sem texto adicional.
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const genAI = await this._initializeAI();
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const languageNames = {
         'en': 'inglês',
@@ -188,7 +196,8 @@ Retorne APENAS o JSON traduzido, sem texto adicional.
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const genAI = await this._initializeAI();
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const prompt = `
 Você é um especialista em redação técnica comercial.

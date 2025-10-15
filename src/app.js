@@ -246,6 +246,36 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// Public AI status endpoint (não requer autenticação)
+app.get('/ai-status', async (req, res) => {
+  try {
+    const aiService = await import('./services/ai-service.js').then(m => m.default);
+
+    const status = {
+      environment: process.env.NODE_ENV || 'development',
+      aiEnabled: aiService.isEnabled(),
+      hasApiKey: !!process.env.GEMINI_API_KEY,
+      apiKeyPreview: process.env.GEMINI_API_KEY
+        ? process.env.GEMINI_API_KEY.substring(0, 20) + '...'
+        : 'Not configured',
+      timestamp: new Date().toISOString()
+    };
+
+    res.json({
+      success: true,
+      status: status,
+      message: aiService.isEnabled()
+        ? '✅ AI está configurada e funcionando!'
+        : '⚠️ AI não está habilitada. Verifique NODE_ENV e GEMINI_API_KEY'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Auth routes
 app.use('/', authRouter);
 app.use('/users', usersRouter);

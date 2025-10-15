@@ -1,5 +1,22 @@
 <%- include('../partials/top') %>
 
+<!-- Seção para extrair dados com IA -->
+<section class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+  <h3 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    ✨ Extração Automática com IA
+  </h3>
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <input type="file" id="ai_document_upload" accept=".pdf,.jpg,.jpeg,.png,.txt" style="flex: 1; padding: 0.75rem; border: 2px solid white; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" />
+    <button type="button" onclick="extractFromDocument()" class="btn" style="white-space: nowrap; background: white; color: #667eea; font-weight: bold; border: none;">
+      🤖 Extrair Dados
+    </button>
+  </div>
+  <p style="color: rgba(255,255,255,0.9); font-size: 0.875rem; margin-top: 0.5rem; margin-bottom: 0;">
+    Faça upload de um PDF, imagem ou documento de cotação e a IA preencherá automaticamente o formulário.
+  </p>
+  <div id="ai_extraction_status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;"></div>
+</section>
+
 <!-- Seção para carregar cotação existente -->
 <section class="card" style="background: var(--gray-50); border: 2px dashed var(--gray-300);">
   <h3 style="color: var(--gray-600); margin-bottom: 1rem;">Carregar Cotação Existente (Opcional)</h3>
@@ -1301,6 +1318,144 @@
         });
       });
     });
+  }
+
+  // === FUNÇÃO DE EXTRAÇÃO COM IA ===
+  async function extractFromDocument() {
+    const fileInput = document.getElementById('ai_document_upload');
+    const statusDiv = document.getElementById('ai_extraction_status');
+    const extractBtn = event.target;
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alert('Por favor, selecione um arquivo primeiro.');
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (file.size > maxSize) {
+      alert('Arquivo muito grande. Tamanho máximo: 10MB');
+      return;
+    }
+
+    // Mostrar status de carregamento
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = '#3b82f6';
+    statusDiv.style.color = 'white';
+    statusDiv.innerHTML = '🤖 Processando documento com IA... Isso pode levar alguns segundos.';
+    extractBtn.disabled = true;
+    extractBtn.textContent = 'Processando...';
+
+    try {
+      const formData = new FormData();
+      formData.append('document', file);
+
+      const response = await fetch('/quotes/ai-extract', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const data = result.data;
+
+        // Preencher campos básicos
+        if (data.client_name) setFieldValue('client', data.client_name);
+        if (data.client_cnpj) setFieldValue('cnpj', data.client_cnpj);
+        if (data.delivery_time) setFieldValue('delivery', data.delivery_time);
+        if (data.notes) setFieldValue('notes', data.notes);
+        if (data.equipment_description) {
+          // Adicionar descrição do equipamento às observações
+          const currentNotes = document.getElementById('notes').value;
+          const newNotes = currentNotes ? currentNotes + '\n\n' + data.equipment_description : data.equipment_description;
+          setFieldValue('notes', newNotes);
+        }
+
+        // Preencher especificações técnicas
+        if (data.tech_specs && data.tech_specs.length > 0) {
+          const firstSection = document.querySelector('.equipment-section[data-section-id="0"]');
+          if (firstSection) {
+            const tableBody = firstSection.querySelector('.spec-table-body');
+            if (tableBody) {
+              tableBody.innerHTML = ''; // Limpar existentes
+
+              data.tech_specs.forEach(spec => {
+                if (spec.parameter && spec.value) {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                      <input type="text" class="spec-param" value="${spec.parameter}" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                      <input type="text" class="spec-value" value="${spec.value}" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                      <button type="button" class="btn danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="this.closest('tr').remove()">Remover</button>
+                    </td>
+                  `;
+                  tableBody.appendChild(row);
+                }
+              });
+            }
+          }
+        }
+
+        // Preencher princípio de funcionamento
+        if (data.principle) {
+          const firstSection = document.querySelector('.equipment-section[data-section-id="0"]');
+          if (firstSection) {
+            const principleTextarea = firstSection.querySelector('.principle');
+            if (principleTextarea) {
+              principleTextarea.value = data.principle;
+            }
+          }
+        }
+
+        // Preencher itens de equipamentos
+        if (data.items && data.items.length > 0) {
+          // Limpar items existentes
+          const equipContainer = document.getElementById('sec_equip_a').querySelector('.items');
+          if (equipContainer) {
+            equipContainer.innerHTML = '';
+
+            data.items.forEach(item => {
+              addRow('sec_equip_a', {
+                name: item.name || '',
+                qty: item.qty || 1,
+                unit: item.unit || 0,
+                currency: item.currency || 'BRL',
+                days: item.days || null
+              });
+            });
+          }
+        }
+
+        // Mostrar mensagem de sucesso
+        statusDiv.style.background = '#10b981';
+        statusDiv.innerHTML = `✅ Dados extraídos com sucesso! ${result.message || ''}`;
+
+        // Scroll suave para o topo do formulário
+        document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+
+      } else {
+        throw new Error(result.error || 'Falha ao extrair dados do documento');
+      }
+
+    } catch (error) {
+      console.error('Erro ao extrair dados:', error);
+      statusDiv.style.background = '#dc2626';
+      statusDiv.innerHTML = `❌ Erro: ${error.message}`;
+    } finally {
+      extractBtn.disabled = false;
+      extractBtn.textContent = '🤖 Extrair Dados';
+
+      // Auto-ocultar status após 10 segundos
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 10000);
+    }
   }
 
   // Linhas iniciais

@@ -1021,6 +1021,73 @@ router.post('/:code/status', async (req, res) => {
   }
 });
 
+// AI Extraction Route
+router.post('/ai-extract', upload.single('document'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'Nenhum arquivo enviado' });
+    }
+
+    console.log('🤖 AI Extraction - Processing file:', req.file.filename);
+
+    // Importar serviço de IA
+    const aiService = await import('../services/ai-service.js').then(m => m.default);
+
+    // Verificar se o serviço está habilitado
+    if (!aiService.isEnabled()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Serviço de IA não configurado. Configure GEMINI_API_KEY no arquivo .env'
+      });
+    }
+
+    // Ler o arquivo
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const mimeType = req.file.mimetype;
+
+    console.log('📄 File info:', {
+      size: req.file.size,
+      mimeType: mimeType,
+      originalName: req.file.originalname
+    });
+
+    // Extrair dados usando IA
+    const extractedData = await aiService.extractQuoteFromDocument(fileBuffer, mimeType);
+
+    // Limpar arquivo temporário
+    fs.unlinkSync(req.file.path);
+
+    console.log('✅ AI Extraction successful:', {
+      client: extractedData.client_name,
+      itemsCount: extractedData.items?.length || 0,
+      specsCount: extractedData.tech_specs?.length || 0
+    });
+
+    res.json({
+      success: true,
+      data: extractedData,
+      message: 'Dados extraídos com sucesso!'
+    });
+
+  } catch (error) {
+    console.error('❌ AI Extraction error:', error);
+
+    // Limpar arquivo temporário em caso de erro
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (cleanupError) {
+        console.error('Error cleaning up file:', cleanupError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erro ao processar documento com IA'
+    });
+  }
+});
+
 export default router;
 
 

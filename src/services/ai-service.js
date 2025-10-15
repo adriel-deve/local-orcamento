@@ -1,6 +1,7 @@
 /**
  * Serviço de IA para processamento de documentos e cotações
- * Usa Google Gemini API (gratuito até 1 milhão de tokens/mês)
+ * Usa Google Gemini API REST (gratuito até 1 milhão de tokens/mês)
+ * Implementação usando fetch direto para evitar problemas de ES modules
  */
 class AIService {
   constructor() {
@@ -19,17 +20,29 @@ class AIService {
       this.enabled = false;
     } else {
       this.enabled = true;
-      this.genAI = null; // Será inicializado quando necessário
+      this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
       console.log('✅ IA habilitada em produção com Google Gemini API');
     }
   }
 
-  async _initializeAI() {
-    if (!this.genAI && this.enabled) {
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      this.genAI = new GoogleGenerativeAI(this.apiKey);
+  async _callGeminiAPI(requestBody) {
+    const url = `${this.apiUrl}?key=${this.apiKey}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Gemini API error: ${response.status} - ${error}`);
     }
-    return this.genAI;
+
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
   }
 
   /**
@@ -51,9 +64,6 @@ class AIService {
     }
 
     try {
-      const genAI = await this._initializeAI();
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
       const prompt = `
 Você é um assistente especializado em extrair informações de cotações/orçamentos comerciais.
 Analise o documento fornecido e extraia as seguintes informações em formato JSON:
@@ -95,28 +105,37 @@ IMPORTANTE:
 Retorne APENAS o JSON, sem texto adicional.
 `;
 
-      let result;
+      let requestBody;
 
       // Se for imagem ou PDF, enviar como parte multimodal
       if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
         const base64Data = fileBuffer.toString('base64');
-        result = await model.generateContent([
-          prompt,
-          {
-            inlineData: {
-              data: base64Data,
-              mimeType: mimeType
-            }
-          }
-        ]);
+        requestBody = {
+          contents: [{
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data
+                }
+              }
+            ]
+          }]
+        };
       } else {
         // Se for texto puro
         const textContent = fileBuffer.toString('utf-8');
-        result = await model.generateContent(`${prompt}\n\nDocumento:\n${textContent}`);
+        requestBody = {
+          contents: [{
+            parts: [
+              { text: `${prompt}\n\nDocumento:\n${textContent}` }
+            ]
+          }]
+        };
       }
 
-      const response = await result.response;
-      const text = response.text();
+      const text = await this._callGeminiAPI(requestBody);
 
       // Extrair JSON da resposta (remover markdown se houver)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -145,9 +164,6 @@ Retorne APENAS o JSON, sem texto adicional.
     }
 
     try {
-      const genAI = await this._initializeAI();
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
       const languageNames = {
         'en': 'inglês',
         'es': 'espanhol',
@@ -167,9 +183,13 @@ ${JSON.stringify(quoteData, null, 2)}
 Retorne APENAS o JSON traduzido, sem texto adicional.
 `;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const requestBody = {
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      };
+
+      const text = await this._callGeminiAPI(requestBody);
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
@@ -196,9 +216,6 @@ Retorne APENAS o JSON traduzido, sem texto adicional.
     }
 
     try {
-      const genAI = await this._initializeAI();
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
       const prompt = `
 Você é um especialista em redação técnica comercial.
 Melhore a seguinte descrição de produto/serviço, tornando-a mais profissional e clara:
@@ -213,9 +230,14 @@ IMPORTANTE:
 - Retorne APENAS a descrição melhorada, sem comentários adicionais
 `;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      const requestBody = {
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      };
+
+      const text = await this._callGeminiAPI(requestBody);
+      return text.trim();
 
     } catch (error) {
       console.error('Erro ao melhorar descrição:', error);

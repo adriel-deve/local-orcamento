@@ -35,7 +35,7 @@
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto;
-      padding: 20mm;
+      padding: 15mm;
       background: white;
       page-break-after: always;
     }
@@ -130,20 +130,23 @@
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 15px;
-      font-size: 11px;
+      font-size: 9px;
+      table-layout: fixed;
     }
 
     .items-table th,
     .items-table td {
       border: 1px solid #ddd;
-      padding: 6px;
+      padding: 4px;
       text-align: left;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .items-table th {
       background: #f5f5f5;
       font-weight: bold;
-      font-size: 10px;
+      font-size: 8px;
       text-transform: uppercase;
     }
 
@@ -238,8 +241,28 @@
     @media print {
       body { background: white !important; }
       .print-btn { display: none !important; }
-      .page { margin: 0; padding: 15mm; box-shadow: none; }
+      .page {
+        margin: 0;
+        padding: 12mm 10mm;
+        box-shadow: none;
+      }
       .page-break { page-break-before: always; }
+      .items-table {
+        font-size: 8px !important;
+      }
+      .items-table th,
+      .items-table td {
+        padding: 3px !important;
+      }
+      .items-table th {
+        font-size: 7px !important;
+      }
+      .modalidade {
+        padding: 10px !important;
+      }
+      .section-title {
+        font-size: 12px !important;
+      }
     }
 
     @media screen {
@@ -382,18 +405,18 @@
         <% } %>
 
         <!-- Tabela do equipamento -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9px; table-layout: fixed;">
           <thead>
             <tr style="background: #f3f4f6;">
-              <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 35%;">Parâmetro</th>
-              <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600;">Especificação</th>
+              <th style="padding: 4px; text-align: left; border: 1px solid #ddd; font-weight: 600; width: 30%; word-wrap: break-word;">Parâmetro</th>
+              <th style="padding: 4px; text-align: left; border: 1px solid #ddd; font-weight: 600; word-wrap: break-word;">Especificação</th>
             </tr>
           </thead>
           <tbody>
             <% equip.specs.forEach(spec => { %>
             <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;"><%= spec.param %></td>
-              <td style="padding: 8px; border: 1px solid #ddd;"><%= spec.value %></td>
+              <td style="padding: 4px; border: 1px solid #ddd; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word;"><%= spec.param %></td>
+              <td style="padding: 4px; border: 1px solid #ddd; word-wrap: break-word; overflow-wrap: break-word;"><%= spec.value %></td>
             </tr>
             <% }); %>
           </tbody>
@@ -432,14 +455,14 @@
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 40%">Descrição</th>
-                <th style="width: 8%" class="text-center">Qtd</th>
+                <th style="width: 38%">Descrição</th>
+                <th style="width: 6%" class="text-center">Qtd</th>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
-                <th style="width: 8%" class="text-center">Dias</th>
+                <th style="width: 6%" class="text-center">Dias</th>
                   <% } %>
-                <th style="width: 15%" class="text-right">Valor Unit.</th>
-                <th style="width: 10%" class="text-center">Moeda</th>
-                <th style="width: 15%" class="text-right">Subtotal</th>
+                <th style="width: 18%" class="text-right">Valor Unit.</th>
+                <th style="width: 8%" class="text-center">Moeda</th>
+                <th style="width: 18%" class="text-right">Subtotal</th>
               </tr>
             </thead>
             <tbody>
@@ -499,14 +522,14 @@
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 40%">Descrição</th>
-                <th style="width: 8%" class="text-center">Qtd</th>
+                <th style="width: 38%">Descrição</th>
+                <th style="width: 6%" class="text-center">Qtd</th>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
-                <th style="width: 8%" class="text-center">Dias</th>
+                <th style="width: 6%" class="text-center">Dias</th>
                   <% } %>
-                <th style="width: 15%" class="text-right">Valor Unit.</th>
-                <th style="width: 10%" class="text-center">Moeda</th>
-                <th style="width: 15%" class="text-right">Subtotal</th>
+                <th style="width: 18%" class="text-right">Valor Unit.</th>
+                <th style="width: 8%" class="text-center">Moeda</th>
+                <th style="width: 18%" class="text-right">Subtotal</th>
               </tr>
             </thead>
             <tbody>

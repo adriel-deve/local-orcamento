@@ -7,7 +7,12 @@
     ✨ Extração Automática com IA
   </h3>
   <div style="display: flex; gap: 1rem; align-items: center;">
-    <input type="file" id="ai_document_upload" accept=".pdf,.jpg,.jpeg,.png,.txt" style="flex: 1; padding: 0.75rem; border: 2px solid white; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" />
+    <div style="flex: 1; position: relative;">
+      <input type="file" id="ai_document_upload" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="showFileSelected(this)" style="width: 100%; padding: 0.75rem; border: 2px solid white; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" />
+      <div id="file_selected_indicator" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.2); border-radius: 6px; color: white; font-size: 0.875rem;">
+        📎 <span id="file_name"></span> (<span id="file_size"></span>)
+      </div>
+    </div>
     <button type="button" onclick="extractFromDocument()" class="btn" style="white-space: nowrap; background: white; color: #667eea; font-weight: bold; border: none;">
       🤖 Extrair Dados
     </button>
@@ -1323,6 +1328,34 @@
   }
 
   // === FUNÇÃO DE EXTRAÇÃO COM IA ===
+  function showFileSelected(input) {
+    const indicator = document.getElementById('file_selected_indicator');
+    const fileName = document.getElementById('file_name');
+    const fileSize = document.getElementById('file_size');
+
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      fileName.textContent = file.name;
+
+      // Formatar tamanho do arquivo
+      const size = file.size;
+      let sizeText;
+      if (size < 1024) {
+        sizeText = size + ' B';
+      } else if (size < 1024 * 1024) {
+        sizeText = (size / 1024).toFixed(1) + ' KB';
+      } else {
+        sizeText = (size / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+      fileSize.textContent = sizeText;
+
+      // Mostrar indicador
+      indicator.style.display = 'block';
+    } else {
+      indicator.style.display = 'none';
+    }
+  }
+
   async function extractFromDocument() {
     const fileInput = document.getElementById('ai_document_upload');
     const statusDiv = document.getElementById('ai_extraction_status');

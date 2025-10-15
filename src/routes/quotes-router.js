@@ -31,7 +31,14 @@ function normalizeItem(it) {
   const qty = Number(it.qty || 1);
   const unit = Number(it.unit || it.price || 0);
   const currency = String(it.currency || 'BRL').toUpperCase();
-  return { name: it.name || '', qty, unit, currency, subtotal: qty * unit };
+  const item = { name: it.name || '', qty, unit, currency, subtotal: qty * unit };
+
+  // Adicionar days se existir
+  if (it.days !== undefined && it.days !== null && it.days !== '') {
+    item.days = Number(it.days);
+  }
+
+  return item;
 }
 
 function categorizeSpecs(specs) {

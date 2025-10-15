@@ -538,7 +538,6 @@ Excluem-se da garantia: os desgastes normais de uso; defeitos de mau uso, imper√
 
   doc.text('Empresa: Pharmatec Solutions', 120, yPos + 20);
   doc.text('Website: www.apharmatec.com.br', 120, yPos + 25);
-  doc.text('Suporte: suporte@apharmatec.com.br', 120, yPos + 30);
 
   return yPos + 50;
 }

@@ -332,8 +332,11 @@
       </div>
     </div>
 
-    <!-- Especificações Técnicas -->
-    <% if (quote.tech_spec || quote.principle || quote.equipment_image || quote.equipment_images) { %>
+  </div>
+
+  <!-- PÁGINA 2: Especificações Técnicas + Imagem -->
+  <% if (quote.tech_spec || quote.principle || quote.equipment_image || quote.equipment_images) { %>
+  <div class="page">
     <div class="section">
       <%
         // Preparar array de imagens
@@ -421,30 +424,39 @@
             <% }); %>
           </tbody>
         </table>
-
-        <!-- Princípio de Funcionamento deste equipamento -->
-        <%
-          // Dividir princípio em partes (separadas por "---")
-          const principleSections = quote.principle ? quote.principle.split('---').map(p => p.trim()).filter(p => p && !p.includes('EQUIPAMENTO')) : [];
-
-          if (principleSections[equipIdx]) {
-        %>
-        <div style="margin-bottom: 20px;">
-          <h4 style="font-size: 11px; font-weight: 700; margin-bottom: 8px;">Princípio de Funcionamento</h4>
-          <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= principleSections[equipIdx] %></p>
-        </div>
-        <% } %>
       <% }); %>
       <% } %>
     </div>
-      <% } %>
+  </div>
+  <% } %>
 
-    <!-- Modalidade A (Sistema CIF) -->
-    <%
-    const modalidadeA = sections.filter(s => s.key.includes('_a'));
-    const hasModalidadeA = modalidadeA.some(s => s.items && s.items.length > 0);
-    %>
-    <% if (hasModalidadeA) { %>
+  <!-- PÁGINA 3: Princípio de Funcionamento + Observações -->
+  <% if (quote.principle || quote.notes) { %>
+  <div class="page">
+    <% if (quote.principle) { %>
+    <div class="section">
+      <h3 class="section-title">Princípio de Funcionamento</h3>
+      <p style="margin-bottom: 15px; font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.principle %></p>
+    </div>
+    <% } %>
+
+    <!-- Observações -->
+    <% if (quote.notes) { %>
+    <div class="section">
+      <h3 class="section-title">Observações</h3>
+      <p style="font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.notes %></p>
+    </div>
+    <% } %>
+  </div>
+  <% } %>
+
+  <!-- PÁGINA 4: Modalidade A (Sistema CIF) -->
+  <%
+  const modalidadeA = sections.filter(s => s.key.includes('_a'));
+  const hasModalidadeA = modalidadeA.some(s => s.items && s.items.length > 0);
+  %>
+  <% if (hasModalidadeA) { %>
+  <div class="page">
     <div class="modalidade modalidade-a">
       <h2 class="modalidade-title">MODALIDADE A - Sistema CIF</h2>
 
@@ -504,14 +516,16 @@
       </div>
         <% } %>
     </div>
-      <% } %>
+  </div>
+  <% } %>
 
-    <!-- Modalidade B (Sistema FOB) -->
-    <%
-    const modalidadeB = sections.filter(s => s.key.includes('_b'));
-    const hasModalidadeB = modalidadeB.some(s => s.items && s.items.length > 0);
-    %>
-    <% if (hasModalidadeB) { %>
+  <!-- PÁGINA 5: Modalidade B (Sistema FOB) -->
+  <%
+  const modalidadeB = sections.filter(s => s.key.includes('_b'));
+  const hasModalidadeB = modalidadeB.some(s => s.items && s.items.length > 0);
+  %>
+  <% if (hasModalidadeB) { %>
+  <div class="page">
     <div class="modalidade modalidade-b">
       <h2 class="modalidade-title">MODALIDADE B - Sistema FOB</h2>
 
@@ -571,17 +585,8 @@
       </div>
         <% } %>
     </div>
-      <% } %>
-
-
-    <!-- Observações -->
-    <% if (quote.notes) { %>
-    <div class="section">
-      <h3 class="section-title">Observações</h3>
-      <p style="font-size: 11px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"><%= quote.notes %></p>
-    </div>
-      <% } %>
   </div>
+  <% } %>
 
   <!-- PíGINA DE CONDIÇÕES DE PAGAMENTO (se incluída) -->
   <% if (quote.include_payment_conditions === 'on' || quote.include_payment_conditions === true) { %>

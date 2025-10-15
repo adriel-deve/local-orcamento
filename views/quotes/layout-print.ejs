@@ -332,11 +332,8 @@
       </div>
     </div>
 
-  </div>
-
-  <!-- PÁGINA 2: Especificações Técnicas + Imagem -->
-  <% if (quote.tech_spec || quote.principle || quote.equipment_image || quote.equipment_images) { %>
-  <div class="page">
+    <!-- Especificações Técnicas + Imagem (mesma página) -->
+    <% if (quote.tech_spec || quote.equipment_image || quote.equipment_images) { %>
     <div class="section">
       <%
         // Preparar array de imagens
@@ -427,10 +424,10 @@
       <% }); %>
       <% } %>
     </div>
+    <% } %>
   </div>
-  <% } %>
 
-  <!-- PÁGINA 3: Princípio de Funcionamento + Observações -->
+  <!-- PÁGINA 2: Princípio de Funcionamento + Observações -->
   <% if (quote.principle || quote.notes) { %>
   <div class="page">
     <% if (quote.principle) { %>
@@ -450,7 +447,7 @@
   </div>
   <% } %>
 
-  <!-- PÁGINA 4: Modalidade A (Sistema CIF) -->
+  <!-- PÁGINA 3: Modalidade A (Sistema CIF) -->
   <%
   const modalidadeA = sections.filter(s => s.key.includes('_a'));
   const hasModalidadeA = modalidadeA.some(s => s.items && s.items.length > 0);
@@ -519,7 +516,7 @@
   </div>
   <% } %>
 
-  <!-- PÁGINA 5: Modalidade B (Sistema FOB) -->
+  <!-- PÁGINA 4: Modalidade B (Sistema FOB) -->
   <%
   const modalidadeB = sections.filter(s => s.key.includes('_b'));
   const hasModalidadeB = modalidadeB.some(s => s.items && s.items.length > 0);

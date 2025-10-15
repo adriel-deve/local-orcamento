@@ -338,14 +338,22 @@
         let equipments = [];
         let currentEquip = null;
 
-        techLines.forEach(line => {
+        techLines.forEach((line, index) => {
           if (line.includes('--- EQUIPAMENTO')) {
             if (currentEquip) equipments.push(currentEquip);
             currentEquip = {
               title: line.replace(/---/g, '').trim(),
               specs: []
             };
-          } else if (currentEquip && line.includes(':')) {
+          } else if (line.includes(':')) {
+            // Se ainda não há equipamento, criar o primeiro
+            if (!currentEquip) {
+              currentEquip = {
+                title: 'Equipamento 1',
+                specs: []
+              };
+            }
+
             const parts = line.split(':');
             currentEquip.specs.push({
               param: parts[0].trim(),

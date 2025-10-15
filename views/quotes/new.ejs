@@ -409,6 +409,13 @@
     const table = document.querySelector(`[data-section="${sectionId}"] .spec-table-body`);
     if (!table) return;
 
+    // Verificar limite de 20 linhas
+    const currentRows = table.querySelectorAll('tr').length;
+    if (currentRows >= 20) {
+      alert('Limite máximo de 20 especificações técnicas por equipamento atingido.');
+      return;
+    }
+
     const row = document.createElement('tr');
     row.innerHTML = `
       <td style="padding: 8px; border: 1px solid #e5e7eb;">

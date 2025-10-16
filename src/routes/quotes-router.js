@@ -1024,7 +1024,7 @@ router.post('/:code/status', async (req, res) => {
 // AI Status Check Route (para verificar se está configurado na Vercel)
 router.get('/ai-status', async (req, res) => {
   try {
-    const aiService = await import('../services/ai-service.js').then(m => m.default);
+    const aiService = await import('../services/gemini-service.js').then(m => m.default);
 
     const status = {
       environment: process.env.NODE_ENV || 'development',

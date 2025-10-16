@@ -18,8 +18,8 @@ class GeminiService {
       this.enabled = false;
     } else {
       this.enabled = true;
-      this.apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent';
-      console.log('✅ IA habilitada em produção');
+      this.apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
+      console.log('✅ IA habilitada em produção com Gemini 2.5 Flash');
     }
   }
 
@@ -49,18 +49,46 @@ class GeminiService {
       throw new Error('IA não configurada');
     }
 
-    const prompt = `Extraia informações desta cotação em JSON:
+    const prompt = `Você é um assistente especializado em analisar cotações e documentos técnicos de equipamentos.
+
+Analise o documento fornecido e extraia as seguintes informações em formato JSON:
+
 {
-  "client_name": "",
-  "client_cnpj": "",
-  "delivery_time": "",
-  "notes": "",
-  "items": [{"name": "", "qty": 1, "unit": 0, "currency": "BRL"}],
-  "tech_specs": [{"parameter": "", "value": ""}],
-  "equipment_description": "",
-  "principle": ""
+  "client_name": "Nome do cliente/empresa",
+  "client_cnpj": "CNPJ se disponível",
+  "delivery_time": "Prazo de entrega",
+  "notes": "Observações importantes",
+  "items": [
+    {
+      "name": "Descrição completa do item/equipamento",
+      "qty": 1,
+      "unit": 0,
+      "currency": "BRL",
+      "days": null
+    }
+  ],
+  "tech_specs": [
+    {
+      "parameter": "Nome do parâmetro técnico",
+      "value": "Valor da especificação"
+    }
+  ],
+  "equipment_description": "Descrição geral do equipamento ou sistema",
+  "principle": "Princípio de funcionamento do equipamento - explique DETALHADAMENTE como o equipamento funciona, seu processo operacional, fundamentos técnicos e aplicação. Se não houver informação explícita, CRIE uma explicação técnica baseada no tipo de equipamento mencionado."
 }
-Retorne APENAS o JSON.`;
+
+INSTRUÇÕES IMPORTANTES:
+1. Se um campo não estiver disponível, use null ou string vazia
+2. Para preços, extraia apenas números (sem R$, US$ ou símbolos)
+3. Para especificações técnicas, extraia TODOS os pares parâmetro:valor encontrados
+4. Para o "principle" (princípio de funcionamento):
+   - Procure por seções como "Funcionamento", "Operação", "Descrição Técnica"
+   - Se encontrar, extraia TODO o conteúdo
+   - Se NÃO encontrar mas souber o tipo de equipamento, CRIE uma explicação técnica completa
+   - Seja detalhado e técnico (mínimo 2-3 parágrafos)
+5. Seja preciso e extraia todas as informações relevantes
+
+Retorne APENAS o JSON válido, sem texto adicional antes ou depois.`;
 
     let requestBody;
     if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {

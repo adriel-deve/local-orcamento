@@ -1061,7 +1061,7 @@ router.post('/ai-extract', upload.single('document'), async (req, res) => {
     console.log('🤖 AI Extraction - Processing file:', req.file.filename);
 
     // Importar serviço de IA
-    const aiService = await import('../services/ai-service.js').then(m => m.default);
+    const aiService = await import('../services/gemini-service.js').then(m => m.default);
 
     // Verificar se o serviço está habilitado
     if (!aiService.isEnabled()) {

@@ -228,7 +228,7 @@ app.get('/ai-status', async (req, res) => {
   console.log('[AI-STATUS] Route hit!');
   try {
     console.log('[AI-STATUS] Importing AI service...');
-    const aiService = await import('./services/ai-service.js').then(m => m.default);
+    const aiService = await import('./services/gemini-service.js').then(m => m.default);
     console.log('[AI-STATUS] AI service imported, checking status...');
 
     const status = {

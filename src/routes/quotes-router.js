@@ -1118,6 +1118,99 @@ router.post('/ai-extract', upload.single('document'), async (req, res) => {
   }
 });
 
+// AI Translation Route
+router.post('/translate', async (req, res) => {
+  try {
+    const { quoteData, targetLanguage } = req.body;
+
+    if (!quoteData || !targetLanguage) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dados da cotação e idioma de destino são obrigatórios'
+      });
+    }
+
+    if (!['en', 'es'].includes(targetLanguage)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Idioma inválido. Use "en" para Inglês ou "es" para Espanhol'
+      });
+    }
+
+    console.log('🌐 AI Translation - Translating to:', targetLanguage);
+
+    // Importar serviço de IA
+    const aiService = await import('../services/gemini-service.js').then(m => m.default);
+
+    // Verificar se o serviço está habilitado
+    if (!aiService.isEnabled()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Serviço de IA não configurado. Configure GEMINI_API_KEY no arquivo .env'
+      });
+    }
+
+    // Traduzir cotação
+    const translatedQuote = await aiService.translateQuote(quoteData, targetLanguage);
+
+    console.log('✅ Translation successful');
+
+    res.json({
+      success: true,
+      translatedQuote: translatedQuote,
+      targetLanguage: targetLanguage
+    });
+
+  } catch (error) {
+    console.error('❌ AI Translation error:', error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erro ao traduzir cotação com IA'
+    });
+  }
+});
+
+// Preview Translated Quote Route
+router.post('/preview-translated', async (req, res) => {
+  try {
+    const translatedQuote = JSON.parse(req.body.translatedQuote);
+    const sections = JSON.parse(req.body.sections);
+
+    // Calculate totals for the translated quote
+    const totals = {
+      modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
+      modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
+      general: { BRL: 0, USD: 0, EUR: 0 }
+    };
+
+    sections.forEach(section => {
+      const sectionTotals = section.totals || { BRL: 0, USD: 0, EUR: 0 };
+
+      // Add to general totals
+      totals.general.BRL += sectionTotals.BRL || 0;
+      totals.general.USD += sectionTotals.USD || 0;
+      totals.general.EUR += sectionTotals.EUR || 0;
+
+      // Add to modalidade-specific totals
+      if (section.key.includes('_a')) {
+        totals.modalidadeA.BRL += sectionTotals.BRL || 0;
+        totals.modalidadeA.USD += sectionTotals.USD || 0;
+        totals.modalidadeA.EUR += sectionTotals.EUR || 0;
+      } else if (section.key.includes('_b')) {
+        totals.modalidadeB.BRL += sectionTotals.BRL || 0;
+        totals.modalidadeB.USD += sectionTotals.USD || 0;
+        totals.modalidadeB.EUR += sectionTotals.EUR || 0;
+      }
+    });
+
+    res.render('quotes/layout-print', { quote: translatedQuote, sections, totals });
+  } catch (error) {
+    console.error('Error rendering translated quote:', error);
+    res.status(500).send('Erro ao exibir cotação traduzida: ' + error.message);
+  }
+});
+
 export default router;
 
 

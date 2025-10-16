@@ -116,6 +116,51 @@ Retorne APENAS o JSON válido, sem texto adicional antes ou depois.`;
 
     return JSON.parse(jsonMatch[0]);
   }
+
+  async translateQuote(quoteData, targetLanguage = 'en') {
+    if (!this.enabled) {
+      throw new Error('IA não configurada');
+    }
+
+    const languageNames = {
+      'en': 'inglês',
+      'es': 'espanhol',
+      'pt': 'português'
+    };
+
+    const targetLangName = languageNames[targetLanguage] || targetLanguage;
+
+    const prompt = `Você é um tradutor especializado em documentos técnicos comerciais.
+
+Traduza a seguinte cotação para ${targetLangName}, mantendo a estrutura JSON exata.
+
+INSTRUÇÕES IMPORTANTES:
+1. Traduza APENAS os valores de texto (strings)
+2. Mantenha números, datas, preços e códigos INALTERADOS
+3. Preserve termos técnicos importantes quando apropriado (ex: nomes de equipamentos específicos)
+4. Para especificações técnicas, traduza os parâmetros mas mantenha unidades de medida
+5. Mantenha formatação e estrutura do JSON
+6. Seja preciso e profissional
+
+Cotação original em português:
+${JSON.stringify(quoteData, null, 2)}
+
+Retorne APENAS o JSON traduzido, sem texto adicional antes ou depois.`;
+
+    const requestBody = {
+      contents: [{
+        parts: [{ text: prompt }]
+      }]
+    };
+
+    const text = await this.callAPI(requestBody);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('IA não conseguiu traduzir a cotação');
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  }
 }
 
 export default new GeminiService();

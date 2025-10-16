@@ -278,6 +278,7 @@
   <div class="action-buttons" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-wrap: nowrap; gap: 12px; justify-content: center; align-items: center; background: rgba(255,255,255,0.95); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px);">
     <button class="action-btn back-btn" onclick="goBack()" style="background: #2563eb; color: white; border: none; padding: 10px 24px; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(37,99,235,0.3); white-space: nowrap; transition: all 0.3s ease;">&larr; Voltar</button>
     <button class="action-btn print-btn" onclick="window.print()" style="background: #059669; color: white; border: none; padding: 10px 24px; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(5,150,105,0.3); white-space: nowrap; transition: all 0.3s ease;">🖨️ Imprimir</button>
+    <button class="action-btn translate-btn" onclick="translateQuote()" style="background: #7c3aed; color: white; border: none; padding: 10px 24px; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(124,58,237,0.3); white-space: nowrap; transition: all 0.3s ease;">🌐 Traduzir</button>
     <button class="action-btn close-btn" onclick="window.close()" style="background: #6b7280; color: white; border: none; padding: 10px 24px; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(107,114,128,0.3); white-space: nowrap; transition: all 0.3s ease;">✕ Fechar</button>
   </div>
   <% } %>
@@ -859,6 +860,81 @@
       const buttons = document.querySelector('.action-buttons');
       if (buttons) buttons.style.display = 'flex';
     });
+
+    async function translateQuote() {
+      const translateBtn = document.querySelector('.translate-btn');
+      if (!translateBtn) return;
+
+      // Ask user which language
+      const language = prompt('Para qual idioma deseja traduzir?\n\nDigite:\n- "en" para Inglês\n- "es" para Espanhol', 'en');
+
+      if (!language || !['en', 'es'].includes(language.toLowerCase())) {
+        if (language !== null) {
+          alert('Idioma inválido. Use "en" para Inglês ou "es" para Espanhol.');
+        }
+        return;
+      }
+
+      const originalHtml = translateBtn.innerHTML;
+      translateBtn.disabled = true;
+      translateBtn.innerHTML = '🔄 Traduzindo...';
+
+      try {
+        const response = await fetch('/quotes/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            quoteData: quoteData,
+            targetLanguage: language.toLowerCase()
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erro ao traduzir');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('✅ Cotação traduzida com sucesso!\n\nAbrindo versão traduzida em nova aba...');
+
+          // Open translated quote in new tab
+          const translatedWindow = window.open('', '_blank');
+          translatedWindow.document.write('<html><head><title>Traduzindo...</title></head><body><h2>Gerando cotação traduzida...</h2><p>Aguarde...</p></body></html>');
+
+          // Create a form to submit translated data
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/quotes/preview-translated';
+          form.target = '_blank';
+
+          const translatedDataInput = document.createElement('input');
+          translatedDataInput.type = 'hidden';
+          translatedDataInput.name = 'translatedQuote';
+          translatedDataInput.value = JSON.stringify(result.translatedQuote);
+          form.appendChild(translatedDataInput);
+
+          const sectionsInput = document.createElement('input');
+          sectionsInput.type = 'hidden';
+          sectionsInput.name = 'sections';
+          sectionsInput.value = JSON.stringify(sectionsData);
+          form.appendChild(sectionsInput);
+
+          document.body.appendChild(form);
+          form.submit();
+          document.body.removeChild(form);
+        }
+      } catch (error) {
+        console.error('Erro ao traduzir:', error);
+        alert('❌ Erro ao traduzir cotação: ' + error.message);
+      } finally {
+        translateBtn.disabled = false;
+        translateBtn.innerHTML = originalHtml;
+      }
+    }
   </script>
 </body>
 </html>

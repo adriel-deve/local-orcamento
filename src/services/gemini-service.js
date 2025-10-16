@@ -18,7 +18,7 @@ class GeminiService {
       this.enabled = false;
     } else {
       this.enabled = true;
-      this.apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+      this.apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent';
       console.log('✅ IA habilitada em produção');
     }
   }

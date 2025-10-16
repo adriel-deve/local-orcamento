@@ -1,8 +1,9 @@
 {
     "name": "local-orcamentos",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": true,
     "type": "module",
+    "buildTimestamp": "2025-10-15T21:15:00Z",
     "scripts": {
         "start": "node src/app.js",
         "init:db": "node src/init-db.js",

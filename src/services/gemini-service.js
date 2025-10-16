@@ -51,16 +51,24 @@ class GeminiService {
 
     const prompt = `Você é um assistente especializado em analisar cotações e documentos técnicos de equipamentos.
 
-Analise o documento fornecido e extraia as seguintes informações em formato JSON:
+Analise o documento fornecido e extraia as seguintes informações em formato JSON.
+
+⚠️ IMPORTANTE - TRADUÇÃO AUTOMÁTICA:
+- Se o documento estiver em INGLÊS ou qualquer outro idioma, TRADUZA TODO O CONTEÚDO para PORTUGUÊS BRASILEIRO
+- Todos os campos devem estar em português brasileiro, exceto códigos e números
+- Mantenha termos técnicos apropriados mas traduza descrições
+
+Formato JSON a retornar:
 
 {
+  "detected_language": "Idioma detectado (en, pt, es, etc)",
   "client_name": "Nome do cliente/empresa",
   "client_cnpj": "CNPJ se disponível",
   "delivery_time": "Prazo de entrega",
   "notes": "Observações importantes",
   "items": [
     {
-      "name": "Descrição completa do item/equipamento",
+      "name": "Descrição completa do item/equipamento EM PORTUGUÊS",
       "qty": 1,
       "unit": 0,
       "currency": "BRL",
@@ -69,24 +77,26 @@ Analise o documento fornecido e extraia as seguintes informações em formato JS
   ],
   "tech_specs": [
     {
-      "parameter": "Nome do parâmetro técnico",
-      "value": "Valor da especificação"
+      "parameter": "Nome do parâmetro técnico EM PORTUGUÊS",
+      "value": "Valor da especificação (mantém unidades originais)"
     }
   ],
-  "equipment_description": "Descrição geral do equipamento ou sistema",
-  "principle": "Princípio de funcionamento do equipamento - explique DETALHADAMENTE como o equipamento funciona, seu processo operacional, fundamentos técnicos e aplicação. Se não houver informação explícita, CRIE uma explicação técnica baseada no tipo de equipamento mencionado."
+  "equipment_description": "Descrição geral do equipamento EM PORTUGUÊS",
+  "principle": "Princípio de funcionamento EM PORTUGUÊS - explique DETALHADAMENTE como o equipamento funciona, seu processo operacional, fundamentos técnicos e aplicação. Se não houver informação explícita, CRIE uma explicação técnica baseada no tipo de equipamento mencionado."
 }
 
 INSTRUÇÕES IMPORTANTES:
-1. Se um campo não estiver disponível, use null ou string vazia
-2. Para preços, extraia apenas números (sem R$, US$ ou símbolos)
-3. Para especificações técnicas, extraia TODOS os pares parâmetro:valor encontrados
-4. Para o "principle" (princípio de funcionamento):
-   - Procure por seções como "Funcionamento", "Operação", "Descrição Técnica"
-   - Se encontrar, extraia TODO o conteúdo
-   - Se NÃO encontrar mas souber o tipo de equipamento, CRIE uma explicação técnica completa
+1. SEMPRE detecte o idioma e traduza para português brasileiro se necessário
+2. Se um campo não estiver disponível, use null ou string vazia
+3. Para preços, extraia apenas números (sem R$, US$ ou símbolos)
+4. Para especificações técnicas, extraia TODOS os pares parâmetro:valor encontrados
+5. Para o "principle" (princípio de funcionamento):
+   - Procure por seções como "Funcionamento", "Operação", "Descrição Técnica" ou "Operating Principle"
+   - Se encontrar, extraia TODO o conteúdo e traduza para português
+   - Se NÃO encontrar mas souber o tipo de equipamento, CRIE uma explicação técnica completa em português
    - Seja detalhado e técnico (mínimo 2-3 parágrafos)
-5. Seja preciso e extraia todas as informações relevantes
+6. Seja preciso e extraia todas as informações relevantes
+7. TRADUZA descrições de equipamentos, especificações e textos para português
 
 Retorne APENAS o JSON válido, sem texto adicional antes ou depois.`;
 

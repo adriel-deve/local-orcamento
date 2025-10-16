@@ -1090,13 +1090,28 @@ router.post('/ai-extract', upload.single('document'), async (req, res) => {
     console.log('✅ AI Extraction successful:', {
       client: extractedData.client_name,
       itemsCount: extractedData.items?.length || 0,
-      specsCount: extractedData.tech_specs?.length || 0
+      specsCount: extractedData.tech_specs?.length || 0,
+      detectedLanguage: extractedData.detected_language
     });
+
+    // Criar mensagem apropriada baseada no idioma detectado
+    let message = 'Dados extraídos com sucesso!';
+    if (extractedData.detected_language && extractedData.detected_language !== 'pt') {
+      const languageNames = {
+        'en': 'Inglês',
+        'es': 'Espanhol',
+        'fr': 'Francês',
+        'de': 'Alemão',
+        'it': 'Italiano'
+      };
+      const detectedLangName = languageNames[extractedData.detected_language] || extractedData.detected_language.toUpperCase();
+      message = `Dados extraídos e traduzidos de ${detectedLangName} para Português!`;
+    }
 
     res.json({
       success: true,
       data: extractedData,
-      message: 'Dados extraídos com sucesso!'
+      message: message
     });
 
   } catch (error) {

@@ -363,6 +363,7 @@
   <% if (!pdfMode) { %>
   <div class="action-buttons">
     <button class="action-btn" onclick="window.history.back()" style="background: #2563eb;">← Voltar</button>
+    <button class="action-btn pdf-btn" onclick="downloadPDF('classic')" style="background: #dc2626;">📄 Baixar PDF</button>
     <button class="action-btn" onclick="window.print()" style="background: #059669;">🖨️ Imprimir</button>
     <button class="action-btn" onclick="window.close()" style="background: #6b7280;">✕ Fechar</button>
   </div>
@@ -729,8 +730,54 @@
   </div>
 
   <script>
+    const quoteData = <%- JSON.stringify(quote) %>;
+
     function goBack() {
       window.history.back();
+    }
+
+    async function downloadPDF(layoutType) {
+      const pdfBtn = document.querySelector('.pdf-btn');
+      if (!pdfBtn) return;
+
+      const originalHtml = pdfBtn.innerHTML;
+      pdfBtn.disabled = true;
+      pdfBtn.innerHTML = '📄 Gerando...';
+
+      try {
+        const formData = new FormData();
+        formData.append('quote_code', quoteData.quote_code || '');
+        formData.append('layout_type', layoutType);
+        formData.append('from_preview', 'true');
+
+        const response = await fetch('/quotes/generate-pdf-download', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao gerar PDF');
+        }
+
+        // Download the PDF
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `proposta-${quoteData.quote_code}-${layoutType}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        alert('✅ PDF gerado com sucesso!');
+      } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('❌ Erro ao gerar PDF: ' + error.message);
+      } finally {
+        pdfBtn.disabled = false;
+        pdfBtn.innerHTML = originalHtml;
+      }
     }
 
     window.addEventListener('beforeprint', () => {

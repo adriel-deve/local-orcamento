@@ -1276,6 +1276,79 @@ router.post('/preview-translated', async (req, res) => {
   }
 });
 
+// Generate PDF from HTML using Puppeteer
+router.post('/generate-pdf-download', upload.any(), async (req, res) => {
+  try {
+    const layoutType = req.body.layout_type || 'new';
+    const quoteCode = req.body.quote_code || 'quote';
+
+    console.log('🖨️ Generating PDF with Puppeteer for layout:', layoutType);
+
+    // Import Puppeteer
+    const puppeteer = await import('puppeteer');
+
+    // Get base URL
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+    // Construct URL based on layout type
+    let url;
+    if (req.body.from_preview === 'true') {
+      // Generate from current preview (needs to be saved first)
+      url = `${baseUrl}/quotes/${quoteCode}/layout${layoutType === 'classic' ? '-classic' : ''}`;
+    } else {
+      url = `${baseUrl}/quotes/${quoteCode}/layout${layoutType === 'classic' ? '-classic' : ''}`;
+    }
+
+    console.log('📄 Generating PDF from URL:', url);
+
+    // Launch browser
+    const browser = await puppeteer.default.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+
+    // Navigate to the page
+    await page.goto(url, {
+      waitUntil: 'networkidle0',
+      timeout: 60000
+    });
+
+    // Wait for images to load
+    await page.waitForTimeout(2000);
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '0mm',
+        right: '0mm',
+        bottom: '0mm',
+        left: '0mm'
+      }
+    });
+
+    await browser.close();
+
+    // Send PDF as download
+    const fileName = `proposta-${quoteCode}-${layoutType}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
+
+    console.log('✅ PDF generated successfully:', fileName);
+
+  } catch (error) {
+    console.error('❌ Error generating PDF:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao gerar PDF: ' + error.message
+    });
+  }
+});
+
 export default router;
 
 

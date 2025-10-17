@@ -30,35 +30,6 @@
       page-break-after: always;
     }
 
-    /* Decorative Side Bars */
-    .page::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 15mm;
-      height: 100%;
-      background: linear-gradient(to bottom,
-        #c41e3a 0%,
-        #c41e3a 30%,
-        #8b0000 30%,
-        #8b0000 100%);
-    }
-
-    .page::after {
-      content: '';
-      position: absolute;
-      left: 15mm;
-      top: 0;
-      width: 3mm;
-      height: 100%;
-      background: linear-gradient(to bottom,
-        #d0d0d0 0%,
-        #d0d0d0 30%,
-        #a0a0a0 30%,
-        #a0a0a0 100%);
-    }
-
     .page-number {
       position: absolute;
       bottom: 10mm;
@@ -381,9 +352,15 @@
 
   <!-- PAGE 2: INSTITUTIONAL -->
   <div class="page">
-    <div class="proposal-code-cover" style="text-align: right; font-size: 10pt; color: #666; margin-bottom: 30px;">
+    <div class="proposal-code-cover" style="text-align: center; font-size: 13pt; color: #000; margin-bottom: 10px; font-weight: bold;">
       Proposta Comercial <%= quote.quote_code %>
     </div>
+
+    <% if (mainEquipment) { %>
+    <div style="text-align: center; font-size: 10pt; margin-bottom: 30px; line-height: 1.6;">
+      <%= mainEquipment.name || '' %><%= mainEquipment.model ? ', ' + mainEquipment.model : '' %>
+    </div>
+    <% } %>
 
     <div class="institutional-text">
       Com 30 anos de experiência no mercado nacional e internacional, o Grupo Zanatech é especializado nos
@@ -682,13 +659,13 @@
     </div>
 
     <div class="signature">
-      <p>É um enorme prazer fazer parte do projeto da sua empresa, e ficamos à disposição para quaisquer és</p>
+      <p>É um enorme prazer fazer parte do projeto da sua empresa, e ficamos à disposição para quaisquer esclarecimentos.</p>
       <p>Cordialmente,</p>
       <br>
-      <p><strong>Adriel Fernandes Rosa</strong></p>
+      <p><strong><%= quote.seller_name || 'Adriel Fernandes Rosa' %></strong></p>
       <p>Pharmatec (Grupo Zanatech) - Dpto. Comercial</p>
-      <p>adriel@pharmatec.net.br</p>
-      <p>Cel./Whatsapp: +55 11 9 4253 1015</p>
+      <p><%= quote.contact_email || 'adriel@pharmatec.net.br' %></p>
+      <p>Cel./Whatsapp: <%= quote.contact_phone || '+55 11 9 4253 1015' %></p>
     </div>
 
     <div class="page-number">8</div>

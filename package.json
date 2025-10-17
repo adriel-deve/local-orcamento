@@ -14,6 +14,7 @@
         "claude:help": "cmd /c npx -y @anthropic-ai/claude-code --help"
     },
     "dependencies": {
+        "@sparticuz/chromium": "^141.0.0",
         "bcrypt": "^5.1.1",
         "cloudinary": "^2.7.0",
         "connect-pg-simple": "^10.0.0",
@@ -30,6 +31,7 @@
         "pdfkit": "^0.15.0",
         "pg": "^8.16.3",
         "puppeteer": "^24.25.0",
+        "puppeteer-core": "^24.25.0",
         "uuid": "^10.0.0",
         "xlsx": "^0.18.5"
     }

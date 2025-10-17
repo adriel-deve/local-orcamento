@@ -1276,7 +1276,7 @@ router.post('/preview-translated', async (req, res) => {
   }
 });
 
-// Generate PDF from HTML using Puppeteer
+// Generate PDF from HTML using Puppeteer (Serverless compatible)
 router.post('/generate-pdf-download', upload.any(), async (req, res) => {
   try {
     const layoutType = req.body.layout_type || 'new';
@@ -1284,28 +1284,37 @@ router.post('/generate-pdf-download', upload.any(), async (req, res) => {
 
     console.log('🖨️ Generating PDF with Puppeteer for layout:', layoutType);
 
-    // Import Puppeteer
-    const puppeteer = await import('puppeteer');
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Import Puppeteer (serverless-friendly for production)
+    let browser;
+    if (isProduction) {
+      // Vercel/Serverless environment
+      const chromium = await import('@sparticuz/chromium');
+      const puppeteer = await import('puppeteer-core');
+
+      browser = await puppeteer.default.launch({
+        args: chromium.default.args,
+        defaultViewport: chromium.default.defaultViewport,
+        executablePath: await chromium.default.executablePath(),
+        headless: chromium.default.headless,
+      });
+    } else {
+      // Local development
+      const puppeteer = await import('puppeteer');
+      browser = await puppeteer.default.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+    }
 
     // Get base URL
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     // Construct URL based on layout type
-    let url;
-    if (req.body.from_preview === 'true') {
-      // Generate from current preview (needs to be saved first)
-      url = `${baseUrl}/quotes/${quoteCode}/layout${layoutType === 'classic' ? '-classic' : ''}`;
-    } else {
-      url = `${baseUrl}/quotes/${quoteCode}/layout${layoutType === 'classic' ? '-classic' : ''}`;
-    }
+    const url = `${baseUrl}/quotes/${quoteCode}/layout${layoutType === 'classic' ? '-classic' : ''}`;
 
     console.log('📄 Generating PDF from URL:', url);
-
-    // Launch browser
-    const browser = await puppeteer.default.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
 
     const page = await browser.newPage();
 
@@ -1315,8 +1324,8 @@ router.post('/generate-pdf-download', upload.any(), async (req, res) => {
       timeout: 60000
     });
 
-    // Wait for images to load
-    await page.waitForTimeout(2000);
+    // Wait a bit for images to load
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
 
     // Generate PDF
     const pdfBuffer = await page.pdf({

@@ -321,7 +321,12 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
 
     // Gerar pré-visualização com os dados salvos
     const { sections: processedSections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
-    return res.render('quotes/layout-print', { quote, sections: processedSections, totals });
+
+    // Verificar preferência de layout
+    const layoutPreference = req.body.layout_preference || 'new';
+    const layoutTemplate = layoutPreference === 'classic' ? 'quotes/layout-print-classic' : 'quotes/layout-print';
+
+    return res.render(layoutTemplate, { quote, sections: processedSections, totals });
 
   } catch (e) {
     return res.status(400).send('Falha ao salvar e pré-visualizar: ' + e.message);
@@ -391,7 +396,12 @@ router.post('/preview-html', upload.any(), async (req, res) => {
       payment_additional_notes: req.body.payment_additional_notes || ''
     };
     const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
-    return res.render('quotes/layout-print', { quote, sections, totals });
+
+    // Verificar preferência de layout
+    const layoutPreference = req.body.layout_preference || 'new';
+    const layoutTemplate = layoutPreference === 'classic' ? 'quotes/layout-print-classic' : 'quotes/layout-print';
+
+    return res.render(layoutTemplate, { quote, sections, totals });
   } catch (e) {
     return res.status(400).send('Falha ao pré-visualizar: ' + e.message);
   }

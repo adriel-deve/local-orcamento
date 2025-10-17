@@ -326,11 +326,17 @@
       <button type="button" class="btn secondary" onclick="saveDraft(event)">
         💾 Salvar Rascunho
       </button>
-      <button type="button" class="btn" onclick="previewOnly()" style="background: #3b82f6; color: white;">
-        👁️ Pré-visualizar Layout
+      <button type="button" class="btn" onclick="previewLayout('new')" style="background: #059669; color: white;">
+        👁️ Pré-visualizar Layout Novo
       </button>
-      <button type="button" class="btn primary" onclick="previewHtml()">
-        ✅ Concluir Cotação
+      <button type="button" class="btn" onclick="previewLayout('classic')" style="background: #7c3aed; color: white;">
+        👁️ Pré-visualizar Layout Antigo
+      </button>
+      <button type="button" class="btn primary" onclick="completeWithLayout('new')" style="background: #10b981;">
+        ✅ Concluir com Layout Novo
+      </button>
+      <button type="button" class="btn primary" onclick="completeWithLayout('classic')" style="background: #8b5cf6;">
+        ✅ Concluir com Layout Antigo
       </button>
     </div>
   </form>
@@ -729,14 +735,25 @@
     document.getElementById('quoteForm').submit();
   }
 
-  function previewOnly(){
+  // Preview layout without saving
+  function previewLayout(layoutType){
     if (collectPayload() === false) return;
     const form = document.getElementById('quoteForm');
     const prevAction = form.action;
     const prevTarget = form.target;
     const prevMethod = form.method;
 
-    // Não adicionar status de concluída - apenas pré-visualizar
+    // Add hidden input for layout preference
+    let layoutInput = document.getElementById('layout_preference');
+    if (!layoutInput) {
+      layoutInput = document.createElement('input');
+      layoutInput.type = 'hidden';
+      layoutInput.id = 'layout_preference';
+      layoutInput.name = 'layout_preference';
+      form.appendChild(layoutInput);
+    }
+    layoutInput.value = layoutType;
+
     form.action = '/quotes/preview-html';
     form.method = 'post';
     form.target = '_blank';
@@ -746,14 +763,15 @@
     form.target = prevTarget;
   }
 
-  function previewHtml(){
+  // Save quote and open with selected layout
+  function completeWithLayout(layoutType){
     if (collectPayload() === false) return;
     const form = document.getElementById('quoteForm');
     const prevAction = form.action;
     const prevTarget = form.target;
     const prevMethod = form.method;
 
-    // Adicionar indicador de status concluído
+    // Add status as completed
     let statusInput = document.getElementById('completed_status');
     if (!statusInput) {
       statusInput = document.createElement('input');
@@ -763,6 +781,17 @@
       form.appendChild(statusInput);
     }
     statusInput.value = 'Concluída';
+
+    // Add layout preference
+    let layoutInput = document.getElementById('layout_preference');
+    if (!layoutInput) {
+      layoutInput = document.createElement('input');
+      layoutInput.type = 'hidden';
+      layoutInput.id = 'layout_preference';
+      layoutInput.name = 'layout_preference';
+      form.appendChild(layoutInput);
+    }
+    layoutInput.value = layoutType;
 
     form.action = '/quotes/save-and-preview';
     form.method = 'post';

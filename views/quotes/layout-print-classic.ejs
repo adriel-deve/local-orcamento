@@ -94,8 +94,23 @@
       background-image: url('/img/globo.png');
       background-position: center center;
       background-repeat: no-repeat;
-      background-size: 50%;
-      background-blend-mode: lighten;
+      background-size: 55%;
+      opacity: 1;
+    }
+
+    .institutional-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('/img/globo.png');
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 55%;
+      opacity: 0.15;
+      z-index: 0;
     }
 
     .institutional-text {

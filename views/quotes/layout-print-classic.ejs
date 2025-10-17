@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposta Comercial <%= quote.quote_code %></title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.4;
+      color: #000;
+      background: #f5f5f5;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      margin: 10mm auto;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+      page-break-after: always;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: 10mm;
+      right: 20mm;
+      font-size: 10pt;
+      color: #666;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .cover-logo {
+      width: 200px;
+      margin-bottom: 80px;
+    }
+
+    .cover-title {
+      font-size: 18pt;
+      font-weight: bold;
+      margin-bottom: 20px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      position: absolute;
+      right: 15mm;
+      top: 50%;
+      transform: translateY(-50%);
+      letter-spacing: 2px;
+    }
+
+    .proposal-code-cover {
+      font-size: 16pt;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .equipment-name-cover {
+      font-size: 14pt;
+      margin-bottom: 10px;
+    }
+
+    .model-cover {
+      font-size: 12pt;
+      color: #333;
+    }
+
+    /* Institutional Page */
+    .institutional-text {
+      font-size: 10pt;
+      line-height: 1.6;
+      text-align: justify;
+      margin-bottom: 20px;
+    }
+
+    .proposal-info {
+      margin-top: 40px;
+      font-size: 11pt;
+      line-height: 1.8;
+    }
+
+    .client-info {
+      margin-top: 20px;
+      font-size: 11pt;
+      font-weight: bold;
+    }
+
+    /* Equipment Page */
+    .equipment-image {
+      width: 60%;
+      margin: 20px auto;
+      display: block;
+      border: 1px solid #ccc;
+    }
+
+    .section-title {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    .principle-text {
+      font-size: 10pt;
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    /* Technical Specs Table */
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 10pt;
+    }
+
+    .specs-table th {
+      background: #f0f0f0;
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .specs-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .specs-table td:first-child {
+      text-align: center;
+      width: 40%;
+    }
+
+    /* Modalidade Tables */
+    .modalidade-title {
+      font-size: 14pt;
+      font-weight: bold;
+      text-align: center;
+      margin: 30px 0 20px 0;
+      color: #c41e3a;
+    }
+
+    .modalidade-subtitle {
+      font-size: 9pt;
+      text-align: left;
+      margin-bottom: 15px;
+      border: 1px solid #000;
+      padding: 8px;
+      background: #f9f9f9;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 9pt;
+    }
+
+    .items-table th {
+      background: #f0f0f0;
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 9pt;
+    }
+
+    .items-table td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: left;
+    }
+
+    .items-table td.center {
+      text-align: center;
+    }
+
+    .items-table td.right {
+      text-align: right;
+    }
+
+    .section-header {
+      background: #e0e0e0;
+      font-weight: bold;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .total-row {
+      background: #fff5e6;
+      font-weight: bold;
+    }
+
+    /* Final Summary */
+    .final-summary {
+      margin-top: 40px;
+    }
+
+    .summary-title {
+      font-size: 12pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 10pt;
+    }
+
+    .summary-table th {
+      background: #f0f0f0;
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .summary-table td {
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .payment-conditions {
+      font-size: 9pt;
+      line-height: 1.6;
+      margin-top: 20px;
+      text-align: justify;
+    }
+
+    .payment-box {
+      border: 1px solid #000;
+      padding: 10px;
+      margin: 15px 0;
+    }
+
+    /* Warranty Terms */
+    .warranty-title {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+
+    .warranty-text {
+      font-size: 9pt;
+      line-height: 1.5;
+      text-align: justify;
+      margin-bottom: 15px;
+    }
+
+    .signature {
+      margin-top: 40px;
+      text-align: right;
+      font-size: 9pt;
+      line-height: 1.6;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      gap: 12px;
+      background: rgba(255,255,255,0.95);
+      padding: 12px 24px;
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .action-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+      }
+      .action-buttons {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <% const pdfMode = typeof isPdfRender !== "undefined" ? isPdfRender : false; %>
+
+  <!-- Action Buttons -->
+  <% if (!pdfMode) { %>
+  <div class="action-buttons">
+    <button class="action-btn" onclick="window.history.back()" style="background: #2563eb;">← Voltar</button>
+    <button class="action-btn" onclick="window.print()" style="background: #059669;">🖨️ Imprimir</button>
+    <button class="action-btn" onclick="window.close()" style="background: #6b7280;">✕ Fechar</button>
+  </div>
+  <% } %>
+
+  <!-- PAGE 1: COVER -->
+  <div class="page cover-page">
+    <div class="cover-title">Soluções para Indústria Farmacêutica</div>
+    <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="cover-logo">
+    <div class="proposal-code-cover">Proposta Comercial <%= quote.quote_code %></div>
+    <%
+      const firstSection = sections && sections[0];
+      const mainEquipment = firstSection && firstSection.items && firstSection.items[0];
+    %>
+    <% if (mainEquipment) { %>
+    <div class="equipment-name-cover"><%= mainEquipment.name || 'Equipamento' %></div>
+    <% } %>
+    <div class="page-number">1</div>
+  </div>
+
+  <!-- PAGE 2: INSTITUTIONAL -->
+  <div class="page">
+    <div class="proposal-code-cover" style="text-align: right; font-size: 10pt; color: #666; margin-bottom: 30px;">
+      Proposta Comercial <%= quote.quote_code %>
+    </div>
+
+    <div class="institutional-text">
+      Com 30 anos de experiência no mercado nacional e internacional, o Grupo Zanatech é especializado nos
+      setores farmacêutico, nutracêutico, cosmecêutico, químico, alimentício e veterinário.
+    </div>
+
+    <div class="institutional-text">
+      Atendimento personalizado, tendo como objetivo as necessidades do cliente, operando com soluções, sejam
+      serviços, equipamentos ou peças, reconhecidos por clientes renomados no mercado.
+    </div>
+
+    <div class="proposal-info">
+      <div><strong>Proposta Comercial no.<%= quote.quote_code %> de</strong></div>
+      <div><%= new Date(quote.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
+      <div>com validade de 15 dias. Até</div>
+      <div><%= new Date(new Date(quote.date).getTime() + 15*24*60*60*1000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
+    </div>
+
+    <div class="client-info">
+      <div style="margin-top: 30px;">Em atenção à</div>
+      <div style="margin-top: 10px;"><%= quote.client || quote.company || 'Cliente' %></div>
+      <% if (quote.representative) { %>
+      <div>e.n <%= quote.representative %></div>
+      <% } %>
+    </div>
+
+    <div class="page-number">2</div>
+  </div>
+
+  <!-- PAGE 3: EQUIPMENT + PRINCIPLE -->
+  <div class="page">
+    <div class="proposal-code-cover" style="text-align: right; font-size: 10pt; color: #666;">
+      Proposta Comercial <%= quote.quote_code %>
+    </div>
+
+    <% if (mainEquipment) { %>
+    <h2 style="text-align: center; margin: 30px 0 10px 0; font-size: 14pt;"><%= mainEquipment.name || 'TL-60' %></h2>
+    <p style="text-align: center; font-size: 11pt; margin-bottom: 20px;">Elevador de comprimidos/cápsulas totalmente automático</p>
+    <% } %>
+
+    <% if (firstSection && firstSection.image) { %>
+    <img src="<%= firstSection.image %>" alt="Equipamento" class="equipment-image">
+    <% } %>
+
+    <div class="section-title">Princípio de funcionamento</div>
+    <% if (firstSection && firstSection.principle) { %>
+    <div class="principle-text"><%= firstSection.principle %></div>
+    <% } else { %>
+    <div class="principle-text">Princípio de funcionamento não especificado.</div>
+    <% } %>
+
+    <div class="page-number">3</div>
+  </div>
+
+  <!-- PAGE 4: TECHNICAL SPECIFICATIONS -->
+  <div class="page">
+    <h2 style="text-align: center; margin-bottom: 30px; font-size: 13pt;">Características Técnicas</h2>
+
+    <table class="specs-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Especificações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (firstSection && firstSection.specs && firstSection.specs.length > 0) { %>
+          <% firstSection.specs.forEach(spec => { %>
+            <tr>
+              <td><%= spec.parameter || '' %></td>
+              <td><%= spec.value || '' %></td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="2" style="text-align: center; color: #666;">Especificações técnicas não disponíveis</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+
+    <div class="page-number">4</div>
+  </div>
+
+  <%
+    // Helper function for formatting currency
+    const fmt = (val) => {
+      const num = Number(val || 0).toFixed(2);
+      const parts = num.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return parts.join(',');
+    };
+
+    // Separate sections by modalidade
+    const modalidadeA = sections.filter(s => s.key.includes('_a'));
+    const modalidadeB = sections.filter(s => s.key.includes('_b'));
+  %>
+
+  <!-- PAGE 5: MODALIDADE A -->
+  <div class="page">
+    <div class="modalidade-title">MODALIDADE A</div>
+    <div class="modalidade-subtitle">
+      Importação direta do maquinário por sua Empresa com todo o suporte e a assessoria necessária
+      para garantir plif ciência desde a compra até a operação.
+    </div>
+
+    <% modalidadeA.forEach(section => { %>
+      <table class="items-table">
+        <thead>
+          <tr class="section-header">
+            <td colspan="5"><%= section.title %></td>
+          </tr>
+          <tr>
+            <th style="width: 45%;">DESCRIÇÃO</th>
+            <th style="width: 10%;">QTD.</th>
+            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (section.items && section.items.length > 0) { %>
+            <% section.items.forEach(item => { %>
+              <tr>
+                <td><%= item.name || '' %></td>
+                <td class="center"><%= item.qty || 1 %></td>
+                <td class="right">$ <%= fmt(item.unit || 0) %></td>
+                <td class="center">$</td>
+                <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+              </tr>
+            <% }); %>
+          <% } %>
+          <% if (section.totals) { %>
+            <tr class="total-row">
+              <td colspan="2" class="right"><strong>TOTAL</strong></td>
+              <td class="right"><strong>$ <%= fmt(section.totals.USD || 0) %></strong></td>
+              <td class="center">R$</td>
+              <td class="right"><strong><%= fmt(section.totals.BRL || 0) %></strong></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    <% }); %>
+
+    <div class="page-number">5</div>
+  </div>
+
+  <!-- PAGE 6: MODALIDADE B -->
+  <div class="page">
+    <div class="modalidade-title">MODALIDADE B</div>
+    <div class="modalidade-subtitle">
+      Importação direta sem a assessoria durante a importação e SAT.
+    </div>
+
+    <% modalidadeB.forEach(section => { %>
+      <table class="items-table">
+        <thead>
+          <tr class="section-header">
+            <td colspan="5"><%= section.title %></td>
+          </tr>
+          <tr>
+            <th style="width: 45%;">DESCRIÇÃO</th>
+            <th style="width: 10%;">QTD.</th>
+            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (section.items && section.items.length > 0) { %>
+            <% section.items.forEach(item => { %>
+              <tr>
+                <td><%= item.name || '' %></td>
+                <td class="center"><%= item.qty || 1 %></td>
+                <td class="right">$ <%= fmt(item.unit || 0) %></td>
+                <td class="center">$</td>
+                <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+              </tr>
+            <% }); %>
+          <% } %>
+          <% if (section.totals) { %>
+            <tr class="total-row">
+              <td colspan="2" class="right"><strong>TOTAL</strong></td>
+              <td class="right"><strong>$ <%= fmt(section.totals.USD || 0) %></strong></td>
+              <td class="center">R$</td>
+              <td class="right"><strong><%= fmt(section.totals.BRL || 0) %></strong></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    <% }); %>
+
+    <div class="page-number">6</div>
+  </div>
+
+  <!-- PAGE 7: FINAL SUMMARY -->
+  <div class="page final-summary">
+    <div class="summary-title">O VALOR FINAL TOTAL DESTA PROPOSTA É:</div>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>MODALIDADE A</th>
+          <th>MODALIDADE B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Entrega na porta da sua Empresa + SAT + Garantia<br>Nacional + Manutenção Preventiva</td>
+          <td>Importação direta sem assessoria + SAT</td>
+        </tr>
+        <tr style="font-weight: bold;">
+          <td>
+            USD$<%= fmt(totals.modalidadeA.USD) %> + R$<%= fmt(totals.modalidadeA.BRL) %>
+          </td>
+          <td>
+            USD$<%= fmt(totals.modalidadeB.USD) %> + R$<%= fmt(totals.modalidadeB.BRL) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="payment-conditions">
+      <p style="margin-bottom: 10px;">
+        As condições de pagamento e faturamento dos valores estipulados nesta proposta, serão conforme abaixo:
+      </p>
+      <p style="margin-bottom: 10px; font-weight: bold;">
+        Montante em dólares americanos independente da opção:
+      </p>
+
+      <div class="payment-box">
+        <p style="font-weight: bold; margin-bottom: 5px;">OPÇÃO A<br>ou<br>OPÇÃO B</p>
+        <p style="font-size: 9pt;">
+          01 (um) depósito no aceite da invoice referente a 50% do valor ofertado em dólares e o saldo de 50% do
+          valor em dólares restante da proposta pago na chegada do pedido no porto aduaneiro.
+        </p>
+      </div>
+
+      <p style="margin: 15px 0 10px 0; font-weight: bold;">
+        Montante em reais brasileiros de serviços prestados de acordo com a opção:
+      </p>
+
+      <div class="payment-box">
+        <p style="font-weight: bold; margin-bottom: 5px;">OPÇÃO A<br>ou<br>OPÇÃO B (sem SAT)</p>
+        <p style="font-size: 8pt; line-height: 1.4;">
+          Referente apenas ao montante resultante dos serviços contratados do Grupo Zanatech: Pagamento parcelado em 03
+          (três) parcelas pagas através de depósitos ou boletos.<br>
+          1. Primeira parcela, no valor de 10% do montante em reais, para ser paga no aceite da invoice;<br>
+          2. Segunda parcela no valor de 30% do montante em reais, para ser paga na chegada da invoice na empresa
+          ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;<br>
+          3. Terceira parcela no valor de 60% do montante em reais, para ser paga 30 dias após aprovação do SAT
+          ou 60 dias corridos após o aceite da invoice, o que ocorrer primeiro;
+        </p>
+      </div>
+    </div>
+
+    <div class="page-number">7</div>
+  </div>
+
+  <!-- PAGE 8: WARRANTY TERMS -->
+  <div class="page">
+    <div class="warranty-title">TERMOS DE GARANTIA GERAIS DO FABRICANTE</div>
+    <div class="warranty-text">
+      Garantia de materiais elétricos, mecânicos e pneumáticos comerciais: conforme garantia do fabricante ou fornecedor.<br>
+      Excluem-se da garantia: os desgastes normais de uso; defeitos de mau uso, imperícia ou negligência no uso inadequado do equipamento;
+      defeitos originados pela falta de cuidados, execução incorreta ou inadequada na limpeza, lubrificação, ou armazenamento do equipamento,
+      bem como exposição a condições químicas ou corrosivas, ou com condições ambientais e/ou elétricas inadequadas ou defi cientes;
+      defeitos ou danos causados por instalação ou manutenção técnica imprópria, à falta, violação, alteração, ou substituição de peças
+      ou acessórios, bem como outros itens, por serviço técnico não autorizado pelo fabricante; não cumprimento de técnicaslichess ou
+      condutas técnicas causados por acidente; danos causados por agentes da natureza, assim como pancadas, quedas, queimadas, incêndios,
+      enchentes, maremotos, inundação, tempestade, terremoto, raios, roubo, depredação, dentre outros.
+    </div>
+
+    <div class="warranty-title">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</div>
+    <div class="warranty-text">
+      Em toda visita comercial e/ou técnica do Grupo Zanatech para atender o cliente, podendo ser acompanhada pela equipe do
+      Grupo Zanatech (despesas de alimentação, hospedagem e deslocamento pagos pelo cliente). O Grupo Zanatech pode fazer
+      a documentação em inglês para português (serviço pago pelo cliente). Para vendas de equipamentos a garantia nacional
+      do Grupo Zanatech complementa a garantia do fabricante COUNTEC, sem cancelá-la; por substituída. A garantia tem validade
+      estipulada de 12 meses, para equipamento novo, instalados, qualifi cados e os operadores treinados por pessoal autorizado
+      pelo Grupo Zanatech; ou COUNTEC (serviço pago pelo cliente). O Grupo Zanatech também fornece suporte aos clientes locais
+      através da garantia do Grupo Zanatech (sem cobrança de honorários, apenas as despesas locais) e as peças originais COUNTEC
+      em substituição.Sem em equipamentos COUNTEC sob garantia, sem invalida-la. Serviço pago para equipamentos COUNTEC com
+      garantia vencida sob negociação caso a caso.
+    </div>
+
+    <div class="warranty-title">TERMOS DE GARANTIA GERAIS DO GRUPO ZANATECH</div>
+    <div class="warranty-text">
+      Informamos que o Grupo Zanatech é o representante exclusivo ofi cial da COUNTEC CO., LTD. para todo o território brasileiro,
+      sendo as únicas empresas autorizadas a realizar a venda, serviços de manutenção, suporte técnico e assistência para todos
+      os equipamentos da marca COUNTEC.<br><br>
+      Esta representação exclusiva foi formalmente estabelecida e certifi cada pela COUNTEC CO., LTD. , com vigência assegurada
+      para o período de 2024 a 2027, conforme documento ofi cial emitido por Han Lee, Presidente da COUNTEC CO., LTD.<br><br>
+      Ao adquirir equipamentos ou contratar serviços COUNTEC através do emprego do Grupo Zanatech, V.Sa. conta com o respaldo
+      do cial do fabricante e a segurança de um atendimento qualifi cado e autorizado.
+    </div>
+
+    <div class="signature">
+      <p>É um enorme prazer fazer parte do projeto da sua empresa, e ficamos à disposição para quaisquer és</p>
+      <p>Cordialmente,</p>
+      <br>
+      <p><strong>Adriel Fernandes Rosa</strong></p>
+      <p>Pharmatec (Grupo Zanatech) - Dpto. Comercial</p>
+      <p>adriel@pharmatec.net.br</p>
+      <p>Cel./Whatsapp: +55 11 9 4253 1015</p>
+    </div>
+
+    <div class="page-number">8</div>
+  </div>
+
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+
+    window.addEventListener('beforeprint', () => {
+      const buttons = document.querySelector('.action-buttons');
+      if (buttons) buttons.style.display = 'none';
+    });
+
+    window.addEventListener('afterprint', () => {
+      const buttons = document.querySelector('.action-buttons');
+      if (buttons) buttons.style.display = 'flex';
+    });
+  </script>
+</body>
+</html>

@@ -73,7 +73,8 @@
   <div class="actions">
     <a class="btn" href="/quotes/new">Nova cotação</a>
     <button class="btn" onclick="window.print()">Imprimir / PDF</button>
-    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout" target="_blank">Visualizar Layout</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout-classic" target="_blank" style="background: #7c3aed;">📄 Layout Clássico</a>
+    <a class="btn" href="/quotes/<%= quote.quote_code %>/layout" target="_blank" style="background: #059669;">✨ Layout Novo</a>
     <a class="btn" href="/quotes/<%= quote.quote_code %>/xlsx" target="_blank">Baixar Excel</a>
     <a class="btn" href="/quotes/<%= quote.quote_code %>/pdf" target="_blank">Baixar PDF</a>
   </div>

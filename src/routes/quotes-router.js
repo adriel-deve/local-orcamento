@@ -730,6 +730,46 @@ router.get('/:code/layout', async (req, res) => {
   res.render('quotes/layout-print', { quote: data.quote, sections, totals });
 });
 
+router.get('/:code/layout-classic', async (req, res) => {
+  const code = req.params.code;
+  const data = await getQuoteByCode(code);
+  if (!data) return res.status(404).send('Cotação não encontrada');
+
+  console.log('📄 Loading classic layout for quote:', code);
+
+  const categorized = categorizeSpecs(data.specs);
+  const sections = Object.values(categorized).map(section => ({
+    ...section,
+    totals: totalsFor(section.items)
+  }));
+
+  // Calculate totals by modalidade
+  const totals = {
+    modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
+    modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
+    general: { BRL: 0, USD: 0, EUR: 0 }
+  };
+
+  sections.forEach(section => {
+    const sectionTotals = section.totals;
+    totals.general.BRL += sectionTotals.BRL || 0;
+    totals.general.USD += sectionTotals.USD || 0;
+    totals.general.EUR += sectionTotals.EUR || 0;
+
+    if (section.key.includes('_a')) {
+      totals.modalidadeA.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeA.USD += sectionTotals.USD || 0;
+      totals.modalidadeA.EUR += sectionTotals.EUR || 0;
+    } else if (section.key.includes('_b')) {
+      totals.modalidadeB.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeB.USD += sectionTotals.USD || 0;
+      totals.modalidadeB.EUR += sectionTotals.EUR || 0;
+    }
+  });
+
+  res.render('quotes/layout-print-classic', { quote: data.quote, sections, totals });
+});
+
 router.post('/save', upload.any(), async (req, res, next) => {
   try {
     const data = JSON.parse(req.body.specs_json || '{"sections":{}}');

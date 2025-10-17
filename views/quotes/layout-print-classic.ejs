@@ -45,11 +45,19 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      position: relative;
     }
 
     .cover-logo {
+      width: 300px;
+      margin-bottom: 20px;
+    }
+
+    .logo-divider {
       width: 200px;
-      margin-bottom: 80px;
+      height: 3px;
+      background: #000;
+      margin: 0 auto 30px auto;
     }
 
     .cover-title {
@@ -82,23 +90,37 @@
     }
 
     /* Institutional Page */
+    .institutional-page {
+      background-image: url('/img/globo.png');
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 50%;
+      background-blend-mode: lighten;
+    }
+
     .institutional-text {
       font-size: 10pt;
       line-height: 1.6;
       text-align: justify;
       margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .proposal-info {
       margin-top: 40px;
       font-size: 11pt;
       line-height: 1.8;
+      position: relative;
+      z-index: 1;
     }
 
     .client-info {
       margin-top: 20px;
       font-size: 11pt;
       font-weight: bold;
+      position: relative;
+      z-index: 1;
     }
 
     /* Equipment Page */
@@ -338,20 +360,17 @@
   <!-- PAGE 1: COVER -->
   <div class="page cover-page">
     <div class="cover-title">Soluções para Indústria Farmacêutica</div>
-    <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="cover-logo">
+    <img src="/img/company-logo.jpg" alt="Pharmatec Logo" class="cover-logo">
+    <div class="logo-divider"></div>
     <div class="proposal-code-cover">Proposta Comercial <%= quote.quote_code %></div>
-    <%
-      const firstSection = sections && sections[0];
-      const mainEquipment = firstSection && firstSection.items && firstSection.items[0];
-    %>
-    <% if (mainEquipment) { %>
-    <div class="equipment-name-cover"><%= mainEquipment.name || 'Equipamento' %></div>
+    <% if (quote.machine_model) { %>
+    <div class="equipment-name-cover"><%= quote.machine_model %></div>
     <% } %>
     <div class="page-number">1</div>
   </div>
 
   <!-- PAGE 2: INSTITUTIONAL -->
-  <div class="page">
+  <div class="page institutional-page">
     <div class="proposal-code-cover" style="text-align: center; font-size: 13pt; color: #000; margin-bottom: 10px; font-weight: bold;">
       Proposta Comercial <%= quote.quote_code %>
     </div>

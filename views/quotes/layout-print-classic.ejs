@@ -91,11 +91,7 @@
 
     /* Institutional Page */
     .institutional-page {
-      background-image: url('/img/globo.png');
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-size: 55%;
-      opacity: 1;
+      position: relative;
     }
 
     .institutional-page::before {
@@ -105,7 +101,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url('/img/globo.png');
+      background-image: url('/static/img/globo.png');
       background-position: center center;
       background-repeat: no-repeat;
       background-size: 55%;
@@ -375,7 +371,7 @@
   <!-- PAGE 1: COVER -->
   <div class="page cover-page">
     <div class="cover-title">Soluções para Indústria Farmacêutica</div>
-    <img src="/img/company-logo.jpg" alt="Pharmatec Logo" class="cover-logo">
+    <img src="/static/img/company-logo.jpg" alt="Pharmatec Logo" class="cover-logo">
     <div class="logo-divider"></div>
     <div class="proposal-code-cover">Proposta Comercial <%= quote.quote_code %></div>
     <% if (quote.machine_model) { %>

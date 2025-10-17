@@ -396,18 +396,36 @@
       Proposta Comercial <%= quote.quote_code %>
     </div>
 
-    <% if (mainEquipment) { %>
-    <h2 style="text-align: center; margin: 30px 0 10px 0; font-size: 14pt;"><%= mainEquipment.name || 'TL-60' %></h2>
-    <p style="text-align: center; font-size: 11pt; margin-bottom: 20px;">Elevador de comprimidos/cápsulas totalmente automático</p>
+    <% if (quote.machine_model) { %>
+    <h2 style="text-align: center; margin: 30px 0 10px 0; font-size: 14pt;"><%= quote.machine_model %></h2>
     <% } %>
 
-    <% if (firstSection && firstSection.image) { %>
-    <img src="<%= firstSection.image %>" alt="Equipamento" class="equipment-image">
+    <%
+      // Preparar array de imagens
+      let equipImagesObj = {};
+      if (quote.equipment_images) {
+        try {
+          equipImagesObj = typeof quote.equipment_images === 'string' ? JSON.parse(quote.equipment_images) : quote.equipment_images;
+        } catch (e) {
+          console.error('Erro ao parsear equipment_images:', e);
+        }
+      }
+      // Fallback para imagem única
+      if (Object.keys(equipImagesObj).length === 0 && quote.equipment_image) {
+        equipImagesObj = {'0': quote.equipment_image};
+      }
+
+      // Pegar primeira imagem
+      const firstImage = Object.values(equipImagesObj)[0];
+    %>
+
+    <% if (firstImage) { %>
+    <img src="<%= firstImage %>" alt="Equipamento" class="equipment-image">
     <% } %>
 
     <div class="section-title">Princípio de funcionamento</div>
-    <% if (firstSection && firstSection.principle) { %>
-    <div class="principle-text"><%= firstSection.principle %></div>
+    <% if (quote.principle) { %>
+    <div class="principle-text"><%= quote.principle %></div>
     <% } else { %>
     <div class="principle-text">Princípio de funcionamento não especificado.</div>
     <% } %>
@@ -419,6 +437,11 @@
   <div class="page">
     <h2 style="text-align: center; margin-bottom: 30px; font-size: 13pt;">Características Técnicas</h2>
 
+    <%
+      // Processar especificações técnicas do campo tech_spec
+      const techLines = quote.tech_spec ? quote.tech_spec.split('\n').filter(line => line.trim()) : [];
+    %>
+
     <table class="specs-table">
       <thead>
         <tr>
@@ -427,11 +450,15 @@
         </tr>
       </thead>
       <tbody>
-        <% if (firstSection && firstSection.specs && firstSection.specs.length > 0) { %>
-          <% firstSection.specs.forEach(spec => { %>
+        <% if (techLines.length > 0) { %>
+          <% techLines.forEach(line => {
+            const parts = line.split(':');
+            const parameter = parts[0] ? parts[0].trim() : '';
+            const value = parts.slice(1).join(':').trim();
+          %>
             <tr>
-              <td><%= spec.parameter || '' %></td>
-              <td><%= spec.value || '' %></td>
+              <td><%= parameter %></td>
+              <td><%= value %></td>
             </tr>
           <% }); %>
         <% } else { %>

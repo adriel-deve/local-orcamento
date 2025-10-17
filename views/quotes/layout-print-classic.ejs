@@ -356,9 +356,9 @@
       Proposta Comercial <%= quote.quote_code %>
     </div>
 
-    <% if (mainEquipment) { %>
+    <% if (quote.machine_model) { %>
     <div style="text-align: center; font-size: 10pt; margin-bottom: 30px; line-height: 1.6;">
-      <%= mainEquipment.name || '' %><%= mainEquipment.model ? ', ' + mainEquipment.model : '' %>
+      <%= quote.machine_model %>
     </div>
     <% } %>
 

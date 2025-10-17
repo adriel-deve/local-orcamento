@@ -61,16 +61,17 @@
     }
 
     .cover-title {
-      font-size: 18pt;
+      font-size: 16pt;
       font-weight: bold;
-      margin-bottom: 20px;
       writing-mode: vertical-rl;
-      text-orientation: mixed;
+      text-orientation: upright;
       position: absolute;
       right: 15mm;
-      top: 50%;
+      top: 30%;
       transform: translateY(-50%);
-      letter-spacing: 2px;
+      letter-spacing: 3px;
+      opacity: 0.6;
+      white-space: nowrap;
     }
 
     .proposal-code-cover {
@@ -363,7 +364,6 @@
   <% if (!pdfMode) { %>
   <div class="action-buttons">
     <button class="action-btn" onclick="window.history.back()" style="background: #2563eb;">← Voltar</button>
-    <button class="action-btn pdf-btn" onclick="downloadPDF('classic')" style="background: #dc2626;">📄 Baixar PDF</button>
     <button class="action-btn" onclick="window.print()" style="background: #059669;">🖨️ Imprimir</button>
     <button class="action-btn" onclick="window.close()" style="background: #6b7280;">✕ Fechar</button>
   </div>
@@ -730,28 +730,8 @@
   </div>
 
   <script>
-    const quoteData = <%- JSON.stringify(quote) %>;
-
     function goBack() {
       window.history.back();
-    }
-
-    function downloadPDF(layoutType) {
-      // Hide action buttons before print
-      const actionButtons = document.querySelector('.action-buttons');
-      if (actionButtons) actionButtons.style.display = 'none';
-
-      // Show instructions
-      alert('📄 Para gerar o PDF:\n\n' +
-            '1. No diálogo que vai abrir, escolha "Salvar como PDF" ou "Microsoft Print to PDF"\n' +
-            '2. Clique em "Salvar" ou "Imprimir"\n' +
-            '3. Escolha onde salvar o arquivo\n\n' +
-            'O PDF ficará exatamente como você vê na tela!');
-
-      // Open print dialog
-      setTimeout(() => {
-        window.print();
-      }, 500);
     }
 
     window.addEventListener('beforeprint', () => {

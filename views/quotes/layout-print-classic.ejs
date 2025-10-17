@@ -736,48 +736,22 @@
       window.history.back();
     }
 
-    async function downloadPDF(layoutType) {
-      const pdfBtn = document.querySelector('.pdf-btn');
-      if (!pdfBtn) return;
+    function downloadPDF(layoutType) {
+      // Hide action buttons before print
+      const actionButtons = document.querySelector('.action-buttons');
+      if (actionButtons) actionButtons.style.display = 'none';
 
-      const originalHtml = pdfBtn.innerHTML;
-      pdfBtn.disabled = true;
-      pdfBtn.innerHTML = '📄 Gerando...';
+      // Show instructions
+      alert('📄 Para gerar o PDF:\n\n' +
+            '1. No diálogo que vai abrir, escolha "Salvar como PDF" ou "Microsoft Print to PDF"\n' +
+            '2. Clique em "Salvar" ou "Imprimir"\n' +
+            '3. Escolha onde salvar o arquivo\n\n' +
+            'O PDF ficará exatamente como você vê na tela!');
 
-      try {
-        const formData = new FormData();
-        formData.append('quote_code', quoteData.quote_code || '');
-        formData.append('layout_type', layoutType);
-        formData.append('from_preview', 'true');
-
-        const response = await fetch('/quotes/generate-pdf-download', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao gerar PDF');
-        }
-
-        // Download the PDF
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `proposta-${quoteData.quote_code}-${layoutType}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        alert('✅ PDF gerado com sucesso!');
-      } catch (error) {
-        console.error('Erro ao gerar PDF:', error);
-        alert('❌ Erro ao gerar PDF: ' + error.message);
-      } finally {
-        pdfBtn.disabled = false;
-        pdfBtn.innerHTML = originalHtml;
-      }
+      // Open print dialog
+      setTimeout(() => {
+        window.print();
+      }, 500);
     }
 
     window.addEventListener('beforeprint', () => {

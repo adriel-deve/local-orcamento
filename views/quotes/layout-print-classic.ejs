@@ -30,6 +30,35 @@
       page-break-after: always;
     }
 
+    /* Decorative Side Bars */
+    .page::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 15mm;
+      height: 100%;
+      background: linear-gradient(to bottom,
+        #c41e3a 0%,
+        #c41e3a 30%,
+        #8b0000 30%,
+        #8b0000 100%);
+    }
+
+    .page::after {
+      content: '';
+      position: absolute;
+      left: 15mm;
+      top: 0;
+      width: 3mm;
+      height: 100%;
+      background: linear-gradient(to bottom,
+        #d0d0d0 0%,
+        #d0d0d0 30%,
+        #a0a0a0 30%,
+        #a0a0a0 100%);
+    }
+
     .page-number {
       position: absolute;
       bottom: 10mm;

@@ -1318,19 +1318,45 @@ router.post('/generate-pdf-download', upload.any(), async (req, res) => {
 
     const page = await browser.newPage();
 
-    // Navigate to the page
-    await page.goto(url, {
-      waitUntil: 'networkidle0',
-      timeout: 60000
+    // Set viewport for better rendering
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
+      deviceScaleFactor: 2
     });
 
-    // Wait a bit for images to load
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+    // Navigate to the page and wait for everything to load
+    await page.goto(url, {
+      waitUntil: ['networkidle0', 'domcontentloaded', 'load'],
+      timeout: 90000
+    });
 
-    // Generate PDF
+    // Wait for all images to load
+    await page.evaluate(() => {
+      return Promise.all(
+        Array.from(document.images)
+          .filter(img => !img.complete)
+          .map(img => new Promise(resolve => {
+            img.onload = img.onerror = resolve;
+          }))
+      );
+    });
+
+    // Additional wait for rendering
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 3000)));
+
+    // Hide action buttons
+    await page.evaluate(() => {
+      const buttons = document.querySelector('.action-buttons');
+      if (buttons) buttons.style.display = 'none';
+    });
+
+    // Generate PDF with proper settings
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
+      preferCSSPageSize: false,
+      displayHeaderFooter: false,
       margin: {
         top: '0mm',
         right: '0mm',

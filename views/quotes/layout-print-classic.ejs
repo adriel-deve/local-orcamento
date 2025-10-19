@@ -61,17 +61,15 @@
     }
 
     .cover-title {
-      font-size: 16pt;
+      font-size: 18pt;
       font-weight: bold;
       writing-mode: vertical-rl;
-      text-orientation: upright;
+      text-orientation: mixed;
       position: absolute;
       right: 15mm;
-      top: 30%;
+      top: 50%;
       transform: translateY(-50%);
-      letter-spacing: 3px;
-      opacity: 0.6;
-      white-space: nowrap;
+      letter-spacing: 2px;
     }
 
     .proposal-code-cover {
@@ -106,8 +104,10 @@
       background-position: center bottom;
       background-repeat: no-repeat;
       background-size: 70%;
-      opacity: 0.3;
+      opacity: 0.15;
       z-index: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     .institutional-text {
@@ -343,16 +343,32 @@
     }
 
     @media print {
+      @page {
+        margin: 0;
+        size: A4;
+      }
+
       body {
         background: white;
+        margin: 0;
+        padding: 0;
       }
+
       .page {
         margin: 0;
         box-shadow: none;
         page-break-after: always;
       }
+
       .action-buttons {
-        display: none;
+        display: none !important;
+      }
+
+      /* Força impressão de backgrounds e imagens */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
     }
   </style>

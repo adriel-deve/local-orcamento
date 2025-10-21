@@ -239,13 +239,27 @@
 
     /* Media queries para impressão */
     @media print {
-      body { background: white !important; }
+      @page {
+        margin: 0;
+        size: A4;
+      }
+
+      body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+      }
+
       .print-btn { display: none !important; }
+      .action-buttons { display: none !important; }
+
       .page {
         margin: 0;
         padding: 12mm 10mm;
         box-shadow: none;
+        page-break-after: always;
       }
+
       .page-break { page-break-before: always; }
       .items-table {
         font-size: 8px !important;
@@ -262,6 +276,13 @@
       }
       .section-title {
         font-size: 12px !important;
+      }
+
+      /* Força impressão de backgrounds e imagens */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
     }
 

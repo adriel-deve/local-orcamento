@@ -9,6 +9,7 @@ import { initDatabase, saveQuoteAndSpecs, getQuoteByCode, getAllQuotes, deleteQu
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import { getSettingsAsObject } from '../services/settings-service.js';
 import { generateQuoteNumber } from '../services/quote-number-service.js';
+import { calcularImportacao, criarResumoCalculo } from '../services/import-calculator.js';
 
 const router = Router();
 
@@ -1380,6 +1381,37 @@ router.post('/generate-pdf-download', upload.any(), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erro ao gerar PDF: ' + error.message
+    });
+  }
+});
+
+// ==================== API: CALCULAR IMPORTAÇÃO ====================
+router.post('/calculate-import', async (req, res) => {
+  try {
+    const { valorFOB, taxaCambio } = req.body;
+
+    if (!valorFOB || valorFOB <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valor FOB inválido'
+      });
+    }
+
+    const calculo = await calcularImportacao(
+      parseFloat(valorFOB),
+      parseFloat(taxaCambio) || 5.70
+    );
+
+    res.json({
+      success: true,
+      calculo,
+      resumo: criarResumoCalculo(calculo)
+    });
+  } catch (error) {
+    console.error('❌ Erro ao calcular importação:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao calcular importação: ' + error.message
     });
   }
 });

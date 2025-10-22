@@ -387,6 +387,144 @@
     </div>
   </div>
 
+  <!-- Configurações de Cálculos de Importação -->
+  <div class="settings-section">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+      Cálculos de Importação (Modalidade A - CIF)
+    </h2>
+
+    <div class="info-box" style="margin-bottom: 20px;">
+      <p>
+        <strong>💡 Como funciona:</strong> Configure as alíquotas de impostos (%) e valores fixos de despesas.
+        Quando você adicionar equipamentos na Modalidade A, os valores de assessoria serão calculados automaticamente
+        com base no valor FOB dos equipamentos. Os textos padrão serão preenchidos automaticamente.
+      </p>
+    </div>
+
+    <!-- Textos Padrão -->
+    <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px 0; color: #1e40af; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        Textos Padrão dos Itens
+      </h3>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <%
+        const textFields = ['consultoria', 'honorarios', 'importacao', 'transporte'];
+        textFields.forEach(function(field) {
+          const setting = settings.import.find(s => s.key === 'import_text_' + field);
+        %>
+        <div class="form-field">
+          <label><%= setting ? setting.description : 'Texto: ' + field %></label>
+          <input type="text" name="<%= 'import_text_' + field %>" value="<%= (setting && setting.value) || '' %>" placeholder="Digite o texto padrão...">
+        </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Impostos (Percentuais) -->
+    <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px 0; color: #d97706; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        Impostos e Taxas (% sobre valor FOB)
+      </h3>
+      <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <%
+        const taxFields = [
+          { key: 'ii', name: 'II - Imposto de Importação' },
+          { key: 'ipi', name: 'IPI' },
+          { key: 'pis', name: 'PIS/PASEP' },
+          { key: 'cofins', name: 'COFINS' },
+          { key: 'icms', name: 'ICMS' },
+          { key: 'afrmm', name: 'AFRMM' },
+          { key: 'siscomex', name: 'SISCOMEX' }
+        ];
+        taxFields.forEach(function(tax) {
+          const setting = settings.import.find(s => s.key === 'import_tax_' + tax.key);
+        %>
+        <div class="form-field">
+          <label style="font-size: 0.75rem;"><%= tax.name %> (%)</label>
+          <input type="number" step="0.01" name="<%= 'import_tax_' + tax.key %>" value="<%= (setting && setting.value) || '0' %>" placeholder="0.00">
+        </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Despesas Fixas -->
+    <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px 0; color: #059669; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+        Despesas Fixas (Valores em R$)
+      </h3>
+      <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <%
+        const feeFields = [
+          { key: 'siscomex_fixed', name: 'SISCOMEX (Taxa Fixa)' },
+          { key: 'despachante', name: 'Honorários de Despachante' },
+          { key: 'honorario_radar', name: 'Honorário Radar' },
+          { key: 'armazenagem_porto', name: 'Armazenagem Porto' },
+          { key: 'despesas_porto', name: 'Despesas Porto' },
+          { key: 'licenca_anvisa', name: 'Licença ANVISA' },
+          { key: 'liberacao_bl', name: 'Liberação da BL' },
+          { key: 'licenca_importacao', name: 'Licença de Importação' },
+          { key: 'frete_rodoviario', name: 'Frete Rodoviário' }
+        ];
+        feeFields.forEach(function(fee) {
+          const setting = settings.import.find(s => s.key === 'import_fee_' + fee.key);
+        %>
+        <div class="form-field">
+          <label style="font-size: 0.75rem;"><%= fee.name %></label>
+          <input type="number" step="0.01" name="<%= 'import_fee_' + fee.key %>" value="<%= (setting && setting.value) || '0' %>" placeholder="0.00">
+        </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Consultoria -->
+    <div style="background: #fdf4ff; border: 2px solid #a855f7; border-radius: 12px; padding: 20px;">
+      <h3 style="margin: 0 0 16px 0; color: #7c3aed; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Consultoria (Percentuais)
+      </h3>
+      <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <%
+        const consultoriaFields = [
+          { key: 'consultoria_percent', name: 'Consultoria (% sobre equipamento)' },
+          { key: 'consultoria_desconto_garantia', name: 'Desconto Garantia (%)' },
+          { key: 'consultoria_desconto_manutencao', name: 'Desconto Plano Manutenção (%)' }
+        ];
+        consultoriaFields.forEach(function(field) {
+          const setting = settings.import.find(s => s.key === 'import_' + field.key);
+        %>
+        <div class="form-field">
+          <label style="font-size: 0.75rem;"><%= field.name %></label>
+          <input type="number" step="0.01" name="<%= 'import_' + field.key %>" value="<%= (setting && setting.value) || '0' %>" placeholder="0.00">
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
   <div class="form-actions">
     <a href="/" class="btn btn-secondary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

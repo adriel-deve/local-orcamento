@@ -28,7 +28,8 @@ router.get('/', requireAdmin, async (req, res) => {
       quote: [],
       payment: [],
       contact: [],
-      services: []
+      services: [],
+      import: []
     };
 
     settings.forEach(setting => {

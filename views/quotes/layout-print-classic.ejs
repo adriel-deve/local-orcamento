@@ -562,13 +562,12 @@
       <table class="items-table">
         <thead>
           <tr class="section-header">
-            <td colspan="5"><%= section.title %></td>
+            <td colspan="4"><%= section.title %></td>
           </tr>
           <tr>
-            <th style="width: 45%;">DESCRIÇÃO</th>
+            <th style="width: 50%;">DESCRIÇÃO</th>
             <th style="width: 10%;">QTD.</th>
             <th style="width: 20%;">PREÇO UNIT.(<%= currency1 %>)</th>
-            <th style="width: 5%;"></th>
             <th style="width: 20%;">PREÇO UNIT.(<%= currency2 %>)</th>
           </tr>
         </thead>
@@ -583,8 +582,7 @@
                 <td><%= item.name || '' %></td>
                 <td class="center"><%= item.qty || 1 %></td>
                 <td class="right"><%= symbol1 %> <%= fmt(item.unit || 0) %></td>
-                <td class="center"><%= symbol2 %></td>
-                <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+                <td class="right"><%= symbol2 %> <%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
               </tr>
             <% }); %>
           <% } %>
@@ -592,8 +590,7 @@
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
               <td class="right"><strong><%= symbol1 %> <%= fmt(section.totals[currency1] || 0) %></strong></td>
-              <td class="center"><%= symbol2 %></td>
-              <td class="right"><strong><%= fmt(section.totals[currency2] || 0) %></strong></td>
+              <td class="right"><strong><%= symbol2 %> <%= fmt(section.totals[currency2] || 0) %></strong></td>
             </tr>
           <% } %>
         </tbody>
@@ -631,13 +628,12 @@
       <table class="items-table">
         <thead>
           <tr class="section-header">
-            <td colspan="5"><%= section.title %></td>
+            <td colspan="4"><%= section.title %></td>
           </tr>
           <tr>
-            <th style="width: 45%;">DESCRIÇÃO</th>
+            <th style="width: 50%;">DESCRIÇÃO</th>
             <th style="width: 10%;">QTD.</th>
             <th style="width: 20%;">PREÇO UNIT.(<%= currency1 %>)</th>
-            <th style="width: 5%;"></th>
             <th style="width: 20%;">PREÇO UNIT.(<%= currency2 %>)</th>
           </tr>
         </thead>
@@ -652,8 +648,7 @@
                 <td><%= item.name || '' %></td>
                 <td class="center"><%= item.qty || 1 %></td>
                 <td class="right"><%= symbol1 %> <%= fmt(item.unit || 0) %></td>
-                <td class="center"><%= symbol2 %></td>
-                <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+                <td class="right"><%= symbol2 %> <%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
               </tr>
             <% }); %>
           <% } %>
@@ -661,8 +656,7 @@
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
               <td class="right"><strong><%= symbol1 %> <%= fmt(section.totals[currency1] || 0) %></strong></td>
-              <td class="center"><%= symbol2 %></td>
-              <td class="right"><strong><%= fmt(section.totals[currency2] || 0) %></strong></td>
+              <td class="right"><strong><%= symbol2 %> <%= fmt(section.totals[currency2] || 0) %></strong></td>
             </tr>
           <% } %>
         </tbody>

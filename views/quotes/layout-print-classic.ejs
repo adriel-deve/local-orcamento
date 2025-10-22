@@ -583,7 +583,23 @@
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
               <td></td>
-              <td class="right"><strong><%= currencySymbol %> <%= fmt(section.totals[itemCurrency] || 0) %></strong></td>
+              <td class="right">
+                <strong>
+                  <%
+                    const totalParts = [];
+                    if (section.totals.USD && section.totals.USD > 0) {
+                      totalParts.push('$ ' + fmt(section.totals.USD));
+                    }
+                    if (section.totals.BRL && section.totals.BRL > 0) {
+                      totalParts.push('R$ ' + fmt(section.totals.BRL));
+                    }
+                    if (section.totals.EUR && section.totals.EUR > 0) {
+                      totalParts.push('€ ' + fmt(section.totals.EUR));
+                    }
+                  %>
+                  <%= totalParts.join(' + ') || 'R$ 0,00' %>
+                </strong>
+              </td>
             </tr>
           <% } %>
         </tbody>
@@ -642,7 +658,23 @@
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
               <td></td>
-              <td class="right"><strong><%= currencySymbol %> <%= fmt(section.totals[itemCurrency] || 0) %></strong></td>
+              <td class="right">
+                <strong>
+                  <%
+                    const totalParts = [];
+                    if (section.totals.USD && section.totals.USD > 0) {
+                      totalParts.push('$ ' + fmt(section.totals.USD));
+                    }
+                    if (section.totals.BRL && section.totals.BRL > 0) {
+                      totalParts.push('R$ ' + fmt(section.totals.BRL));
+                    }
+                    if (section.totals.EUR && section.totals.EUR > 0) {
+                      totalParts.push('€ ' + fmt(section.totals.EUR));
+                    }
+                  %>
+                  <%= totalParts.join(' + ') || 'R$ 0,00' %>
+                </strong>
+              </td>
             </tr>
           <% } %>
         </tbody>

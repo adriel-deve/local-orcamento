@@ -542,6 +542,23 @@
     </div>
 
     <% modalidadeA.forEach(section => { %>
+      <%
+        // Detectar as moedas usadas na seção
+        const currencies = section.items && section.items.length > 0
+          ? [...new Set(section.items.map(item => item.currency || 'USD'))]
+          : ['USD'];
+        const currency1 = currencies[0] || 'USD';
+        const currency2 = currencies[1] || (currency1 === 'USD' ? 'BRL' : 'USD');
+
+        const currencySymbols = {
+          'USD': '$',
+          'BRL': 'R$',
+          'EUR': '€'
+        };
+
+        const symbol1 = currencySymbols[currency1] || '$';
+        const symbol2 = currencySymbols[currency2] || 'R$';
+      %>
       <table class="items-table">
         <thead>
           <tr class="section-header">
@@ -550,19 +567,23 @@
           <tr>
             <th style="width: 45%;">DESCRIÇÃO</th>
             <th style="width: 10%;">QTD.</th>
-            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 20%;">PREÇO UNIT.(<%= currency1 %>)</th>
             <th style="width: 5%;"></th>
-            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 20%;">PREÇO UNIT.(<%= currency2 %>)</th>
           </tr>
         </thead>
         <tbody>
           <% if (section.items && section.items.length > 0) { %>
             <% section.items.forEach(item => { %>
+              <%
+                const itemCurrency = item.currency || 'USD';
+                const itemSymbol = currencySymbols[itemCurrency] || '$';
+              %>
               <tr>
                 <td><%= item.name || '' %></td>
                 <td class="center"><%= item.qty || 1 %></td>
-                <td class="right">$ <%= fmt(item.unit || 0) %></td>
-                <td class="center">$</td>
+                <td class="right"><%= symbol1 %> <%= fmt(item.unit || 0) %></td>
+                <td class="center"><%= symbol2 %></td>
                 <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
               </tr>
             <% }); %>
@@ -570,9 +591,9 @@
           <% if (section.totals) { %>
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
-              <td class="right"><strong>$ <%= fmt(section.totals.USD || 0) %></strong></td>
-              <td class="center">R$</td>
-              <td class="right"><strong><%= fmt(section.totals.BRL || 0) %></strong></td>
+              <td class="right"><strong><%= symbol1 %> <%= fmt(section.totals[currency1] || 0) %></strong></td>
+              <td class="center"><%= symbol2 %></td>
+              <td class="right"><strong><%= fmt(section.totals[currency2] || 0) %></strong></td>
             </tr>
           <% } %>
         </tbody>
@@ -590,6 +611,23 @@
     </div>
 
     <% modalidadeB.forEach(section => { %>
+      <%
+        // Detectar as moedas usadas na seção
+        const currencies = section.items && section.items.length > 0
+          ? [...new Set(section.items.map(item => item.currency || 'USD'))]
+          : ['USD'];
+        const currency1 = currencies[0] || 'USD';
+        const currency2 = currencies[1] || (currency1 === 'USD' ? 'BRL' : 'USD');
+
+        const currencySymbols = {
+          'USD': '$',
+          'BRL': 'R$',
+          'EUR': '€'
+        };
+
+        const symbol1 = currencySymbols[currency1] || '$';
+        const symbol2 = currencySymbols[currency2] || 'R$';
+      %>
       <table class="items-table">
         <thead>
           <tr class="section-header">
@@ -598,19 +636,23 @@
           <tr>
             <th style="width: 45%;">DESCRIÇÃO</th>
             <th style="width: 10%;">QTD.</th>
-            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 20%;">PREÇO UNIT.(<%= currency1 %>)</th>
             <th style="width: 5%;"></th>
-            <th style="width: 20%;">PREÇO UNIT.(USD)</th>
+            <th style="width: 20%;">PREÇO UNIT.(<%= currency2 %>)</th>
           </tr>
         </thead>
         <tbody>
           <% if (section.items && section.items.length > 0) { %>
             <% section.items.forEach(item => { %>
+              <%
+                const itemCurrency = item.currency || 'USD';
+                const itemSymbol = currencySymbols[itemCurrency] || '$';
+              %>
               <tr>
                 <td><%= item.name || '' %></td>
                 <td class="center"><%= item.qty || 1 %></td>
-                <td class="right">$ <%= fmt(item.unit || 0) %></td>
-                <td class="center">$</td>
+                <td class="right"><%= symbol1 %> <%= fmt(item.unit || 0) %></td>
+                <td class="center"><%= symbol2 %></td>
                 <td class="right"><%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
               </tr>
             <% }); %>
@@ -618,9 +660,9 @@
           <% if (section.totals) { %>
             <tr class="total-row">
               <td colspan="2" class="right"><strong>TOTAL</strong></td>
-              <td class="right"><strong>$ <%= fmt(section.totals.USD || 0) %></strong></td>
-              <td class="center">R$</td>
-              <td class="right"><strong><%= fmt(section.totals.BRL || 0) %></strong></td>
+              <td class="right"><strong><%= symbol1 %> <%= fmt(section.totals[currency1] || 0) %></strong></td>
+              <td class="center"><%= symbol2 %></td>
+              <td class="right"><strong><%= fmt(section.totals[currency2] || 0) %></strong></td>
             </tr>
           <% } %>
         </tbody>

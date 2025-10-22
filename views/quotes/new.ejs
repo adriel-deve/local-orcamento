@@ -206,7 +206,13 @@
       <div id="sec_equip_a" class="spec">
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_equip_a')">Adicionar Equipamento</button>
+        <button type="button" class="btn" onclick="calcularImportacao()" style="background: #10b981; margin-left: 10px;">
+          🧮 Calcular Importação Automática
+        </button>
       </div>
+
+      <!-- Status do Cálculo -->
+      <div id="import_calc_status" style="display: none; margin: 15px 0; padding: 15px; border-radius: 8px;"></div>
 
       <h4>Serviços de Assessoria na Importação</h4>
       <div id="sec_assessoria_a" class="spec">
@@ -1520,6 +1526,179 @@
         statusDiv.style.display = 'none';
       }, 10000);
     }
+  }
+
+  // === FUNÇÃO DE CÁLCULO AUTOMÁTICO DE IMPORTAÇÃO ===
+  async function calcularImportacao() {
+    const statusDiv = document.getElementById('import_calc_status');
+
+    // 1. Coletar todos os equipamentos da Modalidade A
+    const equipSection = document.getElementById('sec_equip_a');
+    if (!equipSection) {
+      alert('Seção de equipamentos não encontrada');
+      return;
+    }
+
+    const rows = equipSection.querySelectorAll('.item_row');
+    if (rows.length === 0) {
+      alert('Adicione pelo menos um equipamento antes de calcular a importação');
+      return;
+    }
+
+    // Calcular total FOB em USD
+    let totalFOBUSD = 0;
+    let totalFOBBRL = 0;
+    let temErro = false;
+
+    rows.forEach(row => {
+      const nameInput = row.querySelector('input[placeholder="Nome do item"]');
+      const qtyInput = row.querySelector('input[placeholder="Qtd"]');
+      const unitInput = row.querySelector('input[placeholder="Preço unit"]');
+      const currencySelect = row.querySelector('select');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) return; // Pular linhas vazias
+
+      const qty = parseFloat(qtyInput ? qtyInput.value : 1) || 1;
+      const unit = parseFloat(unitInput ? unitInput.value : 0) || 0;
+      const currency = currencySelect ? currencySelect.value : 'USD';
+
+      const subtotal = qty * unit;
+
+      if (currency === 'USD') {
+        totalFOBUSD += subtotal;
+      } else if (currency === 'BRL') {
+        totalFOBBRL += subtotal;
+      }
+    });
+
+    if (totalFOBUSD === 0 && totalFOBBRL === 0) {
+      alert('Nenhum equipamento com valor encontrado. Preencha os preços dos equipamentos.');
+      return;
+    }
+
+    // Perguntar taxa de câmbio se necessário
+    let taxaCambio = 5.70;
+    if (totalFOBUSD > 0 || totalFOBBRL > 0) {
+      const taxaInput = prompt('Digite a taxa de câmbio atual (USD para BRL):', '5.70');
+      if (taxaInput === null) return; // Cancelou
+      taxaCambio = parseFloat(taxaInput) || 5.70;
+    }
+
+    // Converter tudo para USD
+    const valorFOBTotal = totalFOBUSD + (totalFOBBRL / taxaCambio);
+
+    if (valorFOBTotal <= 0) {
+      alert('Valor FOB total inválido');
+      return;
+    }
+
+    // Mostrar status de carregamento
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = '#3b82f6';
+    statusDiv.style.color = 'white';
+    statusDiv.innerHTML = '🧮 Calculando impostos e despesas de importação...';
+
+    try {
+      // 2. Chamar API de cálculo
+      const response = await fetch('/quotes/calculate-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          valorFOB: valorFOBTotal,
+          taxaCambio: taxaCambio
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao calcular importação');
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+
+      const calculo = result.calculo;
+
+      // 3. Mostrar resumo
+      statusDiv.style.background = '#10b981';
+      statusDiv.innerHTML = `
+        <h4 style="margin: 0 0 10px 0;">✅ Cálculo Concluído!</h4>
+        <div style="background: white; color: #1f2937; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+${result.resumo}
+        </div>
+        <button type="button" onclick="aplicarCalculoImportacao(${JSON.stringify(calculo).replace(/"/g, '&quot;')})"
+                style="margin-top: 10px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+          📋 Aplicar Valores ao Formulário
+        </button>
+        <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+                style="margin-top: 10px; margin-left: 10px; padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
+          Fechar
+        </button>
+      `;
+
+    } catch (error) {
+      console.error('Erro ao calcular importação:', error);
+      statusDiv.style.background = '#ef4444';
+      statusDiv.innerHTML = `
+        <strong>❌ Erro:</strong> ${error.message}
+        <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+                style="margin-left: 10px; padding: 5px 15px; background: white; color: #ef4444; border: none; border-radius: 4px; cursor: pointer;">
+          Fechar
+        </button>
+      `;
+    }
+  }
+
+  // === APLICAR CÁLCULO AO FORMULÁRIO ===
+  function aplicarCalculoImportacao(calculo) {
+    const confirmacao = confirm(
+      '⚠️ ATENÇÃO: Isso irá SUBSTITUIR os itens atuais de Assessoria e Serviços Operacionais.\n\n' +
+      'Deseja continuar?'
+    );
+
+    if (!confirmacao) return;
+
+    // Limpar seções de assessoria e operacionais
+    const assessoriaSection = document.getElementById('sec_assessoria_a');
+    const operacionaisSection = document.getElementById('sec_operacionais_a');
+
+    if (assessoriaSection) {
+      const container = assessoriaSection.querySelector('.items');
+      if (container) container.innerHTML = '';
+    }
+
+    if (operacionaisSection) {
+      const container = operacionaisSection.querySelector('.items');
+      if (container) container.innerHTML = '';
+    }
+
+    // Adicionar itens calculados
+    calculo.itensParaFormulario.forEach(item => {
+      addRow(item.section, {
+        name: item.name,
+        qty: item.qty,
+        unit: item.unit,
+        currency: item.currency
+      });
+    });
+
+    // Feedback
+    const statusDiv = document.getElementById('import_calc_status');
+    statusDiv.style.background = '#10b981';
+    statusDiv.innerHTML = `
+      <strong>✅ Valores aplicados com sucesso!</strong>
+      <p style="margin: 10px 0 0 0;">Os itens de Assessoria e Serviços Operacionais foram preenchidos automaticamente.</p>
+      <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+              style="margin-top: 10px; padding: 5px 15px; background: white; color: #10b981; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        OK, Entendi
+      </button>
+    `;
+
+    // Scroll suave até a seção de assessoria
+    assessoriaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // Linhas iniciais

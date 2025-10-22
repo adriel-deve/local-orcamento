@@ -36,6 +36,9 @@
   .btn-view { background: #6b7280; color: white; }
   .btn-view:hover { background: #4b5563; }
 
+  .btn-classic { background: #8b5cf6; color: white; }
+  .btn-classic:hover { background: #7c3aed; }
+
   .btn-delete { background: #ef4444; color: white; }
   .btn-delete:hover { background: #dc2626; }
 
@@ -191,7 +194,14 @@
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              Visualizar
+              Layout Novo
+            </a>
+            <a href="/quotes/<%= quote.quote_code %>/layout-classic" target="_blank" class="btn-small btn-classic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              Layout Clássico
             </a>
             <button onclick="deleteQuote('<%= quote.quote_code %>')" class="btn-small btn-delete">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;">

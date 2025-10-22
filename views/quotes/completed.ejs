@@ -36,6 +36,9 @@
   .btn-view { background: #6b7280; color: white; }
   .btn-view:hover { background: #4b5563; }
 
+  .btn-classic { background: #8b5cf6; color: white; }
+  .btn-classic:hover { background: #7c3aed; }
+
   .btn-pdf { background: #059669; color: white; }
   .btn-pdf:hover { background: #047857; }
 
@@ -299,7 +302,8 @@
         </td>
         <td>
           <div class="action-buttons">
-            <a href="/quotes/<%= quote.quote_code %>/layout" target="_blank" class="btn-small btn-view">Visualizar</a>
+            <a href="/quotes/<%= quote.quote_code %>/layout" target="_blank" class="btn-small btn-view">Layout Novo</a>
+            <a href="/quotes/<%= quote.quote_code %>/layout-classic" target="_blank" class="btn-small btn-classic">Layout Clássico</a>
             <a href="/quotes/<%= quote.quote_code %>/pdf" target="_blank" class="btn-small btn-pdf">PDF</a>
             <button onclick="openStatusModal('<%= quote.quote_code %>', '<%= quote.business_status || 'ativa' %>')" class="btn-small btn-status">Status</button>
             <% if (currentUser && currentUser.role === 'admin') { %>

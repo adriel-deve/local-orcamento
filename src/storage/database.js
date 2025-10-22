@@ -50,10 +50,10 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
     const insertQuoteQuery = `
       INSERT INTO quotes (quote_code, date, company, client, cnpj, machine_model, tech_spec, principle,
                          representative, supplier, services, validity_days, delivery_time, notes, status,
-                         contact_email, contact_phone, seller_name, equipment_image, include_payment_conditions,
+                         contact_email, contact_phone, seller_name, equipment_image, equipment_images, include_payment_conditions,
                          payment_intro, payment_usd_conditions, payment_brl_intro, payment_brl_with_sat,
                          payment_brl_without_sat, payment_additional_notes, user_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
       ON CONFLICT (quote_code)
       DO UPDATE SET
         date = EXCLUDED.date,
@@ -74,6 +74,7 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
         contact_phone = EXCLUDED.contact_phone,
         seller_name = EXCLUDED.seller_name,
         equipment_image = EXCLUDED.equipment_image,
+        equipment_images = EXCLUDED.equipment_images,
         include_payment_conditions = EXCLUDED.include_payment_conditions,
         payment_intro = EXCLUDED.payment_intro,
         payment_usd_conditions = EXCLUDED.payment_usd_conditions,
@@ -106,6 +107,7 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
       quote.contact_phone || null,
       quote.seller_name || null,
       quote.equipment_image || null,
+      quote.equipment_images || null,
       quote.include_payment_conditions || false,
       quote.payment_intro || null,
       quote.payment_usd_conditions || null,

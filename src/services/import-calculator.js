@@ -129,34 +129,136 @@ export async function calcularImportacao(valorFOB, taxaCambio = 5.70) {
     // Textos padrão
     textos,
 
-    // Itens formatados para adicionar no formulário
+    // Itens formatados para adicionar no formulário (um item por imposto/taxa)
     itensParaFormulario: [
+      // IMPOSTOS (cada um separado)
+      {
+        section: 'sec_operacionais_a',
+        name: `Imposto de Importação (II ${taxaII * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoII * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `IPI (${taxaIPI * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoIPI * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `PIS (${taxaPIS * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoPIS * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `COFINS (${taxaCOFINS * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoCOFINS * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `ICMS (${taxaICMS * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoICMS * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `AFRMM (${taxaAFRMM * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoAFRMM * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: `SISCOMEX (${taxaSISCOMEX * 100}%)`,
+        qty: 1,
+        unit: Math.round(impostoSISCOMEXPerc * 100) / 100,
+        currency: 'BRL'
+      },
+      // DESPESAS FIXAS (cada uma separada)
+      {
+        section: 'sec_operacionais_a',
+        name: 'SISCOMEX (Taxa Fixa)',
+        qty: 1,
+        unit: Math.round(siscomexFixo * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: textos.honorarios || 'Honorários de despachantes e manuseio',
+        qty: 1,
+        unit: Math.round(despachante * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Honorário Radar',
+        qty: 1,
+        unit: Math.round(honorarioRadar * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Armazenagem no Porto',
+        qty: 1,
+        unit: Math.round(armazenagemPorto * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Despesas de Porto',
+        qty: 1,
+        unit: Math.round(despesasPorto * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Licença ANVISA',
+        qty: 1,
+        unit: Math.round(licencaANVISA * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Liberação de BL',
+        qty: 1,
+        unit: Math.round(liberacaoBL * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: 'Licença de Importação',
+        qty: 1,
+        unit: Math.round(licencaImportacao * 100) / 100,
+        currency: 'BRL'
+      },
+      {
+        section: 'sec_operacionais_a',
+        name: textos.importacao || 'Despesas de importação',
+        qty: 1,
+        unit: Math.round((siscomexFixo + despachante + honorarioRadar + armazenagemPorto + despesasPorto + licencaANVISA + liberacaoBL + licencaImportacao) * 100) / 100,
+        currency: 'BRL'
+      },
+      // FRETE RODOVIÁRIO
+      {
+        section: 'sec_operacionais_a',
+        name: textos.transporte || 'Transporte até a porta da empresa',
+        qty: 1,
+        unit: Math.round(freteRodoviario * 100) / 100,
+        currency: 'BRL'
+      },
+      // CONSULTORIA
       {
         section: 'sec_assessoria_a',
-        name: textos.consultoria,
+        name: textos.consultoria || 'Consultoria com acompanhamento e suporte até o recebimento',
         qty: 1,
-        unit: valorConsultoria,
-        currency: 'BRL'
-      },
-      {
-        section: 'sec_operacionais_a',
-        name: textos.honorarios,
-        qty: 1,
-        unit: despachante,
-        currency: 'BRL'
-      },
-      {
-        section: 'sec_operacionais_a',
-        name: textos.importacao,
-        qty: 1,
-        unit: totalDespesasImportacao,
-        currency: 'BRL'
-      },
-      {
-        section: 'sec_operacionais_a',
-        name: textos.transporte,
-        qty: 1,
-        unit: freteRodoviario,
+        unit: Math.round(valorConsultoria * 100) / 100,
         currency: 'BRL'
       }
     ]

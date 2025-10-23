@@ -1554,14 +1554,18 @@
     console.log('[CALC IMPORT] Processando', rows.length, 'linhas de equipamentos');
 
     rows.forEach((row, index) => {
-      const nameInput = row.querySelector('input[placeholder="Nome do item"]');
-      const qtyInput = row.querySelector('input[placeholder="Qtd"]');
-      const unitInput = row.querySelector('input[placeholder="Preço unit"]');
-      const currencySelect = row.querySelector('select');
+      const nameInput = row.querySelector('.item_name');
+      const qtyInput = row.querySelector('.item_qty');
+      const unitInput = row.querySelector('.item_unit');
+      const currencySelect = row.querySelector('.item_currency');
 
       const name = nameInput ? nameInput.value.trim() : '';
       const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
-      const unit = parseFloat(unitInput ? unitInput.value : 0) || 0;
+
+      // Pegar valor real do atributo data-raw-value (formato numérico sem formatação)
+      const unitRaw = unitInput ? unitInput.getAttribute('data-raw-value') : null;
+      const unit = parseFloat(unitRaw || unitInput?.value.replace(/\./g, '').replace(',', '.') || 0) || 0;
+
       const currency = currencySelect ? currencySelect.value : 'USD';
 
       console.log(`[CALC IMPORT] Linha ${index + 1}:`, {

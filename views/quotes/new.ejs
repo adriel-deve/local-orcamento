@@ -1548,21 +1548,34 @@
     // Calcular total FOB em USD
     let totalFOBUSD = 0;
     let totalFOBBRL = 0;
+    let equipmentCounter = 0;
     let temErro = false;
 
-    rows.forEach(row => {
+    console.log('[CALC IMPORT] Processando', rows.length, 'linhas de equipamentos');
+
+    rows.forEach((row, index) => {
       const nameInput = row.querySelector('input[placeholder="Nome do item"]');
       const qtyInput = row.querySelector('input[placeholder="Qtd"]');
       const unitInput = row.querySelector('input[placeholder="Preço unit"]');
       const currencySelect = row.querySelector('select');
 
       const name = nameInput ? nameInput.value.trim() : '';
-      if (!name) return; // Pular linhas vazias
-
-      const qty = parseFloat(qtyInput ? qtyInput.value : 1) || 1;
+      const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
       const unit = parseFloat(unitInput ? unitInput.value : 0) || 0;
       const currency = currencySelect ? currencySelect.value : 'USD';
 
+      console.log(`[CALC IMPORT] Linha ${index + 1}:`, {
+        name: name || '(vazio)',
+        qty,
+        unit,
+        currency,
+        hasValue: unit > 0
+      });
+
+      // Pular linhas vazias ou sem preço
+      if (!name || unit <= 0) return;
+
+      equipmentCounter++;
       const subtotal = qty * unit;
 
       if (currency === 'USD') {
@@ -1572,7 +1585,13 @@
       }
     });
 
-    if (totalFOBUSD === 0 && totalFOBBRL === 0) {
+    console.log('[CALC IMPORT] Resultado:', {
+      equipmentCounter,
+      totalFOBUSD,
+      totalFOBBRL
+    });
+
+    if (equipmentCounter === 0 || (totalFOBUSD === 0 && totalFOBBRL === 0)) {
       alert('Nenhum equipamento com valor encontrado. Preencha os preços dos equipamentos.');
       return;
     }

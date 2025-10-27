@@ -29,7 +29,8 @@ router.get('/', requireAdmin, async (req, res) => {
       payment: [],
       contact: [],
       services: [],
-      import: []
+      import: [],
+      service_calc: []
     };
 
     settings.forEach(setting => {
@@ -40,6 +41,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
     res.render('settings/index', {
       settings: settingsByCategory,
+      allSettings: settings, // Array completo para busca com .find()
       success: req.query.success === 'true'
     });
   } catch (error) {

@@ -525,6 +525,106 @@
     </div>
   </div>
 
+  <!-- Cálculo de Serviços -->
+  <div class="form-section">
+    <h3>⚙️ Cálculo Automático de Serviços</h3>
+    <p style="color: #666; font-size: 0.875rem; margin-bottom: 20px;">
+      Configure os percentuais e textos padrão para cálculo automático de serviços baseado no valor FOB dos equipamentos.
+    </p>
+
+    <!-- Percentual Base -->
+    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0ea5e9;">
+      <h4 style="margin: 0 0 10px 0; color: #0ea5e9; font-size: 0.875rem;">Percentual Base</h4>
+      <div class="form-group">
+        <%
+          const basePercent = allSettings.find(s => s.key === 'service_base_percent');
+        %>
+        <label>Percentual sobre FOB para calcular valor total de serviços (%)</label>
+        <input type="number" step="0.01" name="service_calc_service_base_percent" value="<%= (basePercent && basePercent.value) || '60.00' %>" placeholder="60.00">
+        <small style="color: #666;">Fórmula: Valor de Serviços = FOB × (Percentual Base / 100)</small>
+      </div>
+    </div>
+
+    <!-- NRs (Normas Regulamentadoras) -->
+    <div class="subsection">
+      <h4 style="color: #dc2626; margin-bottom: 15px;">📋 NRs (Normas Regulamentadoras)</h4>
+      <%
+        const nrsPercent = allSettings.find(s => s.key === 'service_nrs_percent');
+        const nrsText = allSettings.find(s => s.key === 'service_nrs_text');
+      %>
+      <div class="form-group">
+        <label>Percentual sobre Valor de Serviços (%)</label>
+        <input type="number" step="0.01" name="service_calc_service_nrs_percent" value="<%= (nrsPercent && nrsPercent.value) || '45.00' %>" placeholder="45.00">
+      </div>
+      <div class="form-group">
+        <label>Texto Padrão</label>
+        <textarea name="service_calc_service_nrs_text" rows="2" placeholder="Adaptações para as Normas NR 10, NR 12..."><%= (nrsText && nrsText.value) || '' %></textarea>
+      </div>
+    </div>
+
+    <!-- SAT (Startup e Treinamento) -->
+    <div class="subsection">
+      <h4 style="color: #dc2626; margin-bottom: 15px;">🚀 SAT (Startup e Treinamento)</h4>
+      <%
+        const satPercent = allSettings.find(s => s.key === 'service_sat_percent');
+        const satText = allSettings.find(s => s.key === 'service_sat_text');
+      %>
+      <div class="form-group">
+        <label>Percentual sobre Valor de Serviços (%)</label>
+        <input type="number" step="0.01" name="service_calc_service_sat_percent" value="<%= (satPercent && satPercent.value) || '26.00' %>" placeholder="26.00">
+      </div>
+      <div class="form-group">
+        <label>Texto Padrão</label>
+        <textarea name="service_calc_service_sat_text" rows="3" placeholder="SAT (Startup feito por engenheiros..."><%= (satText && satText.value) || '' %></textarea>
+      </div>
+    </div>
+
+    <!-- Garantia Extendida -->
+    <div class="subsection">
+      <h4 style="color: #dc2626; margin-bottom: 15px;">🛡️ Garantia Extendida</h4>
+      <%
+        const garantiaPercent = allSettings.find(s => s.key === 'service_garantia_percent');
+        const garantiaText = allSettings.find(s => s.key === 'service_garantia_text');
+      %>
+      <div class="form-group">
+        <label>Percentual sobre Valor de Serviços (%)</label>
+        <input type="number" step="0.01" name="service_calc_service_garantia_percent" value="<%= (garantiaPercent && garantiaPercent.value) || '13.00' %>" placeholder="13.00">
+      </div>
+      <div class="form-group">
+        <label>Texto Padrão</label>
+        <textarea name="service_calc_service_garantia_text" rows="3" placeholder="Garantia Nacional Extendida (12 meses)..."><%= (garantiaText && garantiaText.value) || '' %></textarea>
+      </div>
+    </div>
+
+    <!-- Manutenção Preventiva -->
+    <div class="subsection">
+      <h4 style="color: #dc2626; margin-bottom: 15px;">🔧 Manutenção Preventiva</h4>
+      <%
+        const preventivaPercent = allSettings.find(s => s.key === 'service_preventiva_percent');
+        const preventivaText = allSettings.find(s => s.key === 'service_preventiva_text');
+      %>
+      <div class="form-group">
+        <label>Percentual sobre Valor de Serviços (%)</label>
+        <input type="number" step="0.01" name="service_calc_service_preventiva_percent" value="<%= (preventivaPercent && preventivaPercent.value) || '16.00' %>" placeholder="16.00">
+      </div>
+      <div class="form-group">
+        <label>Texto Padrão</label>
+        <textarea name="service_calc_service_preventiva_text" rows="3" placeholder="Plano de Manutenção Preventiva (12 meses)..."><%= (preventivaText && preventivaText.value) || '' %></textarea>
+      </div>
+    </div>
+
+    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #f59e0b;">
+      <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+        <strong>📊 Fórmula de Cálculo:</strong><br>
+        1. Valor de Serviços = FOB × (Percentual Base / 100)<br>
+        2. NRs = Valor de Serviços × (% NRs / 100)<br>
+        3. SAT = Valor de Serviços × (% SAT / 100)<br>
+        4. Garantia = Valor de Serviços × (% Garantia / 100)<br>
+        5. Preventiva = Valor de Serviços × (% Preventiva / 100)
+      </p>
+    </div>
+  </div>
+
   <div class="form-actions">
     <a href="/" class="btn btn-secondary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

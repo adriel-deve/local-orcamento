@@ -10,6 +10,7 @@ import { uploadToCloudinary } from '../config/cloudinary.js';
 import { getSettingsAsObject } from '../services/settings-service.js';
 import { generateQuoteNumber } from '../services/quote-number-service.js';
 import { calcularImportacao, criarResumoCalculo } from '../services/import-calculator.js';
+import { calcularServicos, criarResumoCalculo as criarResumoServicos } from '../services/service-calculator.js';
 
 const router = Router();
 
@@ -1412,6 +1413,34 @@ router.post('/calculate-import', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erro ao calcular importação: ' + error.message
+    });
+  }
+});
+
+// API endpoint para calcular serviços automaticamente
+router.post('/calculate-services', async (req, res) => {
+  try {
+    const { valorFOB } = req.body;
+
+    if (!valorFOB || valorFOB <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valor FOB inválido'
+      });
+    }
+
+    const calculo = await calcularServicos(parseFloat(valorFOB));
+
+    res.json({
+      success: true,
+      calculo,
+      resumo: criarResumoServicos(calculo)
+    });
+  } catch (error) {
+    console.error('❌ Erro ao calcular serviços:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao calcular serviços: ' + error.message
     });
   }
 });

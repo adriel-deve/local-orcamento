@@ -232,7 +232,13 @@
         </div>
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_operacionais_a')">Adicionar Serviço Operacional</button>
+        <button type="button" class="btn" onclick="calcularServicos()" style="background: #8b5cf6; margin-left: 10px;">
+          ⚙️ Calcular Serviços Automaticamente
+        </button>
       </div>
+
+      <!-- Status do Cálculo de Serviços -->
+      <div id="service_calc_status" style="display: none; margin: 15px 0; padding: 15px; border-radius: 8px;"></div>
 
       <h4>Certificados</h4>
       <div id="sec_certificados_a" class="spec">
@@ -1722,6 +1728,195 @@ ${result.resumo}
 
     // Scroll suave até a seção de assessoria
     assessoriaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Função para calcular serviços automaticamente baseado no valor FOB
+  async function calcularServicos() {
+    const statusDiv = document.getElementById('service_calc_status');
+    const operacionaisSection = document.getElementById('sec_operacionais_a');
+
+    if (!operacionaisSection) {
+      alert('Seção de Serviços Operacionais não encontrada');
+      return;
+    }
+
+    // Calcular total FOB dos equipamentos (apenas USD e BRL)
+    const equipSection = document.getElementById('sec_equip_a');
+    if (!equipSection) {
+      alert('Seção de equipamentos não encontrada');
+      return;
+    }
+
+    const rows = equipSection.querySelectorAll('.item_row');
+    let totalFOBUSD = 0;
+    let totalFOBBRL = 0;
+    let equipmentCounter = 0;
+
+    console.log('[CALC SERVICES] Processando', rows.length, 'linhas de equipamentos');
+
+    rows.forEach((row, index) => {
+      const nameInput = row.querySelector('.item_name');
+      const qtyInput = row.querySelector('.item_qty');
+      const unitInput = row.querySelector('.item_unit');
+      const currencySelect = row.querySelector('.item_currency');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+
+      // Pegar valor real do atributo data-raw-value (formato numérico sem formatação)
+      const unitRaw = unitInput ? unitInput.getAttribute('data-raw-value') : null;
+      const unit = parseFloat(unitRaw || unitInput?.value.replace(/\./g, '').replace(',', '.') || 0) || 0;
+
+      const currency = currencySelect ? currencySelect.value : 'USD';
+
+      console.log(`[CALC SERVICES] Linha ${index + 1}:`, {
+        name: name || '(vazio)',
+        qty,
+        unit,
+        currency,
+        hasValue: unit > 0
+      });
+
+      // Pular linhas vazias ou sem preço
+      if (!name || unit <= 0) return;
+
+      equipmentCounter++;
+      const subtotal = qty * unit;
+
+      if (currency === 'USD') {
+        totalFOBUSD += subtotal;
+      } else if (currency === 'BRL') {
+        totalFOBBRL += subtotal;
+      }
+    });
+
+    console.log('[CALC SERVICES] Resultado:', {
+      equipmentCounter,
+      totalFOBUSD,
+      totalFOBBRL
+    });
+
+    if (equipmentCounter === 0 || (totalFOBUSD === 0 && totalFOBBRL === 0)) {
+      alert('Nenhum equipamento com valor encontrado. Preencha os preços dos equipamentos.');
+      return;
+    }
+
+    // Se houver valores em BRL, converter para USD
+    let taxaCambio = 5.70;
+    if (totalFOBBRL > 0) {
+      const taxaInput = prompt('Digite a taxa de câmbio atual (USD para BRL):', '5.70');
+      if (taxaInput === null) return; // Cancelou
+      taxaCambio = parseFloat(taxaInput) || 5.70;
+    }
+
+    // Converter tudo para BRL para cálculo (serviços são sempre em BRL)
+    const valorFOBTotal = (totalFOBUSD * taxaCambio) + totalFOBBRL;
+
+    if (valorFOBTotal <= 0) {
+      alert('Valor FOB total inválido');
+      return;
+    }
+
+    // Mostrar status de carregamento
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = '#8b5cf6';
+    statusDiv.style.color = 'white';
+    statusDiv.innerHTML = `
+      <strong>⏳ Calculando serviços...</strong>
+      <p style="margin: 5px 0 0 0;">Valor FOB Total: R$ ${valorFOBTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+    `;
+
+    try {
+      // Chamar API de cálculo
+      const response = await fetch('/quotes/calculate-services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          valorFOB: valorFOBTotal
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro desconhecido');
+      }
+
+      const calculo = data.calculo;
+      const resumo = data.resumo;
+
+      // Mostrar resumo do cálculo
+      statusDiv.style.background = '#8b5cf6';
+      statusDiv.innerHTML = `
+        <strong>📊 Cálculo de Serviços Concluído</strong>
+        <pre style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px; margin: 10px 0; overflow-x: auto; text-align: left; white-space: pre-wrap;">${resumo}</pre>
+        <button type="button" onclick="aplicarCalculoServicos(${JSON.stringify(calculo).replace(/"/g, '&quot;')})"
+                style="padding: 10px 20px; background: white; color: #8b5cf6; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 10px;">
+          ✅ Aplicar ao Formulário
+        </button>
+        <button type="button" onclick="document.getElementById('service_calc_status').style.display='none'"
+                style="padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer;">
+          Cancelar
+        </button>
+      `;
+
+      // Scroll suave até o status
+      statusDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    } catch (error) {
+      console.error('Erro ao calcular serviços:', error);
+      statusDiv.style.background = '#dc2626';
+      statusDiv.innerHTML = `
+        <strong>❌ Erro ao calcular</strong>
+        <p style="margin: 5px 0 0 0;">${error.message}</p>
+        <button type="button" onclick="document.getElementById('service_calc_status').style.display='none'"
+                style="margin-top: 10px; padding: 5px 15px; background: white; color: #dc2626; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+          OK
+        </button>
+      `;
+    }
+  }
+
+  // Função para aplicar os valores calculados ao formulário
+  function aplicarCalculoServicos(calculo) {
+    const operacionaisSection = document.getElementById('sec_operacionais_a');
+
+    // Confirmar antes de limpar
+    const confirmacao = confirm('Isso irá limpar os serviços operacionais existentes e adicionar os novos calculados. Deseja continuar?');
+    if (!confirmacao) return;
+
+    // Limpar seção de serviços operacionais
+    if (operacionaisSection) {
+      const container = operacionaisSection.querySelector('.items');
+      if (container) container.innerHTML = '';
+    }
+
+    // Adicionar itens calculados
+    calculo.itensParaFormulario.forEach(item => {
+      addRow(item.section, {
+        name: item.name,
+        qty: item.qty,
+        unit: item.unit,
+        currency: item.currency
+      });
+    });
+
+    // Feedback
+    const statusDiv = document.getElementById('service_calc_status');
+    statusDiv.style.background = '#10b981';
+    statusDiv.innerHTML = `
+      <strong>✅ Serviços aplicados com sucesso!</strong>
+      <p style="margin: 10px 0 0 0;">Os 4 serviços foram adicionados à seção de Serviços Operacionais.</p>
+      <button type="button" onclick="document.getElementById('service_calc_status').style.display='none'"
+              style="margin-top: 10px; padding: 5px 15px; background: white; color: #10b981; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        OK, Entendi
+      </button>
+    `;
+
+    // Scroll suave até a seção de serviços operacionais
+    operacionaisSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // Linhas iniciais

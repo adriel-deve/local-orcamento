@@ -219,7 +219,7 @@
       <div id="sec_equip_a" class="spec">
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_equip_a')">Adicionar Equipamento</button>
-        <button type="button" class="btn" onclick="calcularImportacao()" style="background: #10b981; margin-left: 10px;">
+        <button type="button" class="btn" onclick="calcularImportacao('A')" style="background: #10b981; margin-left: 10px;">
           🧮 Calcular Importação Automática
         </button>
       </div>
@@ -249,7 +249,7 @@
       <div id="sec_operacionais_a" class="spec">
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_operacionais_a')">Adicionar Serviço Operacional</button>
-        <button type="button" class="btn" onclick="calcularServicos()" style="background: #8b5cf6; margin-left: 10px;">
+        <button type="button" class="btn" onclick="calcularServicos('A')" style="background: #8b5cf6; margin-left: 10px;">
           ⚙️ Calcular Serviços Automaticamente
         </button>
       </div>
@@ -297,7 +297,13 @@
       <div id="sec_equip_b" class="spec">
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_equip_b')">Adicionar Equipamento</button>
+        <button type="button" class="btn" onclick="calcularImportacao('B')" style="background: #10b981; margin-left: 10px;">
+          🧮 Calcular Importação Automática
+        </button>
       </div>
+
+      <!-- Status do Cálculo - Modalidade B -->
+      <div id="import_calc_status_b" style="display: none; margin: 15px 0; padding: 15px; border-radius: 8px;"></div>
 
       <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
         <h4 style="margin: 0;">Serviços de Assessoria na Importação</h4>
@@ -321,7 +327,13 @@
       <div id="sec_operacionais_b" class="spec">
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_operacionais_b')">Adicionar Serviço Operacional</button>
+        <button type="button" class="btn" onclick="calcularServicos('B')" style="background: #f59e0b; margin-left: 10px;">
+          ⚙️ Calcular Serviços Automaticamente
+        </button>
       </div>
+
+      <!-- Status do Cálculo de Serviços - Modalidade B -->
+      <div id="service_calc_status_b" style="display: none; margin: 15px 0; padding: 15px; border-radius: 8px;"></div>
 
       <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
         <h4 style="margin: 0;">Certificados</h4>
@@ -1602,11 +1614,12 @@
   }
 
   // === FUNÇÃO DE CÁLCULO AUTOMÁTICO DE IMPORTAÇÃO ===
-  async function calcularImportacao() {
-    const statusDiv = document.getElementById('import_calc_status');
+  async function calcularImportacao(modalidade = 'A') {
+    const suffix = modalidade === 'B' ? '_b' : '';
+    const statusDiv = document.getElementById(modalidade === 'B' ? 'import_calc_status_b' : 'import_calc_status');
 
-    // 1. Coletar todos os equipamentos da Modalidade A
-    const equipSection = document.getElementById('sec_equip_a');
+    // 1. Coletar todos os equipamentos da modalidade selecionada
+    const equipSection = document.getElementById(`sec_equip_${modalidade.toLowerCase()}`);
     if (!equipSection) {
       alert('Seção de equipamentos não encontrada');
       return;
@@ -1725,11 +1738,11 @@
         <div style="background: white; color: #1f2937; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
 ${result.resumo}
         </div>
-        <button type="button" onclick="aplicarCalculoImportacao(${JSON.stringify(calculo).replace(/"/g, '&quot;')})"
+        <button type="button" onclick="aplicarCalculoImportacao(${JSON.stringify(calculo).replace(/"/g, '&quot;')}, '${modalidade}')"
                 style="margin-top: 10px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
           📋 Aplicar Valores ao Formulário
         </button>
-        <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+        <button type="button" onclick="document.getElementById('${modalidade === 'B' ? 'import_calc_status_b' : 'import_calc_status'}').style.display='none'"
                 style="margin-top: 10px; margin-left: 10px; padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
           Fechar
         </button>
@@ -1740,7 +1753,7 @@ ${result.resumo}
       statusDiv.style.background = '#ef4444';
       statusDiv.innerHTML = `
         <strong>❌ Erro:</strong> ${error.message}
-        <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+        <button type="button" onclick="document.getElementById('${modalidade === 'B' ? 'import_calc_status_b' : 'import_calc_status'}').style.display='none'"
                 style="margin-left: 10px; padding: 5px 15px; background: white; color: #ef4444; border: none; border-radius: 4px; cursor: pointer;">
           Fechar
         </button>
@@ -1749,7 +1762,7 @@ ${result.resumo}
   }
 
   // === APLICAR CÁLCULO AO FORMULÁRIO ===
-  function aplicarCalculoImportacao(calculo) {
+  function aplicarCalculoImportacao(calculo, modalidade = 'A') {
     const confirmacao = confirm(
       '⚠️ ATENÇÃO: Isso irá SUBSTITUIR os itens atuais de Assessoria e Serviços Operacionais.\n\n' +
       'Deseja continuar?'
@@ -1757,9 +1770,11 @@ ${result.resumo}
 
     if (!confirmacao) return;
 
+    const suffix = modalidade === 'B' ? '_b' : '_a';
+
     // Limpar seções de assessoria e operacionais
-    const assessoriaSection = document.getElementById('sec_assessoria_a');
-    const operacionaisSection = document.getElementById('sec_operacionais_a');
+    const assessoriaSection = document.getElementById(`sec_assessoria${suffix}`);
+    const operacionaisSection = document.getElementById(`sec_operacionais${suffix}`);
 
     if (assessoriaSection) {
       const container = assessoriaSection.querySelector('.items');
@@ -1771,9 +1786,12 @@ ${result.resumo}
       if (container) container.innerHTML = '';
     }
 
-    // Adicionar itens calculados
+    // Adicionar itens calculados - atualizar section IDs para modalidade correta
     calculo.itensParaFormulario.forEach(item => {
-      addRow(item.section, {
+      // Substituir _a por _b se necessário
+      const sectionId = modalidade === 'B' ? item.section.replace('_a', '_b') : item.section;
+
+      addRow(sectionId, {
         name: item.name,
         qty: item.qty,
         unit: item.unit,
@@ -1782,25 +1800,28 @@ ${result.resumo}
     });
 
     // Feedback
-    const statusDiv = document.getElementById('import_calc_status');
+    const statusDiv = document.getElementById(modalidade === 'B' ? 'import_calc_status_b' : 'import_calc_status');
     statusDiv.style.background = '#10b981';
     statusDiv.innerHTML = `
       <strong>✅ Valores aplicados com sucesso!</strong>
       <p style="margin: 10px 0 0 0;">Os itens de Assessoria e Serviços Operacionais foram preenchidos automaticamente.</p>
-      <button type="button" onclick="document.getElementById('import_calc_status').style.display='none'"
+      <button type="button" onclick="document.getElementById('${modalidade === 'B' ? 'import_calc_status_b' : 'import_calc_status'}').style.display='none'"
               style="margin-top: 10px; padding: 5px 15px; background: white; color: #10b981; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
         OK, Entendi
       </button>
     `;
 
     // Scroll suave até a seção de assessoria
-    assessoriaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (assessoriaSection) {
+      assessoriaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   // Função para calcular serviços automaticamente baseado no valor FOB
-  async function calcularServicos() {
-    const statusDiv = document.getElementById('service_calc_status');
-    const operacionaisSection = document.getElementById('sec_operacionais_a');
+  async function calcularServicos(modalidade = 'A') {
+    const suffix = modalidade === 'B' ? '_b' : '_a';
+    const statusDiv = document.getElementById(modalidade === 'B' ? 'service_calc_status_b' : 'service_calc_status');
+    const operacionaisSection = document.getElementById(`sec_operacionais${suffix}`);
 
     if (!operacionaisSection) {
       alert('Seção de Serviços Operacionais não encontrada');
@@ -1808,7 +1829,7 @@ ${result.resumo}
     }
 
     // Calcular total FOB dos equipamentos (apenas USD e BRL)
-    const equipSection = document.getElementById('sec_equip_a');
+    const equipSection = document.getElementById(`sec_equip${suffix}`);
     if (!equipSection) {
       alert('Seção de equipamentos não encontrada');
       return;

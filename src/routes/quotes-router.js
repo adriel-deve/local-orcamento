@@ -324,11 +324,27 @@ router.post('/save-and-preview', upload.any(), async (req, res) => {
     // Gerar pré-visualização com os dados salvos
     const { sections: processedSections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
 
+    // Parse enableConfig from payload
+    let enableConfig = {
+      enableModalidadeA: payload.enableModalidadeA !== undefined ? payload.enableModalidadeA : true,
+      enableModalidadeB: payload.enableModalidadeB !== undefined ? payload.enableModalidadeB : true,
+      enableSections: payload.enableSections || {
+        equipA: true,
+        assessoriaA: true,
+        operacionaisA: true,
+        certificadosA: true,
+        equipB: true,
+        assessoriaB: true,
+        operacionaisB: true,
+        certificadosB: true
+      }
+    };
+
     // Verificar preferência de layout
     const layoutPreference = req.body.layout_preference || 'new';
     const layoutTemplate = layoutPreference === 'classic' ? 'quotes/layout-print-classic' : 'quotes/layout-print';
 
-    return res.render(layoutTemplate, { quote, sections: processedSections, totals });
+    return res.render(layoutTemplate, { quote, sections: processedSections, totals, enableConfig });
 
   } catch (e) {
     return res.status(400).send('Falha ao salvar e pré-visualizar: ' + e.message);
@@ -399,11 +415,27 @@ router.post('/preview-html', upload.any(), async (req, res) => {
     };
     const { sections, totals } = categorizeAndSummarizeFromFormPayload(payload || { sections: {} });
 
+    // Parse enableConfig from payload
+    let enableConfig = {
+      enableModalidadeA: payload.enableModalidadeA !== undefined ? payload.enableModalidadeA : true,
+      enableModalidadeB: payload.enableModalidadeB !== undefined ? payload.enableModalidadeB : true,
+      enableSections: payload.enableSections || {
+        equipA: true,
+        assessoriaA: true,
+        operacionaisA: true,
+        certificadosA: true,
+        equipB: true,
+        assessoriaB: true,
+        operacionaisB: true,
+        certificadosB: true
+      }
+    };
+
     // Verificar preferência de layout
     const layoutPreference = req.body.layout_preference || 'new';
     const layoutTemplate = layoutPreference === 'classic' ? 'quotes/layout-print-classic' : 'quotes/layout-print';
 
-    return res.render(layoutTemplate, { quote, sections, totals });
+    return res.render(layoutTemplate, { quote, sections, totals, enableConfig });
   } catch (e) {
     return res.status(400).send('Falha ao pré-visualizar: ' + e.message);
   }
@@ -699,20 +731,87 @@ router.get('/:code', async (req, res) => {
   const code = req.params.code;
   const data = await getQuoteByCode(code);
   if (!data) return res.status(404).render('404', { message: 'Cotação não encontrada' });
+
+  // Parse specs_json to get enableModalidade and enableSections preferences
+  let enableConfig = {
+    enableModalidadeA: true,
+    enableModalidadeB: true,
+    enableSections: {
+      equipA: true,
+      assessoriaA: true,
+      operacionaisA: true,
+      certificadosA: true,
+      equipB: true,
+      assessoriaB: true,
+      operacionaisB: true,
+      certificadosB: true
+    }
+  };
+
+  if (data.quote.specs_json) {
+    try {
+      const specsJson = typeof data.quote.specs_json === 'string'
+        ? JSON.parse(data.quote.specs_json)
+        : data.quote.specs_json;
+
+      if (specsJson.enableModalidadeA !== undefined) {
+        enableConfig.enableModalidadeA = specsJson.enableModalidadeA;
+      }
+      if (specsJson.enableModalidadeB !== undefined) {
+        enableConfig.enableModalidadeB = specsJson.enableModalidadeB;
+      }
+      if (specsJson.enableSections) {
+        enableConfig.enableSections = { ...enableConfig.enableSections, ...specsJson.enableSections };
+      }
+    } catch (e) {
+      console.error('Error parsing specs_json for enable config:', e);
+    }
+  }
+
   const categorized = categorizeSpecs(data.specs);
   const sections = Object.values(categorized).map(section => ({
     ...section,
     totals: totalsFor(section.items)
   }));
-  const totals = sections.reduce((acc, section) => {
-    const t = section.totals;
-    acc.BRL += t.BRL || 0;
-    acc.USD += t.USD || 0;
-    acc.EUR += t.EUR || 0;
-    return acc;
-  }, { BRL: 0, USD: 0, EUR: 0 });
 
-  res.render('quotes/layout-print', { quote: data.quote, sections, totals });
+  // Calculate totals only for enabled sections
+  const totals = {
+    modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
+    modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
+    general: { BRL: 0, USD: 0, EUR: 0 }
+  };
+
+  sections.forEach(section => {
+    // Check if section is enabled
+    let sectionEnabled = true;
+    if (section.key === 'equipamentos_a') sectionEnabled = enableConfig.enableSections.equipA;
+    else if (section.key === 'assessoria_a') sectionEnabled = enableConfig.enableSections.assessoriaA;
+    else if (section.key === 'operacionais_a') sectionEnabled = enableConfig.enableSections.operacionaisA;
+    else if (section.key === 'certificados_a') sectionEnabled = enableConfig.enableSections.certificadosA;
+    else if (section.key === 'equipamentos_b') sectionEnabled = enableConfig.enableSections.equipB;
+    else if (section.key === 'assessoria_b') sectionEnabled = enableConfig.enableSections.assessoriaB;
+    else if (section.key === 'operacionais_b') sectionEnabled = enableConfig.enableSections.operacionaisB;
+    else if (section.key === 'certificados_b') sectionEnabled = enableConfig.enableSections.certificadosB;
+
+    if (!sectionEnabled) return; // Skip disabled sections
+
+    const sectionTotals = section.totals;
+    totals.general.BRL += sectionTotals.BRL || 0;
+    totals.general.USD += sectionTotals.USD || 0;
+    totals.general.EUR += sectionTotals.EUR || 0;
+
+    if (section.key.includes('_a') && enableConfig.enableModalidadeA) {
+      totals.modalidadeA.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeA.USD += sectionTotals.USD || 0;
+      totals.modalidadeA.EUR += sectionTotals.EUR || 0;
+    } else if (section.key.includes('_b') && enableConfig.enableModalidadeB) {
+      totals.modalidadeB.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeB.USD += sectionTotals.USD || 0;
+      totals.modalidadeB.EUR += sectionTotals.EUR || 0;
+    }
+  });
+
+  res.render('quotes/layout-print', { quote: data.quote, sections, totals, enableConfig });
 });
 
 router.get('/:code/layout', async (req, res) => {
@@ -1401,6 +1500,22 @@ router.post('/preview-translated', async (req, res) => {
     const translatedQuote = JSON.parse(req.body.translatedQuote);
     const sections = JSON.parse(req.body.sections);
 
+    // Default enableConfig (all enabled for translated previews)
+    const enableConfig = {
+      enableModalidadeA: true,
+      enableModalidadeB: true,
+      enableSections: {
+        equipA: true,
+        assessoriaA: true,
+        operacionaisA: true,
+        certificadosA: true,
+        equipB: true,
+        assessoriaB: true,
+        operacionaisB: true,
+        certificadosB: true
+      }
+    };
+
     // Calculate totals for the translated quote
     const totals = {
       modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
@@ -1428,7 +1543,7 @@ router.post('/preview-translated', async (req, res) => {
       }
     });
 
-    res.render('quotes/layout-print', { quote: translatedQuote, sections, totals });
+    res.render('quotes/layout-print', { quote: translatedQuote, sections, totals, enableConfig });
   } catch (error) {
     console.error('Error rendering translated quote:', error);
     res.status(500).send('Erro ao exibir cotação traduzida: ' + error.message);

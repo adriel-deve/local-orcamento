@@ -1653,6 +1653,7 @@
       const qtyInput = row.querySelector('.item_qty');
       const unitInput = row.querySelector('.item_unit');
       const currencySelect = row.querySelector('.item_currency');
+      const optionalCheckbox = row.querySelector('.item_optional');
 
       const name = nameInput ? nameInput.value.trim() : '';
       const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
@@ -1662,17 +1663,19 @@
       const unit = parseFloat(unitRaw || unitInput?.value.replace(/\./g, '').replace(',', '.') || 0) || 0;
 
       const currency = currencySelect ? currencySelect.value : 'USD';
+      const isOptional = optionalCheckbox ? optionalCheckbox.checked : false;
 
       console.log(`[CALC IMPORT] Linha ${index + 1}:`, {
         name: name || '(vazio)',
         qty,
         unit,
         currency,
-        hasValue: unit > 0
+        hasValue: unit > 0,
+        isOptional
       });
 
-      // Pular linhas vazias ou sem preço
-      if (!name || unit <= 0) return;
+      // Pular linhas vazias, sem preço ou opcionais
+      if (!name || unit <= 0 || isOptional) return;
 
       equipmentCounter++;
       const subtotal = qty * unit;
@@ -1856,6 +1859,7 @@ ${result.resumo}
       const qtyInput = row.querySelector('.item_qty');
       const unitInput = row.querySelector('.item_unit');
       const currencySelect = row.querySelector('.item_currency');
+      const optionalCheckbox = row.querySelector('.item_optional');
 
       const name = nameInput ? nameInput.value.trim() : '';
       const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
@@ -1865,17 +1869,19 @@ ${result.resumo}
       const unit = parseFloat(unitRaw || unitInput?.value.replace(/\./g, '').replace(',', '.') || 0) || 0;
 
       const currency = currencySelect ? currencySelect.value : 'USD';
+      const isOptional = optionalCheckbox ? optionalCheckbox.checked : false;
 
       console.log(`[CALC SERVICES] Linha ${index + 1}:`, {
         name: name || '(vazio)',
         qty,
         unit,
         currency,
-        hasValue: unit > 0
+        hasValue: unit > 0,
+        isOptional
       });
 
-      // Pular linhas vazias ou sem preço
-      if (!name || unit <= 0) return;
+      // Pular linhas vazias, sem preço ou opcionais
+      if (!name || unit <= 0 || isOptional) return;
 
       equipmentCounter++;
       const subtotal = qty * unit;

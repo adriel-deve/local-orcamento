@@ -199,8 +199,15 @@
     <h3>Modalidades de Entrega</h3>
 
     <!-- MODALIDADE A (Sistema CIF) -->
-    <div class="modalidade-container" style="border: 2px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(220, 38, 38, 0.05);">
-      <h2 style="color: var(--primary); margin-bottom: 20px;">Modalidade A (Sistema CIF)</h2>
+    <div id="modalidade_a_container" class="modalidade-container" style="border: 2px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(220, 38, 38, 0.05);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid rgba(220, 38, 38, 0.2);">
+        <h2 style="color: var(--primary); margin: 0;">Modalidade A (Sistema CIF)</h2>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid var(--primary); transition: all 0.3s;">
+          <input type="checkbox" id="enable_modalidade_a" checked onchange="toggleModalidade('a')" style="width: 20px; height: 20px; cursor: pointer;">
+          <span style="font-weight: 600; color: var(--primary); font-size: 0.875rem;">Oferecer esta modalidade</span>
+        </label>
+      </div>
+      <div id="modalidade_a_content">
 
       <h4>Itens (Equipamentos)</h4>
       <div id="sec_equip_a" class="spec">
@@ -237,11 +244,19 @@
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_certificados_a')">Adicionar Certificado</button>
       </div>
+      </div>
     </div>
 
     <!-- MODALIDADE B (Sistema FOB) -->
-    <div class="modalidade-container" style="border: 2px solid var(--secondary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(31, 41, 55, 0.05);">
-      <h2 style="color: var(--secondary); margin-bottom: 20px;">Modalidade B (Sistema FOB)</h2>
+    <div id="modalidade_b_container" class="modalidade-container" style="border: 2px solid var(--secondary); border-radius: 8px; padding: 20px; margin: 20px 0; background: rgba(31, 41, 55, 0.05);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid rgba(31, 41, 55, 0.2);">
+        <h2 style="color: var(--secondary); margin: 0;">Modalidade B (Sistema FOB)</h2>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid var(--secondary); transition: all 0.3s;">
+          <input type="checkbox" id="enable_modalidade_b" checked onchange="toggleModalidade('b')" style="width: 20px; height: 20px; cursor: pointer;">
+          <span style="font-weight: 600; color: var(--secondary); font-size: 0.875rem;">Oferecer esta modalidade</span>
+        </label>
+      </div>
+      <div id="modalidade_b_content">
 
       <div style="margin-bottom: 15px;">
         <button type="button" class="btn" onclick="copyModalidadeAToB()" style="background: var(--secondary);">Copiar Modalidade A para B</button>
@@ -271,9 +286,12 @@
         <div class="items"></div>
         <button type="button" class="btn" onclick="addRow('sec_certificados_b')">Adicionar Certificado</button>
       </div>
+      </div>
     </div>
 
     <input type="hidden" id="specs_json" name="specs_json" />
+    <input type="hidden" id="enable_modalidade_a_field" name="enable_modalidade_a" value="true" />
+    <input type="hidden" id="enable_modalidade_b_field" name="enable_modalidade_b" value="true" />
     <input type="hidden" id="action_field" name="action" value="save" />
 
     <!-- Condições de Pagamento -->
@@ -722,6 +740,11 @@
     pack.sections.itemsAssessoriaB = collect('sec_assessoria_b');
     pack.sections.itemsOperacionaisB = collect('sec_operacionais_b');
     pack.sections.itemsCertificadosB = collect('sec_certificados_b');
+
+    // Preferências de modalidades (habilitadas ou não)
+    pack.enableModalidadeA = document.getElementById('enable_modalidade_a').checked;
+    pack.enableModalidadeB = document.getElementById('enable_modalidade_b').checked;
+
     document.getElementById('specs_json').value = JSON.stringify(pack);
   }
 
@@ -1901,6 +1924,45 @@ ${result.resumo}
 
     // Scroll suave até a seção de serviços operacionais
     operacionaisSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Função para mostrar/ocultar modalidades
+  function toggleModalidade(modalidade) {
+    const checkbox = document.getElementById(`enable_modalidade_${modalidade}`);
+    const content = document.getElementById(`modalidade_${modalidade}_content`);
+    const container = document.getElementById(`modalidade_${modalidade}_container`);
+    const hiddenField = document.getElementById(`enable_modalidade_${modalidade}_field`);
+
+    if (checkbox.checked) {
+      // Mostrar modalidade
+      content.style.display = 'block';
+      content.style.opacity = '1';
+      container.style.opacity = '1';
+      hiddenField.value = 'true';
+    } else {
+      // Ocultar modalidade com animação
+      content.style.opacity = '0.3';
+      content.style.display = 'none';
+      container.style.opacity = '0.6';
+      hiddenField.value = 'false';
+
+      // Confirmar se realmente quer desabilitar
+      setTimeout(() => {
+        const confirmar = confirm(
+          `Tem certeza que NÃO deseja oferecer a Modalidade ${modalidade.toUpperCase()} (${modalidade === 'a' ? 'Sistema CIF' : 'Sistema FOB'})?\n\n` +
+          'Esta modalidade não aparecerá no PDF e Excel da cotação.'
+        );
+
+        if (!confirmar) {
+          // Usuário cancelou, reverter
+          checkbox.checked = true;
+          content.style.display = 'block';
+          content.style.opacity = '1';
+          container.style.opacity = '1';
+          hiddenField.value = 'true';
+        }
+      }, 100);
+    }
   }
 
   // Linhas iniciais

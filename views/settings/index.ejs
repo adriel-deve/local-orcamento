@@ -300,16 +300,37 @@
       Informações de Contato
     </h2>
 
-    <div class="form-grid">
-      <% settings.contact.forEach(function(setting) { %>
-      <div class="form-field">
-        <label>
+    <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0; color: #065f46; font-size: 0.875rem; line-height: 1.6;">
+        <strong>📞 Dica:</strong> Estas informações aparecerão nos documentos de cotação (PDF/Excel) para que os clientes possam entrar em contato.
+      </p>
+    </div>
+
+    <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <% settings.contact.forEach(function(setting, index) { %>
+      <div class="form-field" style="<%= setting.key.includes('vendor_name') ? 'grid-column: span 2;' : '' %>">
+        <label style="display: flex; align-items: center; gap: 8px;">
+          <% if (setting.key.includes('email')) { %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #dc2626;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          <% } else if (setting.key.includes('phone')) { %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #dc2626;">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+          <% } else { %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #dc2626;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          <% } %>
           <%= setting.description %>
         </label>
         <% if (setting.key.includes('email')) { %>
-          <input type="email" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="exemplo@empresa.com">
+          <input type="email" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="exemplo@empresa.com" style="font-family: monospace;">
         <% } else if (setting.key.includes('phone')) { %>
-          <input type="tel" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="(00) 00000-0000">
+          <input type="tel" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="(00) 00000-0000" style="font-family: monospace;">
         <% } else { %>
           <input type="text" name="<%= setting.key %>" value="<%= setting.value || '' %>" placeholder="Digite o valor padrão...">
         <% } %>
@@ -328,13 +349,26 @@
       Condições de Pagamento
     </h2>
 
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0; color: #92400e; font-size: 0.875rem; line-height: 1.6;">
+        <strong>💳 Dica:</strong> Configure os textos padrão das condições de pagamento. Você pode usar quebras de linha para organizar melhor as informações (Ex: parcelamento, descontos, formas de pagamento aceitas).
+      </p>
+    </div>
+
     <div class="form-grid">
-      <% settings.payment.forEach(function(setting) { %>
-      <div class="form-field">
-        <label>
+      <% settings.payment.forEach(function(setting, index) { %>
+      <div class="form-field" style="background: #fefce8; padding: 20px; border-radius: 12px; border: 2px solid #fbbf24;">
+        <label style="display: flex; align-items: center; gap: 8px; color: #92400e; font-weight: 700; margin-bottom: 12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: #f59e0b;">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+          </svg>
           <%= setting.description %>
         </label>
-        <textarea name="<%= setting.key %>"><%= setting.value || '' %></textarea>
+        <textarea name="<%= setting.key %>" rows="4" placeholder="Ex: Pagamento em até 12x sem juros no cartão de crédito&#10;À vista com 10% de desconto&#10;Boleto bancário aceito" style="font-size: 0.875rem; line-height: 1.6;"><%= setting.value || '' %></textarea>
+        <small style="color: #92400e; font-size: 0.75rem; display: block; margin-top: 8px;">
+          💡 Use Enter para criar múltiplas linhas e organizar as condições
+        </small>
       </div>
       <% }) %>
     </div>

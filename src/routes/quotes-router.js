@@ -726,20 +726,86 @@ router.get('/:code/layout', async (req, res) => {
     equipment_images: data.quote.equipment_images
   });
 
+  // Parse specs_json to get enableModalidade and enableSections preferences
+  let enableConfig = {
+    enableModalidadeA: true,
+    enableModalidadeB: true,
+    enableSections: {
+      equipA: true,
+      assessoriaA: true,
+      operacionaisA: true,
+      certificadosA: true,
+      equipB: true,
+      assessoriaB: true,
+      operacionaisB: true,
+      certificadosB: true
+    }
+  };
+
+  if (data.quote.specs_json) {
+    try {
+      const specsJson = typeof data.quote.specs_json === 'string'
+        ? JSON.parse(data.quote.specs_json)
+        : data.quote.specs_json;
+
+      if (specsJson.enableModalidadeA !== undefined) {
+        enableConfig.enableModalidadeA = specsJson.enableModalidadeA;
+      }
+      if (specsJson.enableModalidadeB !== undefined) {
+        enableConfig.enableModalidadeB = specsJson.enableModalidadeB;
+      }
+      if (specsJson.enableSections) {
+        enableConfig.enableSections = { ...enableConfig.enableSections, ...specsJson.enableSections };
+      }
+    } catch (e) {
+      console.error('Error parsing specs_json for enable config:', e);
+    }
+  }
+
   const categorized = categorizeSpecs(data.specs);
   const sections = Object.values(categorized).map(section => ({
     ...section,
     totals: totalsFor(section.items)
   }));
-  const totals = sections.reduce((acc, section) => {
-    const t = section.totals;
-    acc.BRL += t.BRL || 0;
-    acc.USD += t.USD || 0;
-    acc.EUR += t.EUR || 0;
-    return acc;
-  }, { BRL: 0, USD: 0, EUR: 0 });
 
-  res.render('quotes/layout-print', { quote: data.quote, sections, totals });
+  // Calculate totals only for enabled sections
+  const totals = {
+    modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
+    modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
+    general: { BRL: 0, USD: 0, EUR: 0 }
+  };
+
+  sections.forEach(section => {
+    // Check if section is enabled
+    let sectionEnabled = true;
+    if (section.key === 'equipamentos_a') sectionEnabled = enableConfig.enableSections.equipA;
+    else if (section.key === 'assessoria_a') sectionEnabled = enableConfig.enableSections.assessoriaA;
+    else if (section.key === 'operacionais_a') sectionEnabled = enableConfig.enableSections.operacionaisA;
+    else if (section.key === 'certificados_a') sectionEnabled = enableConfig.enableSections.certificadosA;
+    else if (section.key === 'equipamentos_b') sectionEnabled = enableConfig.enableSections.equipB;
+    else if (section.key === 'assessoria_b') sectionEnabled = enableConfig.enableSections.assessoriaB;
+    else if (section.key === 'operacionais_b') sectionEnabled = enableConfig.enableSections.operacionaisB;
+    else if (section.key === 'certificados_b') sectionEnabled = enableConfig.enableSections.certificadosB;
+
+    if (!sectionEnabled) return; // Skip disabled sections
+
+    const sectionTotals = section.totals;
+    totals.general.BRL += sectionTotals.BRL || 0;
+    totals.general.USD += sectionTotals.USD || 0;
+    totals.general.EUR += sectionTotals.EUR || 0;
+
+    if (section.key.includes('_a') && enableConfig.enableModalidadeA) {
+      totals.modalidadeA.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeA.USD += sectionTotals.USD || 0;
+      totals.modalidadeA.EUR += sectionTotals.EUR || 0;
+    } else if (section.key.includes('_b') && enableConfig.enableModalidadeB) {
+      totals.modalidadeB.BRL += sectionTotals.BRL || 0;
+      totals.modalidadeB.USD += sectionTotals.USD || 0;
+      totals.modalidadeB.EUR += sectionTotals.EUR || 0;
+    }
+  });
+
+  res.render('quotes/layout-print', { quote: data.quote, sections, totals, enableConfig });
 });
 
 router.get('/:code/layout-classic', async (req, res) => {
@@ -749,13 +815,49 @@ router.get('/:code/layout-classic', async (req, res) => {
 
   console.log('📄 Loading classic layout for quote:', code);
 
+  // Parse specs_json to get enableModalidade and enableSections preferences
+  let enableConfig = {
+    enableModalidadeA: true,
+    enableModalidadeB: true,
+    enableSections: {
+      equipA: true,
+      assessoriaA: true,
+      operacionaisA: true,
+      certificadosA: true,
+      equipB: true,
+      assessoriaB: true,
+      operacionaisB: true,
+      certificadosB: true
+    }
+  };
+
+  if (data.quote.specs_json) {
+    try {
+      const specsJson = typeof data.quote.specs_json === 'string'
+        ? JSON.parse(data.quote.specs_json)
+        : data.quote.specs_json;
+
+      if (specsJson.enableModalidadeA !== undefined) {
+        enableConfig.enableModalidadeA = specsJson.enableModalidadeA;
+      }
+      if (specsJson.enableModalidadeB !== undefined) {
+        enableConfig.enableModalidadeB = specsJson.enableModalidadeB;
+      }
+      if (specsJson.enableSections) {
+        enableConfig.enableSections = { ...enableConfig.enableSections, ...specsJson.enableSections };
+      }
+    } catch (e) {
+      console.error('Error parsing specs_json for enable config:', e);
+    }
+  }
+
   const categorized = categorizeSpecs(data.specs);
   const sections = Object.values(categorized).map(section => ({
     ...section,
     totals: totalsFor(section.items)
   }));
 
-  // Calculate totals by modalidade
+  // Calculate totals by modalidade (only for enabled modalidades)
   const totals = {
     modalidadeA: { BRL: 0, USD: 0, EUR: 0 },
     modalidadeB: { BRL: 0, USD: 0, EUR: 0 },
@@ -763,23 +865,41 @@ router.get('/:code/layout-classic', async (req, res) => {
   };
 
   sections.forEach(section => {
+    // Check if section is enabled
+    let sectionEnabled = true;
+    if (section.key === 'equipamentos_a') sectionEnabled = enableConfig.enableSections.equipA;
+    else if (section.key === 'assessoria_a') sectionEnabled = enableConfig.enableSections.assessoriaA;
+    else if (section.key === 'operacionais_a') sectionEnabled = enableConfig.enableSections.operacionaisA;
+    else if (section.key === 'certificados_a') sectionEnabled = enableConfig.enableSections.certificadosA;
+    else if (section.key === 'equipamentos_b') sectionEnabled = enableConfig.enableSections.equipB;
+    else if (section.key === 'assessoria_b') sectionEnabled = enableConfig.enableSections.assessoriaB;
+    else if (section.key === 'operacionais_b') sectionEnabled = enableConfig.enableSections.operacionaisB;
+    else if (section.key === 'certificados_b') sectionEnabled = enableConfig.enableSections.certificadosB;
+
+    if (!sectionEnabled) return; // Skip disabled sections
+
     const sectionTotals = section.totals;
     totals.general.BRL += sectionTotals.BRL || 0;
     totals.general.USD += sectionTotals.USD || 0;
     totals.general.EUR += sectionTotals.EUR || 0;
 
-    if (section.key.includes('_a')) {
+    if (section.key.includes('_a') && enableConfig.enableModalidadeA) {
       totals.modalidadeA.BRL += sectionTotals.BRL || 0;
       totals.modalidadeA.USD += sectionTotals.USD || 0;
       totals.modalidadeA.EUR += sectionTotals.EUR || 0;
-    } else if (section.key.includes('_b')) {
+    } else if (section.key.includes('_b') && enableConfig.enableModalidadeB) {
       totals.modalidadeB.BRL += sectionTotals.BRL || 0;
       totals.modalidadeB.USD += sectionTotals.USD || 0;
       totals.modalidadeB.EUR += sectionTotals.EUR || 0;
     }
   });
 
-  res.render('quotes/layout-print-classic', { quote: data.quote, sections, totals });
+  res.render('quotes/layout-print-classic', {
+    quote: data.quote,
+    sections,
+    totals,
+    enableConfig
+  });
 });
 
 router.post('/save', upload.any(), async (req, res, next) => {
@@ -879,7 +999,44 @@ router.get('/:code/xlsx', async (req, res) => {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
     const data = await getQuoteByCode(code);
     if (!data) return res.status(404).send('Cotação não encontrada');
-    const outPath = generateXlsxFromData({ quote: data.quote, specs: data.specs });
+
+    // Parse specs_json to get enableModalidade and enableSections preferences
+    let enableConfig = {
+      enableModalidadeA: true,
+      enableModalidadeB: true,
+      enableSections: {
+        equipA: true,
+        assessoriaA: true,
+        operacionaisA: true,
+        certificadosA: true,
+        equipB: true,
+        assessoriaB: true,
+        operacionaisB: true,
+        certificadosB: true
+      }
+    };
+
+    if (data.quote.specs_json) {
+      try {
+        const specsJson = typeof data.quote.specs_json === 'string'
+          ? JSON.parse(data.quote.specs_json)
+          : data.quote.specs_json;
+
+        if (specsJson.enableModalidadeA !== undefined) {
+          enableConfig.enableModalidadeA = specsJson.enableModalidadeA;
+        }
+        if (specsJson.enableModalidadeB !== undefined) {
+          enableConfig.enableModalidadeB = specsJson.enableModalidadeB;
+        }
+        if (specsJson.enableSections) {
+          enableConfig.enableSections = { ...enableConfig.enableSections, ...specsJson.enableSections };
+        }
+      } catch (e) {
+        console.error('Error parsing specs_json for enable config:', e);
+      }
+    }
+
+    const outPath = generateXlsxFromData({ quote: data.quote, specs: data.specs, enableConfig });
     const fileName = path.basename(outPath);
     const publicUrl = `/output/${fileName}`;
     return res.status(200).send(`<!doctype html><html><head><meta charset="utf-8"><title>Excel</title></head><body>

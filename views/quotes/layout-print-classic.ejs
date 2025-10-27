@@ -534,6 +534,7 @@
   %>
 
   <!-- PAGE 5: MODALIDADE A -->
+  <% if (enableConfig.enableModalidadeA) { %>
   <div class="page">
     <div class="modalidade-title">MODALIDADE A</div>
     <div class="modalidade-subtitle">
@@ -543,6 +544,15 @@
 
     <% modalidadeA.forEach(section => { %>
       <%
+        // Check if section is enabled
+        let sectionEnabled = true;
+        if (section.key === 'equipamentos_a') sectionEnabled = enableConfig.enableSections.equipA;
+        else if (section.key === 'assessoria_a') sectionEnabled = enableConfig.enableSections.assessoriaA;
+        else if (section.key === 'operacionais_a') sectionEnabled = enableConfig.enableSections.operacionaisA;
+        else if (section.key === 'certificados_a') sectionEnabled = enableConfig.enableSections.certificadosA;
+
+        if (!sectionEnabled) return; // Skip disabled sections
+
         // Detectar a moeda principal usada na seção
         const itemCurrency = section.items && section.items.length > 0 && section.items[0].currency
           ? section.items[0].currency
@@ -608,8 +618,10 @@
 
     <div class="page-number">5</div>
   </div>
+  <% } %>
 
   <!-- PAGE 6: MODALIDADE B -->
+  <% if (enableConfig.enableModalidadeB) { %>
   <div class="page">
     <div class="modalidade-title">MODALIDADE B</div>
     <div class="modalidade-subtitle">
@@ -618,6 +630,15 @@
 
     <% modalidadeB.forEach(section => { %>
       <%
+        // Check if section is enabled
+        let sectionEnabled = true;
+        if (section.key === 'equipamentos_b') sectionEnabled = enableConfig.enableSections.equipB;
+        else if (section.key === 'assessoria_b') sectionEnabled = enableConfig.enableSections.assessoriaB;
+        else if (section.key === 'operacionais_b') sectionEnabled = enableConfig.enableSections.operacionaisB;
+        else if (section.key === 'certificados_b') sectionEnabled = enableConfig.enableSections.certificadosB;
+
+        if (!sectionEnabled) return; // Skip disabled sections
+
         // Detectar a moeda principal usada na seção
         const itemCurrency = section.items && section.items.length > 0 && section.items[0].currency
           ? section.items[0].currency
@@ -683,11 +704,21 @@
 
     <div class="page-number">6</div>
   </div>
+  <% } %>
 
   <!-- PAGE 7: FINAL SUMMARY -->
   <div class="page final-summary">
     <div class="summary-title">O VALOR FINAL TOTAL DESTA PROPOSTA É:</div>
 
+    <%
+      // Determine which modalidades are enabled
+      const showBothModalidades = enableConfig.enableModalidadeA && enableConfig.enableModalidadeB;
+      const showOnlyA = enableConfig.enableModalidadeA && !enableConfig.enableModalidadeB;
+      const showOnlyB = !enableConfig.enableModalidadeA && enableConfig.enableModalidadeB;
+    %>
+
+    <% if (showBothModalidades) { %>
+    <!-- Show both modalidades -->
     <table class="summary-table">
       <thead>
         <tr>
@@ -710,6 +741,45 @@
         </tr>
       </tbody>
     </table>
+    <% } else if (showOnlyA) { %>
+    <!-- Show only Modalidade A -->
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>MODALIDADE A</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Entrega na porta da sua Empresa + SAT + Garantia<br>Nacional + Manutenção Preventiva</td>
+        </tr>
+        <tr style="font-weight: bold;">
+          <td>
+            USD$<%= fmt(totals.modalidadeA.USD) %> + R$<%= fmt(totals.modalidadeA.BRL) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <% } else if (showOnlyB) { %>
+    <!-- Show only Modalidade B -->
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>MODALIDADE B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Importação direta sem assessoria + SAT</td>
+        </tr>
+        <tr style="font-weight: bold;">
+          <td>
+            USD$<%= fmt(totals.modalidadeB.USD) %> + R$<%= fmt(totals.modalidadeB.BRL) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <% } %>
 
     <div class="payment-conditions">
       <p style="margin-bottom: 10px;">

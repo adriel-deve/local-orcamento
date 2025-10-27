@@ -473,13 +473,21 @@
   const modalidadeA = sections.filter(s => s.key.includes('_a'));
   const hasModalidadeA = modalidadeA.some(s => s.items && s.items.length > 0);
   %>
-  <% if (hasModalidadeA) { %>
+  <% if (hasModalidadeA && enableConfig.enableModalidadeA) { %>
   <div class="page">
     <div class="modalidade modalidade-a">
       <h2 class="modalidade-title">MODALIDADE A - Sistema CIF</h2>
 
       <% modalidadeA.forEach(section => { %>
-        <% if (section.items && section.items.length > 0) { %>
+        <%
+          // Check if section is enabled
+          let sectionEnabled = true;
+          if (section.key === 'equipamentos_a') sectionEnabled = enableConfig.enableSections.equipA;
+          else if (section.key === 'assessoria_a') sectionEnabled = enableConfig.enableSections.assessoriaA;
+          else if (section.key === 'operacionais_a') sectionEnabled = enableConfig.enableSections.operacionaisA;
+          else if (section.key === 'certificados_a') sectionEnabled = enableConfig.enableSections.certificadosA;
+        %>
+        <% if (section.items && section.items.length > 0 && sectionEnabled) { %>
         <div class="section">
           <h3 class="section-title"><%= section.title.replace('Modalidade A - ', '') %></h3>
           <table class="items-table">
@@ -542,13 +550,21 @@
   const modalidadeB = sections.filter(s => s.key.includes('_b'));
   const hasModalidadeB = modalidadeB.some(s => s.items && s.items.length > 0);
   %>
-  <% if (hasModalidadeB) { %>
+  <% if (hasModalidadeB && enableConfig.enableModalidadeB) { %>
   <div class="page">
     <div class="modalidade modalidade-b">
       <h2 class="modalidade-title">MODALIDADE B - Sistema FOB</h2>
 
       <% modalidadeB.forEach(section => { %>
-        <% if (section.items && section.items.length > 0) { %>
+        <%
+          // Check if section is enabled
+          let sectionEnabled = true;
+          if (section.key === 'equipamentos_b') sectionEnabled = enableConfig.enableSections.equipB;
+          else if (section.key === 'assessoria_b') sectionEnabled = enableConfig.enableSections.assessoriaB;
+          else if (section.key === 'operacionais_b') sectionEnabled = enableConfig.enableSections.operacionaisB;
+          else if (section.key === 'certificados_b') sectionEnabled = enableConfig.enableSections.certificadosB;
+        %>
+        <% if (section.items && section.items.length > 0 && sectionEnabled) { %>
         <div class="section">
           <h3 class="section-title"><%= section.title.replace('Modalidade B - ', '') %></h3>
           <table class="items-table">

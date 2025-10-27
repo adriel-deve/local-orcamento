@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `items` (
   `spec_index` INT NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `price` DECIMAL(12,2) DEFAULT 0,
+  `optional` BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (`quote_id`) REFERENCES `quotes`(`id`) ON DELETE CASCADE
 );
 

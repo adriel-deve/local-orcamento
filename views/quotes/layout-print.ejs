@@ -506,14 +506,24 @@
             <tbody>
               <% section.items.forEach(item => { %>
               <tr>
-                <td><%= item.name %></td>
+                <td>
+                  <%= item.name %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold; margin-left: 8px;">[OPCIONAL]</span>
+                  <% } %>
+                </td>
                 <td class="text-center"><%= item.qty %></td>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
                 <td class="text-center"><%= item.days || '-' %></td>
                   <% } %>
                 <td class="text-right"><%= fmt(item.unit) %></td>
                 <td class="text-center"><%= item.currency %></td>
-                <td class="text-right"><%= item.currency %> <%= fmt(item.subtotal) %></td>
+                <td class="text-right">
+                  <%= item.currency %> <%= fmt(item.subtotal) %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold;">*</span>
+                  <% } %>
+                </td>
               </tr>
               <% }); %>
             </tbody>
@@ -583,14 +593,24 @@
             <tbody>
               <% section.items.forEach(item => { %>
               <tr>
-                <td><%= item.name %></td>
+                <td>
+                  <%= item.name %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold; margin-left: 8px;">[OPCIONAL]</span>
+                  <% } %>
+                </td>
                 <td class="text-center"><%= item.qty %></td>
                 <% if (section.key.includes('operacionais') || section.key.includes('assessoria')) { %>
                 <td class="text-center"><%= item.days || '-' %></td>
                   <% } %>
                 <td class="text-right"><%= fmt(item.unit) %></td>
                 <td class="text-center"><%= item.currency %></td>
-                <td class="text-right"><%= item.currency %> <%= fmt(item.subtotal) %></td>
+                <td class="text-right">
+                  <%= item.currency %> <%= fmt(item.subtotal) %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold;">*</span>
+                  <% } %>
+                </td>
               </tr>
               <% }); %>
             </tbody>

@@ -74,6 +74,8 @@ function categorizeSpecs(specs) {
 function totalsFor(items) {
   const totals = { BRL: 0, USD: 0, EUR: 0 };
   (items || []).forEach(it => {
+    // Excluir itens marcados como opcionais do total
+    if (it.optional) return;
     totals[it.currency] = (totals[it.currency] || 0) + it.subtotal;
   });
   return totals;

@@ -582,10 +582,20 @@
           <% if (section.items && section.items.length > 0) { %>
             <% section.items.forEach(item => { %>
               <tr>
-                <td><%= item.name || '' %></td>
+                <td>
+                  <%= item.name || '' %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold; margin-left: 8px;">[OPCIONAL]</span>
+                  <% } %>
+                </td>
                 <td class="center"><%= item.qty || 1 %></td>
                 <td class="right"><%= currencySymbol %> <%= fmt(item.unit || 0) %></td>
-                <td class="right"><%= currencySymbol %> <%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+                <td class="right">
+                  <%= currencySymbol %> <%= fmt((item.qty || 1) * (item.unit || 0)) %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold;">*</span>
+                  <% } %>
+                </td>
               </tr>
             <% }); %>
           <% } %>
@@ -668,10 +678,20 @@
           <% if (section.items && section.items.length > 0) { %>
             <% section.items.forEach(item => { %>
               <tr>
-                <td><%= item.name || '' %></td>
+                <td>
+                  <%= item.name || '' %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold; margin-left: 8px;">[OPCIONAL]</span>
+                  <% } %>
+                </td>
                 <td class="center"><%= item.qty || 1 %></td>
                 <td class="right"><%= currencySymbol %> <%= fmt(item.unit || 0) %></td>
-                <td class="right"><%= currencySymbol %> <%= fmt((item.qty || 1) * (item.unit || 0)) %></td>
+                <td class="right">
+                  <%= currencySymbol %> <%= fmt((item.qty || 1) * (item.unit || 0)) %>
+                  <% if (item.optional) { %>
+                    <span style="color: #f59e0b; font-weight: bold;">*</span>
+                  <% } %>
+                </td>
               </tr>
             <% }); %>
           <% } %>

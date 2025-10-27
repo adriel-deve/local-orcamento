@@ -137,7 +137,7 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
       // Inserir items da spec
       for (const item of spec.items || []) {
         await pool.execute(
-          'INSERT INTO items (quote_id, spec_index, name, price, qty, currency, days) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          'INSERT INTO items (quote_id, spec_index, name, price, qty, currency, days, optional) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
           [
             quoteId,
             i,
@@ -145,7 +145,8 @@ export async function saveQuoteAndSpecs({ quote, specs }) {
             parseFloat(item.price) || 0,
             parseInt(item.qty) || 1,
             item.currency || 'BRL',
-            item.days ? parseInt(item.days) : null
+            item.days ? parseInt(item.days) : null,
+            item.optional === true || false
           ]
         );
       }
@@ -195,7 +196,8 @@ export async function getQuoteByCode(code) {
           price: parseFloat(item.price) || 0,
           qty: item.qty ? parseInt(item.qty) : 1,
           currency: item.currency ? String(item.currency).toUpperCase() : 'BRL',
-          days: item.days ? parseInt(item.days) : null
+          days: item.days ? parseInt(item.days) : null,
+          optional: item.optional === true || item.optional === 1
         }))
       });
     }

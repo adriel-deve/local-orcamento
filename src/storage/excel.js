@@ -25,7 +25,7 @@ function ensureWorkbook() {
       'id','quote_code','date','company','representative','supplier','services','validity_days','delivery_time','notes','status','created_at','updated_at'
     ]]);
     const specs = XLSX.utils.aoa_to_sheet([[ 'id','quote_id','spec_index','description','image_path' ]]);
-  const items = XLSX.utils.aoa_to_sheet([[ 'id','quote_id','spec_index','name','price','qty','currency','section' ]]);
+  const items = XLSX.utils.aoa_to_sheet([[ 'id','quote_id','spec_index','name','price','qty','currency','section','optional' ]]);
     XLSX.utils.book_append_sheet(wb, quotes, 'quotes');
     XLSX.utils.book_append_sheet(wb, specs, 'specs');
     XLSX.utils.book_append_sheet(wb, items, 'items');
@@ -76,7 +76,8 @@ export function getQuoteByCode(code) {
           price: Number(i.price || 0),
           qty: Number(i.qty || 1),
           currency: String(i.currency || 'BRL'),
-          section: i.section || ''
+          section: i.section || '',
+          optional: i.optional === true || i.optional === 'true' || i.optional === 1
         }))
     }));
   return { quote: q, specs: qSpecs };
@@ -132,7 +133,8 @@ export function saveQuoteAndSpecs({ quote, specs }) {
         price: Number(it.price || 0),
         qty: Number(it.qty || 1),
         currency: String(it.currency || 'BRL'),
-        section: s.description || ''
+        section: s.description || '',
+        optional: it.optional === true ? 'true' : 'false'
       });
     });
   });

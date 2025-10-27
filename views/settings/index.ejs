@@ -540,7 +540,7 @@
           </svg>
           Percentual Base sobre FOB (%)
         </label>
-        <input type="number" step="0.01" name="service_calc_service_base_percent" value="<%= (basePercent && basePercent.value) || '60.00' %>" placeholder="60.00" style="font-size: 1.125rem; font-weight: 600;">
+        <input type="number" step="0.01" name="service_base_percent" value="<%= (basePercent && basePercent.value) || '60.00' %>" placeholder="60.00" style="font-size: 1.125rem; font-weight: 600;">
         <small style="color: #0369a1; display: block; margin-top: 8px;">
           <strong>Fórmula:</strong> Valor de Serviços = FOB × (Percentual Base ÷ 100)
         </small>
@@ -558,11 +558,11 @@
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Percentual (%)</label>
-            <input type="number" step="0.01" name="service_calc_service_nrs_percent" value="<%= (nrsPercent && nrsPercent.value) || '45.00' %>" placeholder="45.00">
+            <input type="number" step="0.01" name="service_nrs_percent" value="<%= (nrsPercent && nrsPercent.value) || '45.00' %>" placeholder="45.00">
           </div>
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Texto Padrão</label>
-            <textarea name="service_calc_service_nrs_text" rows="2" placeholder="Adaptações para as Normas NR 10, NR 12..."><%= (nrsText && nrsText.value) || '' %></textarea>
+            <textarea name="service_nrs_text" rows="2" placeholder="Adaptações para as Normas NR 10, NR 12..."><%= (nrsText && nrsText.value) || '' %></textarea>
           </div>
         </div>
       </div>
@@ -579,11 +579,11 @@
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Percentual (%)</label>
-            <input type="number" step="0.01" name="service_calc_service_sat_percent" value="<%= (satPercent && satPercent.value) || '26.00' %>" placeholder="26.00">
+            <input type="number" step="0.01" name="service_sat_percent" value="<%= (satPercent && satPercent.value) || '26.00' %>" placeholder="26.00">
           </div>
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Texto Padrão</label>
-            <textarea name="service_calc_service_sat_text" rows="2" placeholder="SAT (Startup feito por engenheiros..."><%= (satText && satText.value) || '' %></textarea>
+            <textarea name="service_sat_text" rows="2" placeholder="SAT (Startup feito por engenheiros..."><%= (satText && satText.value) || '' %></textarea>
           </div>
         </div>
       </div>
@@ -600,11 +600,11 @@
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Percentual (%)</label>
-            <input type="number" step="0.01" name="service_calc_service_garantia_percent" value="<%= (garantiaPercent && garantiaPercent.value) || '13.00' %>" placeholder="13.00">
+            <input type="number" step="0.01" name="service_garantia_percent" value="<%= (garantiaPercent && garantiaPercent.value) || '13.00' %>" placeholder="13.00">
           </div>
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Texto Padrão</label>
-            <textarea name="service_calc_service_garantia_text" rows="2" placeholder="Garantia Nacional Extendida (12 meses)..."><%= (garantiaText && garantiaText.value) || '' %></textarea>
+            <textarea name="service_garantia_text" rows="2" placeholder="Garantia Nacional Extendida (12 meses)..."><%= (garantiaText && garantiaText.value) || '' %></textarea>
           </div>
         </div>
       </div>
@@ -621,11 +621,11 @@
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Percentual (%)</label>
-            <input type="number" step="0.01" name="service_calc_service_preventiva_percent" value="<%= (preventivaPercent && preventivaPercent.value) || '16.00' %>" placeholder="16.00">
+            <input type="number" step="0.01" name="service_preventiva_percent" value="<%= (preventivaPercent && preventivaPercent.value) || '16.00' %>" placeholder="16.00">
           </div>
           <div>
             <label style="font-size: 0.875rem; color: #991b1b;">Texto Padrão</label>
-            <textarea name="service_calc_service_preventiva_text" rows="2" placeholder="Plano de Manutenção Preventiva (12 meses)..."><%= (preventivaText && preventivaText.value) || '' %></textarea>
+            <textarea name="service_preventiva_text" rows="2" placeholder="Plano de Manutenção Preventiva (12 meses)..."><%= (preventivaText && preventivaText.value) || '' %></textarea>
           </div>
         </div>
       </div>
